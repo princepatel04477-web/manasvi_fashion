@@ -3,18 +3,25 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
+import { useSession, signOut } from "next-auth/react";
 import { set } from "animejs";
 import { interpolate, luxuryEase } from "@/lib/use-anime-scroll";
 
 export default function Header() {
   const pathname = usePathname();
-  const isHome = pathname === "/";
-  
+  const { data: session } = useSession();
   const navRef1 = useRef<HTMLElement>(null);
   const navRef2 = useRef<HTMLElement>(null);
   const logoRef = useRef<HTMLDivElement>(null);
 
+  const isHome = pathname === "/";
+  const isAdmin = (session?.user as any)?.role === "admin" || (session?.user as any)?.role === "seller";
+  const firstName = session?.user?.name ? session.user.name.split(" ")[0] : "";
+
   useEffect(() => {
+    if (pathname.startsWith("/dashboard") || pathname.startsWith("/auth")) {
+      return;
+    }
     if (!isHome) return;
 
     const handleScroll = () => {
@@ -48,6 +55,10 @@ export default function Header() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [isHome]);
 
+  if (pathname.startsWith("/dashboard") || pathname.startsWith("/auth")) {
+    return null;
+  }
+
   if (!isHome) {
     return (
       <header className="fixed inset-x-0 top-0 z-50">
@@ -58,13 +69,35 @@ export default function Header() {
               <span className="font-[var(--font-cormorant)] text-xs font-semibold uppercase tracking-[0.22em] opacity-90">Fashion</span>
             </Link>
           </div>
-          <nav className="hidden gap-6 text-xs uppercase tracking-[0.22em] text-[#3d2b26] md:flex [text-rendering:optimizeLegibility]">
-            {["/new-arrivals", "/kurtis", "/tunic-tops", "/dresses", "/contact", "/cart"].map((path, i) => (
-              <Link key={path} href={path} className="opacity-90 transition-colors duration-300 hover:text-black">
-                {["New", "Kurtis", "Tunics", "Dresses", "Contact", "Cart"][i]}
-              </Link>
-            ))}
-          </nav>
+          <div className="flex items-center gap-6">
+            <nav className="hidden gap-6 text-xs uppercase tracking-[0.22em] text-[#3d2b26] md:flex [text-rendering:optimizeLegibility] items-center">
+              {["/kurtis", "/tunic-tops", "/dresses", "/cart"].map((path, i) => (
+                <Link key={path} href={path} className="opacity-90 transition-colors duration-300 hover:text-black">
+                  {["Kurtis", "Tunics", "Dresses", "Cart"][i]}
+                </Link>
+              ))}
+              {isAdmin && (
+                <Link href="/dashboard" className="opacity-90 transition-colors duration-300 hover:text-black">
+                  Dashboard
+                </Link>
+              )}
+            </nav>
+
+            <div className="text-xs uppercase tracking-[0.22em] text-[#3d2b26] [text-rendering:optimizeLegibility] flex items-center">
+              {session ? (
+                <button
+                  onClick={() => signOut({ callbackUrl: "/" })}
+                  className="opacity-90 transition-colors duration-300 hover:text-black uppercase tracking-[0.22em] text-xs font-medium cursor-pointer"
+                >
+                  Sign Out {firstName ? `(${firstName})` : ""}
+                </button>
+              ) : (
+                <Link href="/auth/signin" className="opacity-90 transition-colors duration-300 hover:text-black font-medium">
+                  Sign In
+                </Link>
+              )}
+            </div>
+          </div>
         </div>
       </header>
     );
@@ -114,15 +147,29 @@ export default function Header() {
           style={{ opacity: 0, transform: "translateY(20px)" }}
           className="col-start-3 hidden items-center justify-end gap-6 font-[var(--font-cormorant)] text-sm font-semibold uppercase tracking-[0.16em] md:flex [text-rendering:optimizeLegibility] [-webkit-font-smoothing:antialiased]"
         >
-          {[
-            ["/about", "About"],
-            ["/contact", "Contact"],
-            ["/cart", "Cart"],
-          ].map(([path, label]) => (
-            <Link key={path} href={path} className="opacity-90 transition-colors duration-300 hover:text-black">
-              {label}
+          <Link href="/about" className="opacity-90 transition-colors duration-300 hover:text-black">
+            About
+          </Link>
+          <Link href="/cart" className="opacity-90 transition-colors duration-300 hover:text-black">
+            Cart
+          </Link>
+          {isAdmin && (
+            <Link href="/dashboard" className="opacity-90 transition-colors duration-300 hover:text-black">
+              Dashboard
             </Link>
-          ))}
+          )}
+          {session ? (
+            <button
+              onClick={() => signOut({ callbackUrl: "/" })}
+              className="opacity-90 transition-colors duration-300 hover:text-black uppercase tracking-[0.16em] text-sm font-semibold cursor-pointer"
+            >
+              Sign Out {firstName ? `(${firstName})` : ""}
+            </button>
+          ) : (
+            <Link href="/auth/signin" className="opacity-90 transition-colors duration-300 hover:text-black">
+              Sign In
+            </Link>
+          )}
         </nav>
       </div>
     </header>

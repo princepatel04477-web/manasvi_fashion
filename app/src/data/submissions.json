@@ -1,0 +1,22 @@
+[
+  {
+    "id": "SUB-1779358654953",
+    "name": "Aria Sen",
+    "email": "aria@example.com",
+    "phone": "+919999999999",
+    "inquiryType": "styling",
+    "message": "I would love to book a personalized styling session for designer dresses.",
+    "createdAt": "2026-05-21T10:17:34.959Z",
+    "fallback": true
+  },
+  {
+    "id": "SUB-1779359206302",
+    "name": "Mira Dey",
+    "email": "mira@example.com",
+    "phone": "+919876543211",
+    "inquiryType": "styling",
+    "message": "I would love to book a personalized styling session for designer dresses.",
+    "createdAt": "2026-05-21T10:26:46.304Z",
+    "fallback": true
+  }
+]

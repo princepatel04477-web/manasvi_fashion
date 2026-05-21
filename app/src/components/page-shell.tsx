@@ -1,7 +1,11 @@
-import { products } from "@/data/products";
-import ProductCard from "@/components/product-card";
+"use client";
 
-export function ProductSection({ title, filter }: { title: string; filter?: (p: (typeof products)[number]) => boolean }) {
+import { useShop } from "@/context/shop-context";
+import ProductCard from "@/components/product-card";
+import { Product } from "@/types";
+
+export function ProductSection({ title, filter }: { title: string; filter?: (p: Product) => boolean }) {
+  const { products } = useShop();
   const list = filter ? products.filter(filter) : products;
   return (
     <section className="mx-auto max-w-7xl px-6 py-16">

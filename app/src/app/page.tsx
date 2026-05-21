@@ -6,6 +6,29 @@ import { animate, set } from "animejs";
 import { interpolate, luxuryEase } from "@/lib/use-anime-scroll";
 
 export default function Home() {
+  const [cms, setCms] = useState({
+    heroBanner: "/manasvi-hero.png",
+    heroTitle: "MANASVI",
+    heroSubtitle: "FASHION",
+    sectionTunicImage: "/photos/9ba35110773d4f9f8f2bfcffc17bfd3cd034c4679562654196a1c52b120c67d6.png",
+    sectionTunicLink: "/tunic-tops",
+    sectionTunicAlt: "Freshly picked moments embroidered tunic top",
+    sectionKurtiImage: "/photos/red-kurti-carousel.png",
+    sectionKurtiLink: "/kurtis",
+    sectionKurtiAlt: "Freshly picked moments embroidered red kurti"
+  });
+
+  useEffect(() => {
+    fetch("/api/cms")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && !data.error) {
+          setCms(data);
+        }
+      })
+      .catch((err) => console.error("Error loading CMS:", err));
+  }, []);
+
   const [viewport, setViewport] = useState(() => {
     if (typeof window === "undefined") {
       return { width: 1440, height: 900 };
@@ -178,7 +201,7 @@ export default function Home() {
           <div className="absolute inset-0 bg-[#b89e86]" />
           <div ref={heroImageRef} className="absolute inset-0 [will-change:transform,opacity]">
             <img
-              src="/manasvi-hero.png"
+              src={cms.heroBanner}
               alt="Manasvi luxury campaign"
               className="h-full w-full object-cover object-center"
             />
@@ -208,13 +231,13 @@ export default function Home() {
                 }}
                 className="cormorant-garamond-manasvi text-[clamp(5.2rem,17vw,15rem)] leading-none text-[#fffaf5] transition-[filter] duration-300 [font-kerning:normal] [text-rendering:optimizeLegibility] [-webkit-font-smoothing:antialiased]"
               >
-                MANASVI
+                {cms.heroTitle}
               </h1>
               <p
                 ref={brandSubtitleRef}
                 className="-mt-3 im-fell-great-primer-regular text-[clamp(1.1rem,2.4vw,1.8rem)] font-normal uppercase tracking-[0.36em] text-white/90 sm:-mt-4"
               >
-                FASHION
+                {cms.heroSubtitle}
               </p>
             </div>
           </div>
@@ -224,15 +247,15 @@ export default function Home() {
       <section ref={tunicRef} className="bg-[#f6eee8] py-0">
         <div className="w-full overflow-hidden">
           <div ref={tunicSectionRef} className="[will-change:transform,opacity]">
-            <Link href="/tunic-tops" className="group block">
+            <Link href={cms.sectionTunicLink} className="group block">
               <img
-                src="/photos/9ba35110773d4f9f8f2bfcffc17bfd3cd034c4679562654196a1c52b120c67d6.png"
-                alt="Freshly picked moments embroidered tunic top"
+                src={cms.sectionTunicImage}
+                alt={cms.sectionTunicAlt}
                 className="block h-[76vw] max-h-[620px] w-full object-cover object-[54%_center] transition-transform duration-700 ease-out group-hover:scale-[1.06] sm:h-[70vw] md:hidden"
               />
               <img
-                src="/photos/9ba35110773d4f9f8f2bfcffc17bfd3cd034c4679562654196a1c52b120c67d6.png"
-                alt="Freshly picked moments embroidered tunic top"
+                src={cms.sectionTunicImage}
+                alt={cms.sectionTunicAlt}
                 className="hidden w-full transition-transform duration-700 ease-out group-hover:scale-[1.04] md:block"
               />
             </Link>
@@ -243,15 +266,15 @@ export default function Home() {
       <section ref={kurtiRef} className="bg-[#f6eee8] py-0">
         <div className="w-full overflow-hidden">
           <div ref={kurtiSectionRef} className="[will-change:transform,opacity]">
-            <Link href="/kurtis" className="group block">
+            <Link href={cms.sectionKurtiLink} className="group block">
               <img
-                src="/photos/red-kurti-carousel.png"
-                alt="Freshly picked moments embroidered red kurti"
+                src={cms.sectionKurtiImage}
+                alt={cms.sectionKurtiAlt}
                 className="block h-[76vw] max-h-[620px] w-full object-cover object-[52%_center] transition-transform duration-700 ease-out group-hover:scale-[1.06] sm:h-[70vw] md:hidden"
               />
               <img
-                src="/photos/red-kurti-carousel.png"
-                alt="Freshly picked moments embroidered red kurti"
+                src={cms.sectionKurtiImage}
+                alt={cms.sectionKurtiAlt}
                 className="hidden w-full transition-transform duration-700 ease-out group-hover:scale-[1.04] md:block"
               />
             </Link>

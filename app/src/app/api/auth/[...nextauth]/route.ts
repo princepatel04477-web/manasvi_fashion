@@ -1,18 +1,80 @@
 import NextAuth from "next-auth";
-import Credentials from "next-auth/providers/credentials";
+import CredentialsProvider from "next-auth/providers/credentials";
+import { getUserByEmail } from "@/lib/db-users";
+import bcrypt from "bcryptjs";
 
 const handler = NextAuth({
   providers: [
-    Credentials({
+    CredentialsProvider({
       name: "Credentials",
-      credentials: { email: {}, password: {} },
-      async authorize(credentials) {
-        if (credentials?.email) return { id: "1", name: "Manasvi User", email: credentials.email as string };
-        return null;
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" }
       },
-    }),
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
+          throw new Error("Please enter your email and password.");
+        }
+
+        const user = await getUserByEmail(credentials.email);
+        if (!user) {
+          throw new Error("Invalid email or password.");
+        }
+
+        const isPasswordCorrect = await bcrypt.compare(
+          credentials.password,
+          user.passwordHash
+        );
+
+        if (!isPasswordCorrect) {
+          throw new Error("Invalid email or password.");
+        }
+
+        // Return user details with role
+        return {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          phone: user.phone,
+          shippingAddress: user.shippingAddress,
+          city: user.city,
+          postalCode: user.postalCode
+        };
+      }
+    })
   ],
-  session: { strategy: "jwt" },
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        const u = user as any;
+        token.role = u.role;
+        token.phone = u.phone;
+        token.shippingAddress = u.shippingAddress;
+        token.city = u.city;
+        token.postalCode = u.postalCode;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (session.user) {
+        const u = session.user as any;
+        u.role = token.role as string;
+        u.phone = token.phone as string;
+        u.shippingAddress = token.shippingAddress as string;
+        u.city = token.city as string;
+        u.postalCode = token.postalCode as string;
+      }
+      return session;
+    }
+  },
+  pages: {
+    signIn: "/auth/signin"
+  },
+  session: {
+    strategy: "jwt"
+  },
+  secret: process.env.NEXTAUTH_SECRET || "manasvi-fashion-secret-key-12345"
 });
 
 export { handler as GET, handler as POST };

@@ -79,3 +79,133 @@ body {
   transform: translateX(-50%);
   background: radial-gradient(circle, rgba(61, 43, 38, 0.28), rgba(61, 43, 38, 0));
 }
+
+/* Luxury Brand Custom Theme Variables */
+:root {
+  --color-soft-blush: #F4D7CF;
+  --color-warm-nude: #E7C2B8;
+  --color-muted-peach: #DFAE9F;
+  --color-soft-cocoa: #8B6B61;
+  --color-deep-brown: #3B2B28;
+  --color-cream-white: #FAF7F2;
+  --color-muted-rose: #C98E87;
+}
+
+/* Typography Utility Classes */
+.font-cormorant {
+  font-family: var(--font-cormorant), serif;
+}
+.font-playfair {
+  font-family: var(--font-playfair), serif;
+}
+.font-bodoni {
+  font-family: var(--font-bodoni), serif;
+}
+.font-grance {
+  font-family: var(--font-grance), serif;
+}
+.font-inter {
+  font-family: var(--font-inter), sans-serif;
+}
+
+/* Cinematic Visual System */
+.soft-grain {
+  position: relative;
+}
+
+.soft-grain::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.045;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+.warm-shadow {
+  box-shadow: 0 30px 60px -15px rgba(59, 43, 40, 0.12), 0 12px 30px -10px rgba(59, 43, 40, 0.08);
+}
+
+.editorial-line {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-muted-peach), transparent);
+  opacity: 0.5;
+}
+
+.luxury-input {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(139, 107, 97, 0.3);
+  color: var(--color-deep-brown);
+  transition: all 400ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.luxury-input:focus {
+  outline: none;
+  border-bottom-color: var(--color-soft-cocoa);
+  box-shadow: 0 4px 12px -4px rgba(231, 194, 184, 0.25);
+}
+
+/* Cinematic Motion Keyframes */
+@keyframes lightLeakPulse {
+  0% {
+    opacity: 0.12;
+    filter: saturate(1.0);
+  }
+  50% {
+    opacity: 0.28;
+    filter: saturate(1.2);
+  }
+  100% {
+    opacity: 0.12;
+    filter: saturate(1.0);
+  }
+}
+
+@keyframes kenBurnsCinema {
+  0% {
+    transform: scale(1.0);
+  }
+  50% {
+    transform: scale(1.08) translate(1%, -1%);
+  }
+  100% {
+    transform: scale(1.0);
+  }
+}
+
+.cinematic-leak {
+  animation: lightLeakPulse 16s infinite ease-in-out;
+}
+
+.ken-burns-slow {
+  animation: kenBurnsCinema 28s infinite ease-in-out;
+}
+
+.editorial-backdrop {
+  backdrop-filter: blur(16px);
+  background-color: rgba(250, 247, 242, 0.82);
+}
+
+.text-shadow-elegant {
+  text-shadow: 0 2px 12px rgba(59, 43, 40, 0.15);
+}
+
+@keyframes slideInLeft {
+  0% {
+    opacity: 0;
+    transform: translateX(-12px) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+.animate-slide-in {
+  animation: slideInLeft 600ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+

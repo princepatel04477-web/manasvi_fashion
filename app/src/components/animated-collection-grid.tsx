@@ -52,7 +52,7 @@ export default function AnimatedCollectionGrid({ title, subtitle, products }: { 
   }, [products]);
 
   return (
-    <main className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
       <div
         ref={headerRef}
         style={{ opacity: 0, transform: "scale(1.06) translateY(24px)" }}
@@ -74,6 +74,6 @@ export default function AnimatedCollectionGrid({ title, subtitle, products }: { 
           </div>
         ))}
       </div>
-    </main>
+    </div>
   );
 }
