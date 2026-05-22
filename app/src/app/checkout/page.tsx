@@ -37,7 +37,7 @@ export default function CheckoutPage() {
 
   if (sessionStatus === "loading") {
     return (
-      <main className="min-h-screen bg-[#FAF7F2] text-[#3B2B28] pt-32 pb-24 px-4 flex flex-col justify-center items-center">
+      <main className="min-h-screen bg-[#FAF7F2] text-[#3B2B28] pt-24 sm:pt-28 md:pt-32 pb-24 px-4 flex flex-col justify-center items-center">
         <span className="font-cormorant text-xs uppercase tracking-[0.25em] text-[#8B6B61] animate-pulse mb-2">Manasvi Fashion</span>
         <p className="font-inter text-xs text-[#8B6B61]/80 font-light">Verifying secure checkout session...</p>
       </main>
@@ -61,7 +61,7 @@ export default function CheckoutPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#FAF7F2] text-[#3B2B28] pt-32 pb-24 px-4 md:px-6 relative overflow-hidden soft-grain">
+    <main className="min-h-screen bg-[#FAF7F2] text-[#3B2B28] pt-24 sm:pt-28 md:pt-32 pb-24 px-4 md:px-6 relative overflow-hidden soft-grain">
       {/* BACKGROUND DECORATIVE GLOWS */}
       <div className="absolute top-[8%] left-[-15%] w-[50vw] h-[50vw] rounded-full bg-[#F4D7CF] opacity-20 filter blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[20%] right-[-10%] w-[45vw] h-[45vw] rounded-full bg-[#E7C2B8] opacity-20 filter blur-[130px] pointer-events-none" />
@@ -69,11 +69,11 @@ export default function CheckoutPage() {
       <div className="max-w-3xl mx-auto relative z-10">
         {/* HERO SECTION */}
         <div className="max-w-3xl mb-10 flex flex-col gap-3 animate-slide-in">
-          <h1 className="font-cormorant text-4xl sm:text-5xl md:text-6xl font-light italic leading-tight">
+          <h1 className="font-cormorant text-3xl sm:text-4xl md:text-5xl font-light italic leading-tight">
             Secure Checkout
           </h1>
           <div className="w-16 h-[1px] bg-[#C98E87] my-1" />
-          <p className="font-inter text-xs sm:text-sm text-[#8B6B61] tracking-wide font-light">
+          <p className="font-inter text-sm sm:text-base text-[#8B6B61] tracking-wide font-light">
             Complete your shipping details below to place your order securely.
           </p>
         </div>
@@ -82,35 +82,43 @@ export default function CheckoutPage() {
           <div className="space-y-4">
             <input 
               required 
+              type="text"
+              autoCapitalize="words"
               placeholder="Full Name" 
               value={name} 
               onChange={(e) => setName(e.target.value)} 
-              className="w-full rounded-xl border border-[#E7C2B8]/40 bg-[#FAF7F2]/50 p-4 font-inter text-xs tracking-wider placeholder-[#8B6B61]/40 focus:outline-none focus:border-[#8B6B61]/60 focus:bg-white transition-all text-[#3B2B28]" 
+              className="w-full rounded-xl border border-[#E7C2B8]/40 bg-[#FAF7F2]/50 p-4 font-inter text-base md:text-sm tracking-wider placeholder-[#8B6B61]/40 focus:outline-none focus:border-[#8B6B61]/60 focus:bg-white transition-all text-[#3B2B28]" 
             />
             <input 
               required 
+              type="text"
               placeholder="Address" 
               value={address} 
               onChange={(e) => setAddress(e.target.value)} 
-              className="w-full rounded-xl border border-[#E7C2B8]/40 bg-[#FAF7F2]/50 p-4 font-inter text-xs tracking-wider placeholder-[#8B6B61]/40 focus:outline-none focus:border-[#8B6B61]/60 focus:bg-white transition-all text-[#3B2B28]" 
+              className="w-full rounded-xl border border-[#E7C2B8]/40 bg-[#FAF7F2]/50 p-4 font-inter text-base md:text-sm tracking-wider placeholder-[#8B6B61]/40 focus:outline-none focus:border-[#8B6B61]/60 focus:bg-white transition-all text-[#3B2B28]" 
             />
             <div className="grid gap-4 md:grid-cols-2">
               <input 
                 required 
+                type="text"
+                autoCapitalize="words"
                 placeholder="City" 
                 value={city} 
                 onChange={(e) => setCity(e.target.value)} 
-                className="w-full rounded-xl border border-[#E7C2B8]/40 bg-[#FAF7F2]/50 p-4 font-inter text-xs tracking-wider placeholder-[#8B6B61]/40 focus:outline-none focus:border-[#8B6B61]/60 focus:bg-white transition-all text-[#3B2B28]" 
+                className="w-full rounded-xl border border-[#E7C2B8]/40 bg-[#FAF7F2]/50 p-4 font-inter text-base md:text-sm tracking-wider placeholder-[#8B6B61]/40 focus:outline-none focus:border-[#8B6B61]/60 focus:bg-white transition-all text-[#3B2B28]" 
               />
               <input 
                 required 
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 placeholder="PIN Code" 
                 value={pin} 
                 onChange={(e) => setPin(e.target.value)} 
-                className="w-full rounded-xl border border-[#E7C2B8]/40 bg-[#FAF7F2]/50 p-4 font-inter text-xs tracking-wider placeholder-[#8B6B61]/40 focus:outline-none focus:border-[#8B6B61]/60 focus:bg-white transition-all text-[#3B2B28]" 
+                className="w-full rounded-xl border border-[#E7C2B8]/40 bg-[#FAF7F2]/50 p-4 font-inter text-base md:text-sm tracking-wider placeholder-[#8B6B61]/40 focus:outline-none focus:border-[#8B6B61]/60 focus:bg-white transition-all text-[#3B2B28]" 
               />
             </div>
-            <select className="w-full rounded-xl border border-[#E7C2B8]/40 bg-[#FAF7F2]/50 p-4 font-inter text-xs tracking-wider focus:outline-none focus:border-[#8B6B61]/60 focus:bg-white transition-all text-[#3B2B28] cursor-pointer">
+            <select className="w-full rounded-xl border border-[#E7C2B8]/40 bg-[#FAF7F2]/50 p-4 font-inter text-base md:text-sm tracking-wider focus:outline-none focus:border-[#8B6B61]/60 focus:bg-white transition-all text-[#3B2B28] cursor-pointer min-h-[52px]">
               <option>UPI Payment (Fastest)</option>
               <option>Razorpay Secure</option>
               <option>Stripe Card (International)</option>

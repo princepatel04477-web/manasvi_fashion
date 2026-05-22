@@ -336,10 +336,11 @@ export default function ContactPage() {
                     id="name"
                     name="name"
                     type="text"
+                    autoCapitalize="words"
                     value={formData.name}
                     onChange={handleInputChange}
                     placeholder="e.g. Eleanor Vance"
-                    className="luxury-input py-3 text-sm font-inter placeholder-[#8B6B61]/40"
+                    className="luxury-input py-3 text-base md:text-sm font-inter placeholder-[#8B6B61]/40"
                   />
                   {errors.name && (
                     <span className="font-cormorant text-xs italic text-[#C98E87] flex items-center gap-1.5 mt-1">
@@ -361,10 +362,11 @@ export default function ContactPage() {
                       id="email"
                       name="email"
                       type="email"
+                      inputMode="email"
                       value={formData.email}
                       onChange={handleInputChange}
                       placeholder="e.g. eleanor@example.com"
-                      className="luxury-input py-3 text-sm font-inter placeholder-[#8B6B61]/40"
+                      className="luxury-input py-3 text-base md:text-sm font-inter placeholder-[#8B6B61]/40"
                     />
                     {errors.email && (
                       <span className="font-cormorant text-xs italic text-[#C98E87] flex items-center gap-1.5 mt-1">
@@ -383,10 +385,11 @@ export default function ContactPage() {
                       id="phone"
                       name="phone"
                       type="tel"
+                      inputMode="tel"
                       value={formData.phone}
                       onChange={handleInputChange}
                       placeholder="e.g. +91 98765 43210"
-                      className="luxury-input py-3 text-sm font-inter placeholder-[#8B6B61]/40"
+                      className="luxury-input py-3 text-base md:text-sm font-inter placeholder-[#8B6B61]/40"
                     />
                     {errors.phone && (
                       <span className="font-cormorant text-xs italic text-[#C98E87] flex items-center gap-1.5 mt-1">
@@ -408,7 +411,7 @@ export default function ContactPage() {
                     <button
                       type="button"
                       onClick={() => setDropdownOpen(!dropdownOpen)}
-                      className="w-full flex justify-between items-center py-3 border-b border-[#8B6B61]/30 text-[#3B2B28] text-sm font-inter text-left focus:outline-none focus:border-[#8B6B61] transition-all duration-300"
+                      className="w-full flex justify-between items-center py-3 border-b border-[#8B6B61]/30 text-[#3B2B28] text-base md:text-sm font-inter text-left focus:outline-none focus:border-[#8B6B61] transition-all duration-300 min-h-[48px]"
                     >
                       <span className={formData.inquiryType ? "text-[#3B2B28]" : "text-[#8B6B61]/40"}>
                         {inquiryLabels[formData.inquiryType]}
@@ -424,7 +427,7 @@ export default function ContactPage() {
                             key={type}
                             type="button"
                             onClick={() => selectInquiryType(type)}
-                            className="w-full text-left px-5 py-3 text-xs md:text-sm font-inter text-[#8B6B61] hover:bg-[#FAF7F2] hover:text-[#3B2B28] transition-colors duration-200 flex justify-between items-center"
+                            className="w-full text-left px-5 py-3.5 text-base md:text-sm font-inter text-[#8B6B61] hover:bg-[#FAF7F2] hover:text-[#3B2B28] transition-colors duration-200 flex justify-between items-center"
                           >
                             <span>{inquiryLabels[type]}</span>
                             {formData.inquiryType === type && <Check className="w-4 h-4 text-[#C98E87]" />}
@@ -447,7 +450,7 @@ export default function ContactPage() {
                     value={formData.message}
                     onChange={handleInputChange}
                     placeholder="Describe your design, sizing, or support needs..."
-                    className="luxury-input py-3 text-sm font-inter placeholder-[#8B6B61]/40 resize-none min-h-[100px]"
+                    className="luxury-input py-3 text-base md:text-sm font-inter placeholder-[#8B6B61]/40 resize-none min-h-[100px]"
                   />
                   {errors.message && (
                     <span className="font-cormorant text-xs italic text-[#C98E87] flex items-center gap-1.5 mt-1">

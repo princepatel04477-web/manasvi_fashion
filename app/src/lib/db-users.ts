@@ -18,7 +18,7 @@ export interface User {
 const USERS_FILE = "users-db.json";
 
 export const ADMIN_EMAILS = [
-  "admin@manasvifashion.com",
+  "manasvifashion1515@gmail.com",
   "prince@example.com",
   "aryan@example.com"
 ];
@@ -34,13 +34,13 @@ export function getRoleByEmail(email: string): User["role"] {
 
 async function getSeedUsers(): Promise<User[]> {
   const salt = await bcrypt.genSalt(10);
-  const passwordHash = await bcrypt.hash("Password123", salt);
+  const passwordHash = await bcrypt.hash("manu@1515", salt);
   
   return [
     {
       id: "usr-admin",
       name: "Manasvi Admin",
-      email: "admin@manasvifashion.com",
+      email: "manasvifashion1515@gmail.com",
       passwordHash: passwordHash,
       role: "admin",
       createdAt: new Date().toISOString()
@@ -49,6 +49,7 @@ async function getSeedUsers(): Promise<User[]> {
 }
 
 export async function getUsers(): Promise<User[]> {
+  let dbUsers: User[] = [];
   if (supabase) {
     try {
       const { data, error } = await supabase
@@ -61,7 +62,7 @@ export async function getUsers(): Promise<User[]> {
           name: string;
           email: string;
           password_hash: string;
-          role: "admin" | "customer";
+          role: "admin" | "seller" | "customer";
           phone?: string;
           shipping_address?: string;
           city?: string;
@@ -69,7 +70,7 @@ export async function getUsers(): Promise<User[]> {
           created_at: string;
           createdAt?: string;
         }
-        return (data as unknown as DbUserRow[]).map((item) => ({
+        dbUsers = (data as unknown as DbUserRow[]).map((item) => ({
           id: String(item.id),
           name: item.name,
           email: item.email,
@@ -81,15 +82,30 @@ export async function getUsers(): Promise<User[]> {
           postalCode: item.postal_code,
           createdAt: item.created_at || item.createdAt
         })) as User[];
+      } else {
+        console.warn("[db-users] Supabase select users failed:", error?.message);
       }
-      console.warn("[db-users] Supabase select users failed:", error?.message);
     } catch (err) {
       console.warn("[db-users] Supabase users error:", err);
     }
   }
 
   const seed = await getSeedUsers();
-  return readJson<User[]>(USERS_FILE, seed);
+  const localUsers = await readJson<User[]>(USERS_FILE, seed);
+
+  // Merge seed, local and remote users by email (case-insensitive) to ensure local users (e.g. seeded admin)
+  // are always accessible and not masked by an empty Supabase db.
+  const mergedMap = new Map<string, User>();
+  for (const u of seed) {
+    mergedMap.set(u.email.toLowerCase(), u);
+  }
+  for (const u of localUsers) {
+    mergedMap.set(u.email.toLowerCase(), u);
+  }
+  for (const u of dbUsers) {
+    mergedMap.set(u.email.toLowerCase(), u);
+  }
+  return Array.from(mergedMap.values());
 }
 
 export async function getUserByEmail(email: string): Promise<User | undefined> {
@@ -151,8 +167,13 @@ export async function registerUser(
     }
   }
 
-  const all = await getUsers();
-  all.push(newUser);
-  await writeJson<User[]>(USERS_FILE, all);
+  // To prevent write duplication/masking, read and append directly to local JSON list
+  const seed = await getSeedUsers();
+  const allLocal = await readJson<User[]>(USERS_FILE, seed);
+  
+  if (!allLocal.some((u) => u.email.toLowerCase() === newUser.email.toLowerCase())) {
+    allLocal.push(newUser);
+    await writeJson<User[]>(USERS_FILE, allLocal);
+  }
   return newUser;
 }

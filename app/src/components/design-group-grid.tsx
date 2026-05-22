@@ -21,14 +21,14 @@ export default function DesignGroupGrid({
   slideFromRight?: boolean;
 }) {
   return (
-    <main className="mx-auto max-w-7xl px-4 pb-12 pt-24 sm:px-6 sm:pt-28 lg:px-8 lg:pt-32">
+    <main className="mx-auto max-w-7xl px-4 pb-12 pt-20 sm:px-6 sm:pt-24 lg:px-8 lg:pt-32">
       <div className="mb-8">
-        <p className="text-xs tracking-[0.22em] text-[#6a5b4f]">CURATED COLLECTION</p>
-        <h1 className="mt-2 font-serif text-3xl sm:text-4xl lg:text-5xl text-[#2f2924]">{title}</h1>
+        <p className="text-[11px] sm:text-xs tracking-[0.22em] text-[#6a5b4f]">CURATED COLLECTION</p>
+        <h1 className="mt-2 font-serif text-2xl sm:text-3xl lg:text-5xl text-[#2f2924]">{title}</h1>
         <p className="mt-3 max-w-2xl text-sm sm:text-base text-[#4b4139]">{subtitle}</p>
       </div>
 
-      <div className="grid grid-cols-1 gap-8">
+      <div className="grid grid-cols-1 gap-8 overflow-x-hidden">
         {groups.map((group) => (
           <VariantLayout key={group.id} group={group} slideFromRight={slideFromRight} />
         ))}
@@ -42,6 +42,13 @@ function VariantLayout({ group, slideFromRight }: { group: DesignGroup; slideFro
   const mainImage = group.images[active] || group.images[0];
   const { addCustomToCart } = useShop();
   const articleRef = useRef<HTMLElement>(null);
+  const [translateDistance, setTranslateDistance] = useState(120);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.innerWidth < 768) {
+      setTranslateDistance(30);
+    }
+  }, []);
 
   useEffect(() => {
     if (!slideFromRight) return;
@@ -51,7 +58,7 @@ function VariantLayout({ group, slideFromRight }: { group: DesignGroup; slideFro
         entries.forEach((entry) => {
           if (entry.isIntersecting && articleRef.current) {
             animate(articleRef.current, {
-              translateX: [120, 0],
+              translateX: [translateDistance, 0],
               opacity: [0, 1],
               duration: 900,
               easing: "cubicBezier(0.16, 1, 0.3, 1)",
@@ -70,12 +77,12 @@ function VariantLayout({ group, slideFromRight }: { group: DesignGroup; slideFro
     return () => {
       observer.disconnect();
     };
-  }, [slideFromRight]);
+  }, [slideFromRight, translateDistance]);
 
   return (
     <article
       ref={articleRef}
-      style={slideFromRight ? { opacity: 0, transform: "translateX(120px)" } : undefined}
+      style={slideFromRight ? { opacity: 0, transform: `translateX(${translateDistance}px)` } : undefined}
       className="rounded-2xl border border-[#d9cfbf] bg-[#fffdf9] p-4 shadow-[0_10px_28px_rgba(63,52,44,0.08)]"
     >
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
@@ -89,7 +96,7 @@ function VariantLayout({ group, slideFromRight }: { group: DesignGroup; slideFro
           </div>
         </div>
         <div className="lg:col-span-4">
-          <h2 className="font-serif text-3xl text-[#2f2924]">{group.title}</h2>
+          <h2 className="font-serif text-2xl sm:text-3xl text-[#2f2924]">{group.title}</h2>
           <p className="mt-2 text-sm text-[#6d5f54]">{group.subtitle}</p>
           <p className="mt-3 text-lg font-semibold text-[#3d2b26]">{formatINR(group.price)}</p>
           <p className="mt-6 text-sm uppercase tracking-[0.12em] text-[#5a4d43]">Color Variants</p>
@@ -122,7 +129,7 @@ function VariantLayout({ group, slideFromRight }: { group: DesignGroup; slideFro
                   slug: group.href,
                 })
               }
-              className="group relative inline-flex h-[50px] w-[190px] items-center justify-start overflow-hidden rounded-[12px] bg-[#3d2b26] pl-6 pr-4 text-[#fffdf9] transition-all duration-300"
+              className="group relative inline-flex h-[50px] w-full sm:w-[190px] items-center justify-start overflow-hidden rounded-[12px] bg-[#3d2b26] pl-6 pr-4 text-[#fffdf9] transition-all duration-300"
             >
               <span className="mr-8 text-sm tracking-wide transition-opacity duration-500 group-hover:opacity-0">
                 Add to Cart

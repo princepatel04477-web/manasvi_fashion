@@ -58,8 +58,8 @@ export default function AnimatedCollectionGrid({ title, subtitle, products }: { 
         style={{ opacity: 0, transform: "scale(1.06) translateY(24px)" }}
         className="mb-8"
       >
-        <p className="text-xs tracking-[0.22em] text-[#6e2b38]">CURATED COLLECTION</p>
-        <h1 className="mt-2 font-serif text-3xl sm:text-4xl lg:text-5xl">{title}</h1>
+        <p className="text-[11px] sm:text-xs tracking-[0.22em] text-[#6e2b38]">CURATED COLLECTION</p>
+        <h1 className="mt-2 font-serif text-2xl sm:text-3xl lg:text-5xl">{title}</h1>
         <p className="mt-3 max-w-2xl text-sm sm:text-base text-[#3d2b26cc]">{subtitle}</p>
       </div>
 

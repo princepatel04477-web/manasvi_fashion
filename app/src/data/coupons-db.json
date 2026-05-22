@@ -1,0 +1,22 @@
+[
+  {
+    "code": "WELCOME10",
+    "discountType": "percentage",
+    "discountValue": 10,
+    "expiryDate": "2026-08-19T14:13:16.803Z",
+    "usageLimit": 500,
+    "usedCount": 124,
+    "minOrderValue": 1999,
+    "active": true
+  },
+  {
+    "code": "FESTIVE500",
+    "discountType": "fixed",
+    "discountValue": 500,
+    "expiryDate": "2026-06-20T14:13:16.803Z",
+    "usageLimit": 200,
+    "usedCount": 45,
+    "minOrderValue": 4999,
+    "active": true
+  }
+]

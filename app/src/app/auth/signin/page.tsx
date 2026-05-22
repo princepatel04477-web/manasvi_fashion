@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { Eye, EyeOff } from "lucide-react";
 
 const CAMPAIGN_IMAGES = [
   "/manasvi-hero.png",
@@ -79,6 +80,7 @@ function SignInForm() {
   const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(searchParams.get("error") || "");
   const isRegistered = searchParams.get("registered") === "true";
@@ -110,7 +112,7 @@ function SignInForm() {
   };
 
   return (
-    <div className="w-full max-w-md px-4 sm:px-8 py-10 flex flex-col justify-center min-h-screen">
+    <div className="w-full max-w-md px-4 sm:px-8 py-12 md:py-0 flex flex-col justify-center md:min-h-screen">
       <div className="space-y-8">
         {/* Title Block */}
         <div className="space-y-3">
@@ -152,11 +154,12 @@ function SignInForm() {
             </label>
             <input
               type="email"
+              inputMode="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              placeholder="e.g. admin@manasvifashion.com"
-              className="w-full bg-transparent border-b border-[#E7C2B8]/40 py-3 text-sm text-[#3B2B28] outline-none transition-all duration-300 focus:border-[#8B6B61] focus:shadow-[0_4px_12px_-4px_rgba(231,194,184,0.15)] placeholder-[#8B6B61]/35 font-light"
+              placeholder="e.g. manasvifashion1515@gmail.com"
+              className="w-full bg-transparent border-b border-[#E7C2B8]/40 py-3 text-base md:text-sm text-[#3B2B28] outline-none transition-all duration-300 focus:border-[#8B6B61] focus:shadow-[0_4px_12px_-4px_rgba(231,194,184,0.15)] placeholder-[#8B6B61]/35 font-light"
             />
           </div>
 
@@ -164,14 +167,28 @@ function SignInForm() {
             <label className="block text-[9px] font-semibold uppercase tracking-[0.2em] text-[#8B6B61]">
               Password
             </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              placeholder="••••••••"
-              className="w-full bg-transparent border-b border-[#E7C2B8]/40 py-3 text-sm text-[#3B2B28] outline-none transition-all duration-300 focus:border-[#8B6B61] focus:shadow-[0_4px_12px_-4px_rgba(231,194,184,0.15)] placeholder-[#8B6B61]/35"
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                placeholder="••••••••"
+                className="w-full bg-transparent border-b border-[#E7C2B8]/40 py-3 pr-10 text-base md:text-sm text-[#3B2B28] outline-none transition-all duration-300 focus:border-[#8B6B61] focus:shadow-[0_4px_12px_-4px_rgba(231,194,184,0.15)] placeholder-[#8B6B61]/35"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-0 bottom-3 text-[#8B6B61]/70 hover:text-[#3B2B28] transition-colors duration-300 focus:outline-none cursor-pointer"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? (
+                  <EyeOff className="w-4 h-4" />
+                ) : (
+                  <Eye className="w-4 h-4" />
+                )}
+              </button>
+            </div>
           </div>
 
           {/* Form Actions */}
@@ -257,11 +274,11 @@ function SignInForm() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-white/70 p-3 rounded-lg border border-[#E7C2B8]/20 font-mono text-[11px]">
                 <div>
                   <span className="block text-[8px] uppercase tracking-wider text-[#8B6B61]/60 mb-0.5">Email</span>
-                  <span className="font-semibold text-[#3B2B28] select-all">admin@manasvifashion.com</span>
+                  <span className="font-semibold text-[#3B2B28] select-all">manasvifashion1515@gmail.com</span>
                 </div>
                 <div>
                   <span className="block text-[8px] uppercase tracking-wider text-[#8B6B61]/60 mb-0.5">Password</span>
-                  <span className="font-semibold text-[#3B2B28] select-all">Password123</span>
+                  <span className="font-semibold text-[#3B2B28] select-all">manu@1515</span>
                 </div>
               </div>
             </div>

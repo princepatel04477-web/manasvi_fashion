@@ -26,7 +26,7 @@ export default function TunicTopsPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#FAF7F2] text-[#3B2B28] pt-32 pb-24 relative overflow-hidden soft-grain">
+    <main className="min-h-screen bg-[#FAF7F2] text-[#3B2B28] pt-24 sm:pt-28 md:pt-32 pb-20 sm:pb-24 relative overflow-hidden soft-grain">
       {/* BACKGROUND DECORATIVE GLOWS */}
       <div className="absolute top-[8%] left-[-15%] w-[50vw] h-[50vw] rounded-full bg-[#E7C2B8] opacity-20 filter blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[15%] right-[-10%] w-[45vw] h-[45vw] rounded-full bg-[#F4D7CF] opacity-20 filter blur-[130px] pointer-events-none" />
@@ -34,7 +34,7 @@ export default function TunicTopsPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
         {/* EDITORIAL HEADER */}
-        <div className="max-w-3xl mb-16 md:mb-24 flex flex-col gap-3">
+        <div className="max-w-3xl mb-12 sm:mb-16 md:mb-24 flex flex-col gap-3">
           <motion.span 
             initial={{ opacity: 0, x: -15 }}
             animate={{ opacity: 1, x: 0 }}
@@ -49,7 +49,7 @@ export default function TunicTopsPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.1 }}
-            className="font-cormorant text-4xl sm:text-5xl md:text-6xl font-light italic leading-tight"
+            className="font-cormorant text-3xl sm:text-4xl md:text-5xl font-light italic leading-tight"
           >
             Contemporary Tunic Essentials
           </motion.h1>
@@ -60,7 +60,7 @@ export default function TunicTopsPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="font-inter text-xs sm:text-sm text-[#8B6B61] leading-relaxed max-w-lg font-light tracking-wide"
+            className="font-inter text-sm sm:text-base text-[#8B6B61] leading-relaxed max-w-lg font-light tracking-wide"
           >
             Relaxed silhouettes crafted for modern everyday elegance. Seamless blends of contemporary cuts with warm boutique charm.
           </motion.p>
@@ -73,7 +73,7 @@ export default function TunicTopsPage() {
             <p className="font-inter text-xs text-[#8B6B61] mt-2">Check back shortly as new designs arrive in our studio.</p>
           </div>
         ) : (
-          <section className="mb-24 md:mb-32">
+          <section className="mb-16 sm:mb-24 md:mb-32">
             <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto items-end">
               {tunicTops.map((tunic, index) => {
                 // Different aspect ratios and top padding to create lookbook variance
@@ -98,8 +98,8 @@ export default function TunicTopsPage() {
         )}
 
         {/* MOVEMENT STORY PANEL */}
-        <section className="my-32 -mx-4 sm:-mx-6 lg:-mx-8">
-          <div className="bg-[#FAF7F2] border-t border-b border-[#E7C2B8]/40 py-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden soft-grain">
+        <section className="my-20 sm:my-32 -mx-4 sm:-mx-6 lg:-mx-8">
+          <div className="bg-[#FAF7F2] border-t border-b border-[#E7C2B8]/40 py-14 sm:py-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden soft-grain">
             <div className="max-w-6xl mx-auto grid gap-12 md:grid-cols-2 items-center">
               
               {/* Photo Box */}

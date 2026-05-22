@@ -29,7 +29,7 @@ export default function DressesPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#FAF7F2] text-[#3B2B28] pt-32 pb-24 relative overflow-hidden soft-grain">
+    <main className="min-h-screen bg-[#FAF7F2] text-[#3B2B28] pt-24 sm:pt-28 md:pt-32 pb-20 sm:pb-24 relative overflow-hidden soft-grain">
       {/* BACKGROUND DECORATIVE GLOWS */}
       <div className="absolute top-[10%] left-[-15%] w-[55vw] h-[55vw] rounded-full bg-[#F4D7CF] opacity-20 filter blur-[150px] pointer-events-none" />
       <div className="absolute bottom-[20%] right-[-10%] w-[45vw] h-[45vw] rounded-full bg-[#E7C2B8] opacity-25 filter blur-[130px] pointer-events-none" />
@@ -37,7 +37,7 @@ export default function DressesPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
         {/* CAMPAIGN INTRODUCTION */}
-        <div className="max-w-4xl mx-auto text-center mb-20 md:mb-28 flex flex-col items-center gap-4">
+        <div className="max-w-4xl mx-auto text-center mb-12 sm:mb-20 md:mb-28 flex flex-col items-center gap-4">
           <motion.span 
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
@@ -52,7 +52,7 @@ export default function DressesPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.1 }}
-            className="font-cormorant text-5xl sm:text-6xl md:text-7xl font-light italic leading-[1.1] tracking-tight"
+            className="font-cormorant text-4xl sm:text-5xl md:text-6xl font-light italic leading-[1.1] tracking-tight"
           >
             Dresses Designed to Flow Effortlessly
           </motion.h1>
@@ -71,7 +71,7 @@ export default function DressesPage() {
 
         {/* DOUBLE-HEIGHT CAMPAIGN COLLAGE LAYOUT */}
         {campaignPairs.length > 0 && (
-          <section className="mb-28 max-w-5xl mx-auto">
+          <section className="mb-20 sm:mb-28 max-w-5xl mx-auto">
             <div className="grid gap-12 md:grid-cols-2 items-start">
               
               {/* Card 1: Left column - standard lookbook card */}
@@ -107,8 +107,8 @@ export default function DressesPage() {
         )}
 
         {/* HIGH-FASHION STORY PANEL: "TIMELESS SILHOUETTES" */}
-        <section className="my-32 -mx-4 sm:-mx-6 lg:-mx-8 relative overflow-hidden">
-          <div className="relative h-[65vh] sm:h-[75vh] w-full flex items-center justify-center">
+        <section className="my-20 sm:my-32 -mx-4 sm:-mx-6 lg:-mx-8 relative overflow-hidden">
+          <div className="relative h-[52vh] sm:h-[65vh] w-full flex items-center justify-center">
             {/* Dark gradient overlay */}
             <div className="absolute inset-0 bg-gradient-to-b from-[#3B2B28]/95 via-[#3B2B28]/60 to-[#3B2B28]/90 z-10" />
             
@@ -140,7 +140,7 @@ export default function DressesPage() {
 
         {/* SECONDARY CAMPAIGN SPREAD */}
         {secondaryPairs.length > 0 && (
-          <section className="mt-28 max-w-5xl mx-auto">
+        <section className="mt-20 sm:mt-28 max-w-5xl mx-auto">
             <div className="grid gap-12 md:grid-cols-2 items-start">
               
               {/* Card 3: Left column - offset with padding */}

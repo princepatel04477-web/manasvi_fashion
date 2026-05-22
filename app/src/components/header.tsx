@@ -2,14 +2,21 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { set } from "animejs";
 import { interpolate, luxuryEase } from "@/lib/use-anime-scroll";
+import { Menu, X, ShoppingBag, Trash2, Plus, Minus } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useShop } from "@/context/shop-context";
+import { formatINR } from "@/lib/store";
 
 export default function Header() {
   const pathname = usePathname();
   const { data: session } = useSession();
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [drawerTab, setDrawerTab] = useState<"menu" | "cart">("menu");
+  const { cart, products: productsList, cartCount, cartTotal, updateQty, removeFromCart } = useShop();
   const navRef1 = useRef<HTMLElement>(null);
   const navRef2 = useRef<HTMLElement>(null);
   const logoRef = useRef<HTMLDivElement>(null);
@@ -18,6 +25,23 @@ export default function Header() {
   const isAdmin = (session?.user as any)?.role === "admin" || (session?.user as any)?.role === "seller";
   const firstName = session?.user?.name ? session.user.name.split(" ")[0] : "";
 
+  // Lock background scroll when mobile drawer is open
+  useEffect(() => {
+    if (isDrawerOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isDrawerOpen]);
+
+  // Auto-close drawer on route change
+  useEffect(() => {
+    setIsDrawerOpen(false);
+  }, [pathname]);
+
   useEffect(() => {
     if (pathname.startsWith("/dashboard") || pathname.startsWith("/auth")) {
       return;
@@ -25,6 +49,20 @@ export default function Header() {
     if (!isHome) return;
 
     const handleScroll = () => {
+      const hasScroll = document.documentElement.scrollHeight > window.innerHeight + 4;
+      if (!hasScroll) {
+        if (navRef1.current) {
+          set(navRef1.current, { opacity: 1, translateY: "0px" });
+        }
+        if (navRef2.current) {
+          set(navRef2.current, { opacity: 1, translateY: "0px" });
+        }
+        if (logoRef.current) {
+          set(logoRef.current, { opacity: 1 });
+        }
+        return;
+      }
+
       const sy = window.scrollY;
       const navOpacity = interpolate(sy, { inputRange: [190, 360], outputRange: [0, 1], ease: luxuryEase });
       const navY = interpolate(sy, { inputRange: [190, 360], outputRange: [20, 0], ease: luxuryEase });
@@ -50,7 +88,8 @@ export default function Header() {
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll();
+    // Call immediately to initialize nav visibility
+    setTimeout(handleScroll, 0);
 
     return () => window.removeEventListener("scroll", handleScroll);
   }, [isHome]);
@@ -61,117 +100,492 @@ export default function Header() {
 
   if (!isHome) {
     return (
-      <header className="fixed inset-x-0 top-0 z-50">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5 sm:px-8">
-          <div>
-            <Link href="/" className="flex flex-col items-center gap-1 font-[var(--font-grance)] text-2xl font-semibold tracking-[0.04em] text-[#3d2b26]">
-              <span>MANASVI</span>
-              <span className="font-[var(--font-cormorant)] text-xs font-semibold uppercase tracking-[0.22em] opacity-90">Fashion</span>
-            </Link>
-          </div>
-          <div className="flex items-center gap-6">
-            <nav className="hidden gap-6 text-xs uppercase tracking-[0.22em] text-[#3d2b26] md:flex [text-rendering:optimizeLegibility] items-center">
-              {["/kurtis", "/tunic-tops", "/dresses", "/cart"].map((path, i) => (
-                <Link key={path} href={path} className="opacity-90 transition-colors duration-300 hover:text-black">
-                  {["Kurtis", "Tunics", "Dresses", "Cart"][i]}
-                </Link>
-              ))}
-              {isAdmin && (
-                <Link href="/dashboard" className="opacity-90 transition-colors duration-300 hover:text-black">
-                  Dashboard
-                </Link>
-              )}
-            </nav>
+      <>
+        <header className="fixed inset-x-0 top-0 z-50 bg-[#FAF7F2]/90 backdrop-blur-md border-b border-[#E7C2B8]/10">
+          <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5 sm:px-8">
+            <div>
+              <Link href="/" className="flex flex-col items-center gap-1 font-[var(--font-grance)] text-2xl font-semibold tracking-[0.04em] text-[#3d2b26]">
+                <span>MANASVI</span>
+                <span className="font-[var(--font-cormorant)] text-xs font-semibold uppercase tracking-[0.22em] opacity-90">Fashion</span>
+              </Link>
+            </div>
+            <div className="flex items-center gap-6">
+              <nav className="hidden gap-6 text-xs uppercase tracking-[0.22em] text-[#3d2b26] md:flex [text-rendering:optimizeLegibility] items-center">
+                {["/kurtis", "/tunic-tops", "/dresses", "/cart"].map((path, i) => (
+                  <Link key={path} href={path} className="opacity-90 transition-colors duration-300 hover:text-black">
+                    {["Kurtis", "Tunics", "Dresses", "Cart"][i]}
+                  </Link>
+                ))}
+                {isAdmin && (
+                  <Link href="/dashboard" className="opacity-90 transition-colors duration-300 hover:text-black">
+                    Dashboard
+                  </Link>
+                )}
+              </nav>
 
-            <div className="text-xs uppercase tracking-[0.22em] text-[#3d2b26] [text-rendering:optimizeLegibility] flex items-center">
-              {session ? (
+              <div className="hidden md:flex text-xs uppercase tracking-[0.22em] text-[#3d2b26] [text-rendering:optimizeLegibility] items-center">
+                {session ? (
+                  <button
+                    onClick={() => signOut({ callbackUrl: "/" })}
+                    className="opacity-90 transition-colors duration-300 hover:text-black uppercase tracking-[0.22em] text-xs font-medium cursor-pointer"
+                  >
+                    Sign Out {firstName ? `(${firstName})` : ""}
+                  </button>
+                ) : (
+                  <Link href="/auth/signin" className="opacity-90 transition-colors duration-300 hover:text-black font-medium">
+                    Sign In
+                  </Link>
+                )}
+              </div>
+
+              {/* Mobile controls */}
+              <div className="flex items-center gap-2 md:hidden">
+                {/* Mobile Cart Button */}
                 <button
-                  onClick={() => signOut({ callbackUrl: "/" })}
-                  className="opacity-90 transition-colors duration-300 hover:text-black uppercase tracking-[0.22em] text-xs font-medium cursor-pointer"
+                  onClick={() => {
+                    setDrawerTab("cart");
+                    setIsDrawerOpen(true);
+                  }}
+                  className="text-[#3d2b26] hover:text-[#8B6B61] transition-colors p-2 relative cursor-pointer"
+                  aria-label="Open shopping bag"
                 >
-                  Sign Out {firstName ? `(${firstName})` : ""}
+                  <ShoppingBag className="w-5.5 h-5.5" />
+                  {cartCount > 0 && (
+                    <span className="absolute top-1 right-1 bg-[#C98E87] text-white text-[8px] font-bold w-4 h-4 flex items-center justify-center rounded-full scale-90 animate-pulse">
+                      {cartCount}
+                    </span>
+                  )}
                 </button>
-              ) : (
-                <Link href="/auth/signin" className="opacity-90 transition-colors duration-300 hover:text-black font-medium">
-                  Sign In
-                </Link>
-              )}
+
+                {/* Mobile Hamburger Button */}
+                <button
+                  onClick={() => {
+                    setDrawerTab("menu");
+                    setIsDrawerOpen(!isDrawerOpen);
+                  }}
+                  className="text-[#3d2b26] hover:text-[#8B6B61] transition-colors focus:outline-none z-50 relative p-2 cursor-pointer"
+                  aria-label="Toggle navigation menu"
+                >
+                  {isDrawerOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      </header>
+        </header>
+
+        {/* Slide-out Drawer Component */}
+        {renderDrawer()}
+      </>
     );
   }
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50">
-      <div
-        className="mx-auto grid max-w-7xl grid-cols-3 items-center px-6 py-4 text-[#fff8f2] [text-shadow:0_1px_8px_rgba(0,0,0,0.45)] [will-change:transform,opacity]"
-      >
-        <nav
-          ref={navRef1}
-          style={{ opacity: 0, transform: "translateY(20px)" }}
-          className="col-start-1 hidden items-center gap-6 font-[var(--font-cormorant)] text-sm font-semibold uppercase tracking-[0.16em] md:flex [text-rendering:optimizeLegibility] [-webkit-font-smoothing:antialiased]"
-        >
-          {[
-            ["/kurtis", "Kurti"],
-            ["/tunic-tops", "Tunic Tops"],
-            ["/collections", "Collections"],
-          ].map(([path, label]) => (
-            <Link key={path} href={path} className="opacity-90 transition-colors duration-300 hover:text-black">
-              {label}
-            </Link>
-          ))}
-        </nav>
-
+    <>
+      <header className="fixed inset-x-0 top-0 z-50">
         <div
-          ref={logoRef}
-          style={{ opacity: 0 }}
-          className="col-start-2 justify-self-center [will-change:opacity]"
+          className="mx-auto grid max-w-7xl grid-cols-3 items-center px-6 py-4 text-[#fff8f2] [text-shadow:0_1px_8px_rgba(0,0,0,0.45)] [will-change:transform,opacity]"
         >
-          <Link
-            href="/"
-            className="flex flex-col items-center gap-0 [font-kerning:normal] [text-rendering:optimizeLegibility] [-webkit-font-smoothing:antialiased]"
+          <nav
+            ref={navRef1}
+            style={{ opacity: 0, transform: "translateY(20px)" }}
+            className="col-start-1 hidden items-center gap-6 font-[var(--font-cormorant)] text-sm font-semibold uppercase tracking-[0.16em] md:flex [text-rendering:optimizeLegibility] [-webkit-font-smoothing:antialiased]"
           >
-            <div className="font-[var(--font-bodoni)] text-[1.625rem] leading-none tracking-[0.055em] text-[#fff8f2] md:text-3xl">
-              MANASVI
-            </div>
-            <div className="font-[var(--font-cormorant)] text-xs font-semibold uppercase tracking-[0.22em] text-[#fff8f2] opacity-90">
-              Fashion
-            </div>
-          </Link>
-        </div>
+            {[
+              ["/kurtis", "Kurti"],
+              ["/tunic-tops", "Tunic Tops"],
+              ["/collections", "Collections"],
+            ].map(([path, label]) => (
+              <Link key={path} href={path} className="opacity-90 transition-colors duration-300 hover:text-black">
+                {label}
+              </Link>
+            ))}
+          </nav>
 
-        <nav
-          ref={navRef2}
-          style={{ opacity: 0, transform: "translateY(20px)" }}
-          className="col-start-3 hidden items-center justify-end gap-6 font-[var(--font-cormorant)] text-sm font-semibold uppercase tracking-[0.16em] md:flex [text-rendering:optimizeLegibility] [-webkit-font-smoothing:antialiased]"
-        >
-          <Link href="/about" className="opacity-90 transition-colors duration-300 hover:text-black">
-            About
-          </Link>
-          <Link href="/cart" className="opacity-90 transition-colors duration-300 hover:text-black">
-            Cart
-          </Link>
-          {isAdmin && (
-            <Link href="/dashboard" className="opacity-90 transition-colors duration-300 hover:text-black">
-              Dashboard
-            </Link>
-          )}
-          {session ? (
-            <button
-              onClick={() => signOut({ callbackUrl: "/" })}
-              className="opacity-90 transition-colors duration-300 hover:text-black uppercase tracking-[0.16em] text-sm font-semibold cursor-pointer"
+          <div
+            ref={logoRef}
+            style={{ opacity: 0 }}
+            className="col-start-2 justify-self-center [will-change:opacity]"
+          >
+            <Link
+              href="/"
+              className="flex flex-col items-center gap-0 [font-kerning:normal] [text-rendering:optimizeLegibility] [-webkit-font-smoothing:antialiased]"
             >
-              Sign Out {firstName ? `(${firstName})` : ""}
-            </button>
-          ) : (
-            <Link href="/auth/signin" className="opacity-90 transition-colors duration-300 hover:text-black">
-              Sign In
+              <div className="font-[var(--font-bodoni)] text-[1.625rem] leading-none tracking-[0.055em] text-[#fff8f2] md:text-3xl">
+                MANASVI
+              </div>
+              <div className="font-[var(--font-cormorant)] text-xs font-semibold uppercase tracking-[0.22em] text-[#fff8f2] opacity-90">
+                Fashion
+              </div>
             </Link>
-          )}
-        </nav>
-      </div>
-    </header>
+          </div>
+
+          <nav
+            ref={navRef2}
+            style={{ opacity: 0, transform: "translateY(20px)" }}
+            className="col-start-3 hidden items-center justify-end gap-6 font-[var(--font-cormorant)] text-sm font-semibold uppercase tracking-[0.16em] md:flex [text-rendering:optimizeLegibility] [-webkit-font-smoothing:antialiased]"
+          >
+            <Link href="/about" className="opacity-90 transition-colors duration-300 hover:text-black">
+              About
+            </Link>
+            <Link href="/cart" className="opacity-90 transition-colors duration-300 hover:text-black">
+              Cart
+            </Link>
+            {isAdmin && (
+              <Link href="/dashboard" className="opacity-90 transition-colors duration-300 hover:text-black">
+                Dashboard
+              </Link>
+            )}
+            {session ? (
+              <button
+                onClick={() => signOut({ callbackUrl: "/" })}
+                className="opacity-90 transition-colors duration-300 hover:text-black uppercase tracking-[0.16em] text-sm font-semibold cursor-pointer"
+              >
+                Sign Out {firstName ? `(${firstName})` : ""}
+              </button>
+            ) : (
+              <Link href="/auth/signin" className="opacity-90 transition-colors duration-300 hover:text-black">
+                Sign In
+              </Link>
+            )}
+          </nav>
+
+          {/* Mobile controls for Home page */}
+          <div className="col-start-3 justify-self-end flex items-center gap-2 md:hidden">
+            {/* Mobile Cart Button */}
+            <button
+              onClick={() => {
+                setDrawerTab("cart");
+                setIsDrawerOpen(true);
+              }}
+              className="text-[#fff8f2] hover:text-[#E7C2B8] transition-colors p-2 relative cursor-pointer"
+              aria-label="Open shopping bag"
+            >
+              <ShoppingBag className="w-5.5 h-5.5" />
+              {cartCount > 0 && (
+                <span className="absolute top-1 right-1 bg-[#C98E87] text-white text-[8px] font-bold w-4 h-4 flex items-center justify-center rounded-full scale-90 animate-pulse">
+                  {cartCount}
+                </span>
+              )}
+            </button>
+
+            {/* Mobile Hamburger toggle */}
+            <button
+              onClick={() => {
+                setDrawerTab("menu");
+                setIsDrawerOpen(!isDrawerOpen);
+              }}
+              className="text-[#fff8f2] hover:text-[#E7C2B8] transition-colors focus:outline-none z-50 relative p-2 cursor-pointer"
+              aria-label="Toggle navigation menu"
+            >
+              {isDrawerOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Slide-out Drawer Component */}
+      {renderDrawer()}
+    </>
   );
+
+  function renderDrawer() {
+    const cartItems = cart
+      .map((item) => {
+        const product = productsList.find((p) => p.id === item.productId);
+        return {
+          ...item,
+          title: item.title || product?.title || "Premium Apparel",
+          price: item.price ?? product?.price ?? 0,
+          category: product?.subcategory || product?.category || "Women's Fashion",
+          image: item.image ?? product?.images[0],
+          hoverImage: product?.images[1] ?? product?.images[0],
+          color: product?.color || "Custom Palette",
+          slug: item.slug ?? product?.slug ?? "",
+        };
+      })
+      .filter((item) => item.title);
+
+    return (
+      <AnimatePresence>
+        {isDrawerOpen && (
+          <>
+            {/* Backdrop with fade-in and smooth click handler */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsDrawerOpen(false)}
+              className="fixed inset-0 z-40 bg-[#160E0C]/40 backdrop-blur-md"
+            />
+
+            {/* Navigation panel sliding from the right */}
+            <motion.div
+              variants={{
+                hidden: { x: "100%" },
+                visible: {
+                  x: 0,
+                  transition: {
+                    type: "spring",
+                    stiffness: 380,
+                    damping: 38,
+                    staggerChildren: 0.08,
+                    delayChildren: 0.15,
+                  },
+                },
+                exit: {
+                  x: "100%",
+                  transition: {
+                    type: "spring",
+                    stiffness: 380,
+                    damping: 38,
+                  },
+                },
+              }}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="fixed bottom-0 right-0 top-0 z-50 flex h-full w-[85vw] max-w-[380px] flex-col bg-[#160E0C] p-6 text-[#FAF7F2] shadow-2xl border-l border-[#8B6B61]/10"
+            >
+              {/* Header inside drawer */}
+              <div className="flex items-center justify-between border-b border-[#FAF7F2]/10 pb-4">
+                <Link
+                  href="/"
+                  onClick={() => setIsDrawerOpen(false)}
+                  className="flex flex-col items-start font-[var(--font-grance)] text-xl font-semibold tracking-[0.04em] text-[#FAF7F2]"
+                >
+                  <span>MANASVI</span>
+                  <span className="font-[var(--font-cormorant)] text-[10px] font-semibold uppercase tracking-[0.22em] text-[#E7C2B8]">
+                    Fashion
+                  </span>
+                </Link>
+                <button
+                  onClick={() => setIsDrawerOpen(false)}
+                  className="text-[#FAF7F2] hover:text-[#E7C2B8] transition-colors p-1 cursor-pointer"
+                  aria-label="Close menu"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              {/* Tab Selector */}
+              <div className="flex w-full border-b border-[#FAF7F2]/10 mt-4 text-[10px] font-semibold uppercase tracking-[0.2em] font-inter">
+                <button
+                  onClick={() => setDrawerTab("menu")}
+                  className={`flex-1 py-3 text-center border-b-2 transition-all duration-300 cursor-pointer ${
+                    drawerTab === "menu"
+                      ? "border-[#E7C2B8] text-white"
+                      : "border-transparent text-white/40 hover:text-white/70"
+                  }`}
+                >
+                  Menu
+                </button>
+                <button
+                  onClick={() => setDrawerTab("cart")}
+                  className={`flex-1 py-3 text-center border-b-2 transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer ${
+                    drawerTab === "cart"
+                      ? "border-[#E7C2B8] text-white"
+                      : "border-transparent text-white/40 hover:text-white/70"
+                  }`}
+                >
+                  <span>Bag</span>
+                  {cartCount > 0 && (
+                    <span className="bg-[#E7C2B8] text-[#160E0C] text-[9px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center scale-90">
+                      {cartCount}
+                    </span>
+                  )}
+                </button>
+              </div>
+
+              {/* Drawer Content */}
+              {drawerTab === "menu" ? (
+                <div className="flex flex-col justify-between flex-grow overflow-hidden">
+                  {/* Navigation links */}
+                  <nav className="flex flex-col gap-6 py-8 overflow-y-auto scrollbar-none flex-grow">
+                    {[
+                      ["/", "Home"],
+                      ["/kurtis", "Kurtis Collection"],
+                      ["/tunic-tops", "Tunic Tops"],
+                      ["/dresses", "Dresses"],
+                      ["/collections", "Lookbook & Collections"],
+                      ["/about", "Our Story"],
+                      ["/cart", "Shopping Bag"],
+                    ].map(([href, label]) => (
+                      <motion.div
+                        key={href}
+                        variants={{
+                          hidden: { opacity: 0, x: 20 },
+                          visible: { opacity: 1, x: 0 },
+                        }}
+                      >
+                        <Link
+                          href={href}
+                          onClick={() => setIsDrawerOpen(false)}
+                          className="group flex items-center justify-between py-1 text-lg font-light tracking-wide hover:text-[#E7C2B8] transition-colors"
+                        >
+                          <span className="font-cormorant italic font-medium">{label}</span>
+                          <span className="opacity-0 group-hover:opacity-100 transition-opacity text-[#E7C2B8] text-xs">→</span>
+                        </Link>
+                      </motion.div>
+                    ))}
+                  </nav>
+
+                  {/* Action buttons at the bottom of the drawer */}
+                  <div className="border-t border-[#FAF7F2]/10 pt-4 flex flex-col gap-4">
+                    {isAdmin && (
+                      <Link
+                        href="/dashboard"
+                        onClick={() => setIsDrawerOpen(false)}
+                        className="w-full text-center py-3 border border-[#E7C2B8]/20 rounded-sm font-inter text-xs uppercase tracking-[0.2em] bg-[#E7C2B8]/5 hover:bg-[#E7C2B8]/10 text-[#E7C2B8] transition-all"
+                      >
+                        Admin Dashboard
+                      </Link>
+                    )}
+                    {session ? (
+                      <button
+                        onClick={() => {
+                          setIsDrawerOpen(false);
+                          signOut({ callbackUrl: "/" });
+                        }}
+                        className="w-full py-3 bg-[#E7C2B8] hover:bg-[#DFAE9F] text-[#160E0C] font-semibold font-inter text-xs uppercase tracking-[0.2em] rounded-sm transition-all cursor-pointer"
+                      >
+                        Sign Out {firstName ? `(${firstName})` : ""}
+                      </button>
+                    ) : (
+                      <Link
+                        href="/auth/signin"
+                        onClick={() => setIsDrawerOpen(false)}
+                        className="w-full text-center py-3 bg-[#E7C2B8] hover:bg-[#DFAE9F] text-[#160E0C] font-semibold font-inter text-xs uppercase tracking-[0.2em] rounded-sm transition-all block"
+                      >
+                        Sign In
+                      </Link>
+                    )}
+                    <div className="text-[10px] text-center text-[#FAF7F2]/40 tracking-wider font-light mt-2 uppercase font-inter">
+                      © 2026 Manasvi Fashion Atelier
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                /* Cart Tab View */
+                <div className="flex flex-col justify-between flex-grow overflow-hidden py-6">
+                  {cartItems.length === 0 ? (
+                    <div className="flex-grow flex flex-col items-center justify-center text-center px-4">
+                      <ShoppingBag className="w-10 h-10 text-white/20 mb-4 stroke-1" />
+                      <p className="font-cormorant text-xl italic text-white/80">Your bag is empty.</p>
+                      <p className="font-inter text-[11px] text-white/40 tracking-wider mt-2 max-w-[200px]">
+                        Save your favorite silhouettes and designs to purchase them later.
+                      </p>
+                      <button
+                        onClick={() => {
+                          setIsDrawerOpen(false);
+                          window.location.href = "/collections";
+                        }}
+                        className="mt-6 px-6 py-2.5 bg-[#FAF7F2] text-[#160E0C] text-[10px] font-semibold uppercase tracking-[0.2em] rounded-sm hover:bg-[#E7C2B8] transition-colors cursor-pointer"
+                      >
+                        Browse Boutique
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      {/* Cart Items List */}
+                      <div className="flex-grow overflow-y-auto pr-1 space-y-4 scrollbar-thin scrollbar-thumb-white/10 hover:scrollbar-thumb-white/20">
+                        {cartItems.map((item) => (
+                          <div
+                            key={`${item.productId}-${item.size}`}
+                            className="flex gap-4 p-3 bg-white/[0.02] border border-white/[0.05] rounded-lg relative group transition-colors duration-300 hover:bg-white/[0.04]"
+                          >
+                            {/* Product Thumbnail */}
+                            <div className="w-16 h-20 rounded-md overflow-hidden bg-white/5 border border-white/[0.08] flex-shrink-0">
+                              <img
+                                src={item.image}
+                                alt={item.title}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+
+                            {/* Item Details */}
+                            <div className="flex-grow flex flex-col justify-between">
+                              <div>
+                                <h4 className="font-cormorant text-sm font-medium tracking-wide text-white line-clamp-1 leading-snug">
+                                  {item.title}
+                                </h4>
+                                <div className="flex gap-2 items-center text-[10px] text-white/40 mt-1 font-inter tracking-wider uppercase">
+                                  <span>Size: {item.size}</span>
+                                  <span>•</span>
+                                  <span>{formatINR(item.price)}</span>
+                                </div>
+                              </div>
+
+                              {/* Quantity controls */}
+                              <div className="flex items-center justify-between mt-2">
+                                <div className="flex items-center gap-2.5 border border-white/10 rounded-md px-2 py-1 bg-white/[0.01]">
+                                  <button
+                                    onClick={() => updateQty(item.productId, item.size, item.qty - 1)}
+                                    className="text-white/40 hover:text-white transition-colors cursor-pointer p-0.5"
+                                    aria-label="Decrease quantity"
+                                  >
+                                    <Minus className="w-3 h-3" />
+                                  </button>
+                                  <span className="font-inter text-xs text-white/80 min-w-[12px] text-center">
+                                    {item.qty}
+                                  </span>
+                                  <button
+                                    onClick={() => updateQty(item.productId, item.size, item.qty + 1)}
+                                    className="text-white/40 hover:text-white transition-colors cursor-pointer p-0.5"
+                                    aria-label="Increase quantity"
+                                  >
+                                    <Plus className="w-3 h-3" />
+                                  </button>
+                                </div>
+
+                                <button
+                                  onClick={() => removeFromCart(item.productId, item.size)}
+                                  className="text-white/30 hover:text-[#C98E87] transition-colors p-1 cursor-pointer"
+                                  aria-label="Remove item"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Summary Section */}
+                      <div className="border-t border-[#FAF7F2]/10 pt-4 mt-4 space-y-3 font-inter">
+                        <div className="flex items-center justify-between text-xs tracking-wider">
+                          <span className="text-white/40 uppercase">Subtotal</span>
+                          <span className="text-white font-medium">{formatINR(cartTotal)}</span>
+                        </div>
+                        <p className="text-[10px] text-white/30 font-light tracking-wide leading-relaxed">
+                          Shipping and discount codes are applied at checkout.
+                        </p>
+                        
+                        <div className="flex gap-2 pt-2">
+                          <Link
+                            href="/cart"
+                            onClick={() => setIsDrawerOpen(false)}
+                            className="flex-1 text-center py-3 border border-white/10 rounded-sm font-inter text-[10px] uppercase tracking-[0.2em] text-white hover:bg-white/[0.05] transition-all"
+                          >
+                            View Bag
+                          </Link>
+                          <Link
+                            href={session ? "/checkout" : "/auth/signin?callbackUrl=/checkout"}
+                            onClick={() => setIsDrawerOpen(false)}
+                            className="flex-1 text-center py-3 bg-[#E7C2B8] hover:bg-[#DFAE9F] text-[#160E0C] font-semibold font-inter text-[10px] uppercase tracking-[0.2em] rounded-sm transition-all"
+                          >
+                            Checkout
+                          </Link>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    );
+  }
+
 }

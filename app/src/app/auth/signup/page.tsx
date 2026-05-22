@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { Eye, EyeOff } from "lucide-react";
 
 const CAMPAIGN_IMAGES = [
   "/photos/Gemini_Generated_Image_h8k8lch8k8lch8k8.png",
@@ -75,6 +76,7 @@ export default function SignUpPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [phone, setPhone] = useState("");
   const [shippingAddress, setShippingAddress] = useState("");
   const [city, setCity] = useState("");
@@ -126,7 +128,7 @@ export default function SignUpPage() {
 
       {/* Right side: SignUp Form viewport */}
       <div className="w-full md:w-1/2 min-h-[55vh] md:min-h-screen flex items-center justify-center bg-[#FAF7F2] z-10 shadow-[-20px_0_40px_rgba(59,43,40,0.03)] border-t md:border-t-0 md:border-l border-[#E7C2B8]/20 relative">
-        <div className="w-full max-w-md px-4 sm:px-8 py-10 flex flex-col justify-center min-h-screen">
+        <div className="w-full max-w-md px-4 sm:px-8 py-12 md:py-0 flex flex-col justify-center md:min-h-screen">
           <div className="space-y-8">
             {/* Title Block */}
             <div className="space-y-3">
@@ -157,11 +159,12 @@ export default function SignUpPage() {
                 </label>
                 <input
                   type="text"
+                  autoCapitalize="words"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
                   placeholder="e.g. Prince Patel"
-                  className="w-full bg-transparent border-b border-[#E7C2B8]/40 py-3 text-sm text-[#3B2B28] outline-none transition-all duration-300 focus:border-[#8B6B61] focus:shadow-[0_4px_12px_-4px_rgba(231,194,184,0.15)] placeholder-[#8B6B61]/35 font-light"
+                  className="w-full bg-transparent border-b border-[#E7C2B8]/40 py-3 text-base md:text-sm text-[#3B2B28] outline-none transition-all duration-300 focus:border-[#8B6B61] focus:shadow-[0_4px_12px_-4px_rgba(231,194,184,0.15)] placeholder-[#8B6B61]/35 font-light"
                 />
               </div>
 
@@ -171,11 +174,12 @@ export default function SignUpPage() {
                 </label>
                 <input
                   type="email"
+                  inputMode="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   placeholder="e.g. prince@example.com"
-                  className="w-full bg-transparent border-b border-[#E7C2B8]/40 py-3 text-sm text-[#3B2B28] outline-none transition-all duration-300 focus:border-[#8B6B61] focus:shadow-[0_4px_12px_-4px_rgba(231,194,184,0.15)] placeholder-[#8B6B61]/35 font-light"
+                  className="w-full bg-transparent border-b border-[#E7C2B8]/40 py-3 text-base md:text-sm text-[#3B2B28] outline-none transition-all duration-300 focus:border-[#8B6B61] focus:shadow-[0_4px_12px_-4px_rgba(231,194,184,0.15)] placeholder-[#8B6B61]/35 font-light"
                 />
               </div>
 
@@ -183,14 +187,28 @@ export default function SignUpPage() {
                 <label className="block text-[9px] font-semibold uppercase tracking-[0.2em] text-[#8B6B61]">
                   Password
                 </label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  placeholder="Min. 6 characters"
-                  className="w-full bg-transparent border-b border-[#E7C2B8]/40 py-3 text-sm text-[#3B2B28] outline-none transition-all duration-300 focus:border-[#8B6B61] focus:shadow-[0_4px_12px_-4px_rgba(231,194,184,0.15)] placeholder-[#8B6B61]/35"
-                />
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    placeholder="Min. 6 characters"
+                    className="w-full bg-transparent border-b border-[#E7C2B8]/40 py-3 pr-10 text-base md:text-sm text-[#3B2B28] outline-none transition-all duration-300 focus:border-[#8B6B61] focus:shadow-[0_4px_12px_-4px_rgba(231,194,184,0.15)] placeholder-[#8B6B61]/35"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-0 bottom-3 text-[#8B6B61]/70 hover:text-[#3B2B28] transition-colors duration-300 focus:outline-none cursor-pointer"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
+                  </button>
+                </div>
               </div>
 
               {/* Profile Details (Boutique Delivery) */}
@@ -206,10 +224,11 @@ export default function SignUpPage() {
                 </label>
                 <input
                   type="tel"
+                  inputMode="tel"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="e.g. +91 98765 43210"
-                  className="w-full bg-transparent border-b border-[#E7C2B8]/40 py-3 text-sm text-[#3B2B28] outline-none transition-all duration-300 focus:border-[#8B6B61] focus:shadow-[0_4px_12px_-4px_rgba(231,194,184,0.15)] placeholder-[#8B6B61]/35 font-light"
+                  className="w-full bg-transparent border-b border-[#E7C2B8]/40 py-3 text-base md:text-sm text-[#3B2B28] outline-none transition-all duration-300 focus:border-[#8B6B61] focus:shadow-[0_4px_12px_-4px_rgba(231,194,184,0.15)] placeholder-[#8B6B61]/35 font-light"
                 />
               </div>
 
@@ -222,7 +241,7 @@ export default function SignUpPage() {
                   value={shippingAddress}
                   onChange={(e) => setShippingAddress(e.target.value)}
                   placeholder="e.g. 101, Rosewood Heights, VIP Road"
-                  className="w-full bg-transparent border-b border-[#E7C2B8]/40 py-3 text-sm text-[#3B2B28] outline-none transition-all duration-300 focus:border-[#8B6B61] focus:shadow-[0_4px_12px_-4px_rgba(231,194,184,0.15)] placeholder-[#8B6B61]/35 font-light"
+                  className="w-full bg-transparent border-b border-[#E7C2B8]/40 py-3 text-base md:text-sm text-[#3B2B28] outline-none transition-all duration-300 focus:border-[#8B6B61] focus:shadow-[0_4px_12px_-4px_rgba(231,194,184,0.15)] placeholder-[#8B6B61]/35 font-light"
                 />
               </div>
 
@@ -233,10 +252,11 @@ export default function SignUpPage() {
                   </label>
                   <input
                     type="text"
+                    autoCapitalize="words"
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
                     placeholder="e.g. Surat"
-                    className="w-full bg-transparent border-b border-[#E7C2B8]/40 py-3 text-sm text-[#3B2B28] outline-none transition-all duration-300 focus:border-[#8B6B61] focus:shadow-[0_4px_12px_-4px_rgba(231,194,184,0.15)] placeholder-[#8B6B61]/35 font-light"
+                    className="w-full bg-transparent border-b border-[#E7C2B8]/40 py-3 text-base md:text-sm text-[#3B2B28] outline-none transition-all duration-300 focus:border-[#8B6B61] focus:shadow-[0_4px_12px_-4px_rgba(231,194,184,0.15)] placeholder-[#8B6B61]/35 font-light"
                   />
                 </div>
 
@@ -246,10 +266,12 @@ export default function SignUpPage() {
                   </label>
                   <input
                     type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                     value={postalCode}
                     onChange={(e) => setPostalCode(e.target.value)}
                     placeholder="e.g. 395007"
-                    className="w-full bg-transparent border-b border-[#E7C2B8]/40 py-3 text-sm text-[#3B2B28] outline-none transition-all duration-300 focus:border-[#8B6B61] focus:shadow-[0_4px_12px_-4px_rgba(231,194,184,0.15)] placeholder-[#8B6B61]/35 font-light"
+                    className="w-full bg-transparent border-b border-[#E7C2B8]/40 py-3 text-base md:text-sm text-[#3B2B28] outline-none transition-all duration-300 focus:border-[#8B6B61] focus:shadow-[0_4px_12px_-4px_rgba(231,194,184,0.15)] placeholder-[#8B6B61]/35 font-light"
                   />
                 </div>
               </div>

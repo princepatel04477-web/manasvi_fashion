@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { formatINR } from "@/lib/store";
 import { useShop } from "@/context/shop-context";
 import { Heart, ShoppingBag, Check, Sparkles, ShieldCheck, ChevronRight } from "lucide-react";
@@ -18,6 +18,11 @@ export default function PDP() {
   const [isAdding, setIsAdding] = useState(false);
   const [addedSuccess, setAddedSuccess] = useState(false);
 
+  const colorVariants = product ? (product.colorVariants || []) : [];
+  const activeVariant = colorVariants[selectedColor] || null;
+  const activeImage = activeVariant?.image || (product ? product.images[0] : "");
+  const liked = product ? wishlist.includes(product.id) : false;
+
   // Set default size dynamically when product loads
   useEffect(() => {
     if (product && product.sizes?.length > 0) {
@@ -25,9 +30,74 @@ export default function PDP() {
     }
   }, [product]);
 
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [showStickyCta, setShowStickyCta] = useState(false);
+  const galleryScrollRef = useRef<HTMLDivElement>(null);
+  const mainCtaRef = useRef<HTMLDivElement>(null);
+
+  // Sync scroll position when color variant is changed
+  useEffect(() => {
+    if (!product) return;
+    if (activeImage && galleryScrollRef.current) {
+      const idx = product.images.indexOf(activeImage);
+      if (idx !== -1) {
+        const container = galleryScrollRef.current;
+        // Wait briefly for client layout to establish container clientWidth
+        setTimeout(() => {
+          container.scrollTo({
+            left: idx * container.clientWidth,
+            behavior: "smooth"
+          });
+        }, 50);
+        setActiveImageIndex(idx);
+      }
+    }
+  }, [selectedColor, product, activeImage]);
+
+  // Track gallery scroll for dots indicator on mobile
+  const handleGalleryScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    if (!product) return;
+    const container = e.currentTarget;
+    const scrollPosition = container.scrollLeft;
+    const width = container.clientWidth;
+    if (width > 0) {
+      const index = Math.round(scrollPosition / width);
+      if (index !== activeImageIndex && index >= 0 && index < product.images.length) {
+        setActiveImageIndex(index);
+        const swipedImg = product.images[index];
+        const variantIdx = colorVariants.findIndex(v => v.image === swipedImg);
+        if (variantIdx !== -1) {
+          setSelectedColor(variantIdx);
+        }
+      }
+    }
+  };
+
+  // Intersection Observer for sticky Add to Cart bar
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        const isPast = entry.boundingClientRect.top < 0;
+        setShowStickyCta(!entry.isIntersecting && isPast);
+      },
+      { threshold: 0 }
+    );
+
+    const currentRef = mainCtaRef.current;
+    if (currentRef) {
+      observer.observe(currentRef);
+    }
+
+    return () => {
+      if (currentRef) {
+        observer.unobserve(currentRef);
+      }
+    };
+  }, []);
+
   if (!product) {
     return (
-      <main className="min-h-screen bg-[#FAF7F2] pt-32 pb-24 px-6 flex items-center justify-center">
+      <main className="min-h-screen bg-[#FAF7F2] pt-24 sm:pt-28 md:pt-32 pb-24 px-6 flex items-center justify-center">
         <div className="text-center">
           <h1 className="font-cormorant text-3xl italic text-[#8B6B61]">Garment not found in our studio.</h1>
           <Link href="/collections" className="mt-4 inline-block text-xs uppercase tracking-widest text-[#3B2B28] underline">
@@ -38,12 +108,8 @@ export default function PDP() {
     );
   }
 
-  const liked = wishlist.includes(product.id);
-  const colorVariants = product.colorVariants || [];
-  const activeVariant = colorVariants[selectedColor] || null;
-  const activeImage = activeVariant?.image || product.images[0];
-
   const handleAddToCart = async () => {
+    if (!product) return;
     setIsAdding(true);
     const colorName = activeVariant?.name || product.color;
     
@@ -64,7 +130,7 @@ export default function PDP() {
   };
 
   return (
-    <main className="min-h-screen bg-[#FAF7F2] text-[#3B2B28] pt-32 pb-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden soft-grain">
+    <main className="min-h-screen bg-[#FAF7F2] text-[#3B2B28] pt-24 sm:pt-28 md:pt-32 pb-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden soft-grain">
       {/* BACKGROUND DECORATIVE GLOWS */}
       <div className="absolute top-[10%] left-[-15%] w-[50vw] h-[50vw] rounded-full bg-[#F4D7CF] opacity-20 filter blur-[130px] pointer-events-none" />
       <div className="absolute bottom-[20%] right-[-10%] w-[45vw] h-[45vw] rounded-full bg-[#E7C2B8] opacity-20 filter blur-[120px] pointer-events-none" />
@@ -72,7 +138,7 @@ export default function PDP() {
       <div className="max-w-7xl mx-auto relative z-10">
         
         {/* BREADCRUMB */}
-        <div className="mb-8 font-inter text-[10px] text-[#8B6B61] tracking-wider uppercase flex items-center gap-1.5 font-light">
+        <div className="mb-8 font-inter text-[11px] sm:text-[10px] text-[#8B6B61] tracking-wider uppercase flex items-center gap-1.5 font-light">
           <Link href="/" className="hover:text-[#3B2B28]">Atelier</Link>
           <ChevronRight className="w-3 h-3" />
           <Link href={`/${product.category}`} className="hover:text-[#3B2B28]">{product.category}</Link>
@@ -83,45 +149,102 @@ export default function PDP() {
         {/* DETAILS GRID */}
         <div className="grid gap-12 lg:grid-cols-12 items-start">
           
-          {/* LEFT: GALLERY VIEWER WITH SMOOTH TRANSITION */}
+          {/* LEFT: GALLERY VIEWER WITH RESPONSIVE SWIPING */}
           <div className="lg:col-span-7 space-y-4">
-            <div className="relative aspect-[3/4] w-full rounded-3xl overflow-hidden bg-white border border-[#E7C2B8]/30 warm-shadow group cursor-zoom-in">
-              <div className="absolute inset-0 bg-[#3B2B28]/5 mix-blend-overlay z-10" />
-              
-              <AnimatePresence mode="wait">
-                <motion.img
-                  key={activeImage}
-                  src={activeImage}
-                  alt={`${product.title} Display View`}
-                  initial={{ opacity: 0, scale: 1.04 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.98 }}
-                  transition={{ duration: 0.5, ease: "easeInOut" }}
-                  className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-[1.03]"
-                />
-              </AnimatePresence>
-            </div>
-
-            {/* Alternating Angle Thumbnail Previews */}
-            {product.images.length > 1 && (
-              <div className="flex gap-3 justify-center">
+            
+            {/* Mobile swipe-friendly gallery */}
+            <div className="lg:hidden space-y-4">
+              <div 
+                ref={galleryScrollRef}
+                onScroll={handleGalleryScroll}
+                className="flex overflow-x-auto snap-x snap-mandatory scrollbar-none w-full aspect-[3/4] rounded-3xl bg-white border border-[#E7C2B8]/30 warm-shadow"
+              >
                 {product.images.map((img, idx) => (
-                  <button
-                    key={img}
-                    onClick={() => {
-                      // Find if this image matches one of the color variants
-                      const variantIdx = colorVariants.findIndex(v => v.image === img);
-                      if (variantIdx !== -1) {
-                        setSelectedColor(variantIdx);
-                      }
-                    }}
-                    className={`w-16 h-20 rounded-xl overflow-hidden border transition bg-white ${activeImage === img ? "border-[#3B2B28] ring-2 ring-[#3B2B28]/10 scale-105" : "border-[#E7C2B8]/40 hover:scale-102"}`}
-                  >
-                    <img src={img} alt="" className="w-full h-full object-cover" />
-                  </button>
+                  <div key={img} className="w-full h-full flex-shrink-0 snap-center relative aspect-[3/4]">
+                    <div className="absolute inset-0 bg-[#3B2B28]/5 mix-blend-overlay z-10" />
+                    <img
+                      src={img}
+                      alt={`${product.title} View ${idx + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
                 ))}
               </div>
-            )}
+              
+              {/* Swipe indicator dots */}
+              {product.images.length > 1 && (
+                <div className="flex justify-center gap-2 pt-1">
+                  {product.images.map((_, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => {
+                        const container = galleryScrollRef.current;
+                        if (container) {
+                          container.scrollTo({
+                            left: idx * container.clientWidth,
+                            behavior: "smooth"
+                          });
+                          setActiveImageIndex(idx);
+                        }
+                      }}
+                      className={`h-1.5 rounded-full transition-all duration-300 ${activeImageIndex === idx ? "w-6 bg-[#3B2B28]" : "w-1.5 bg-[#8B6B61]/40"}`}
+                      aria-label={`Go to slide ${idx + 1}`}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Desktop large static preview with thumbnails */}
+            <div className="hidden lg:block space-y-4">
+              <div className="relative aspect-[3/4] w-full rounded-3xl overflow-hidden bg-white border border-[#E7C2B8]/30 warm-shadow group cursor-zoom-in">
+                <div className="absolute inset-0 bg-[#3B2B28]/5 mix-blend-overlay z-10" />
+                
+                <AnimatePresence mode="wait">
+                  <motion.img
+                    key={activeImage}
+                    src={activeImage}
+                    alt={`${product.title} Display View`}
+                    initial={{ opacity: 0, scale: 1.04 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.98 }}
+                    transition={{ duration: 0.5, ease: "easeInOut" }}
+                    className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-[1.03]"
+                  />
+                </AnimatePresence>
+              </div>
+
+              {/* Alternating Angle Thumbnail Previews */}
+              {product.images.length > 1 && (
+                <div className="flex gap-3 justify-center">
+                  {product.images.map((img, idx) => (
+                    <button
+                      key={img}
+                      onClick={() => {
+                        // Find if this image matches one of the color variants
+                        const variantIdx = colorVariants.findIndex(v => v.image === img);
+                        if (variantIdx !== -1) {
+                          setSelectedColor(variantIdx);
+                        } else {
+                          // If it is just another angle, scroll mobile container too if active
+                          const container = galleryScrollRef.current;
+                          if (container) {
+                            container.scrollTo({
+                              left: idx * container.clientWidth,
+                              behavior: "smooth"
+                            });
+                          }
+                          setActiveImageIndex(idx);
+                        }
+                      }}
+                      className={`w-16 h-20 rounded-xl overflow-hidden border transition bg-white ${activeImage === img || (activeImageIndex === idx && !colorVariants.some(v => v.image === activeImage)) ? "border-[#3B2B28] ring-2 ring-[#3B2B28]/10 scale-105" : "border-[#E7C2B8]/40 hover:scale-102"}`}
+                    >
+                      <img src={img} alt="" className="w-full h-full object-cover" />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* RIGHT: DESCRIPTIONS & CONTROL SYSTEM */}
@@ -132,7 +255,7 @@ export default function PDP() {
                 <span>{product.subcategory}</span>
               </span>
               
-              <h1 className="font-cormorant text-4xl sm:text-5xl font-light italic text-[#3B2B28] leading-tight">
+              <h1 className="font-cormorant text-3xl sm:text-4xl md:text-5xl font-light italic text-[#3B2B28] leading-tight">
                 {product.title}
               </h1>
               
@@ -149,7 +272,7 @@ export default function PDP() {
             </div>
 
             {/* DESCRIPTION */}
-            <p className="font-inter text-xs sm:text-sm text-[#8B6B61] leading-relaxed font-light">
+            <p className="font-inter text-sm sm:text-base text-[#8B6B61] leading-relaxed font-light">
               {product.description}
             </p>
 
@@ -201,7 +324,7 @@ export default function PDP() {
                   <button
                     key={sz}
                     onClick={() => setSize(sz)}
-                    className={`h-11 w-11 rounded-xl border flex items-center justify-center font-inter text-xs font-bold transition-all duration-200 cursor-pointer ${size === sz ? "bg-[#3B2B28] border-[#3B2B28] text-[#FAF7F2] shadow-sm scale-102" : "bg-white border-[#E7C2B8]/40 text-[#3B2B28] hover:border-[#3B2B28]"}`}
+                    className={`h-12 w-12 rounded-xl border flex items-center justify-center font-inter text-xs font-bold transition-all duration-200 cursor-pointer ${size === sz ? "bg-[#3B2B28] border-[#3B2B28] text-[#FAF7F2] shadow-sm scale-102" : "bg-white border-[#E7C2B8]/40 text-[#3B2B28] hover:border-[#3B2B28]"}`}
                   >
                     {sz}
                   </button>
@@ -210,7 +333,7 @@ export default function PDP() {
             </div>
 
             {/* ACTION CTAS */}
-            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 pt-4">
+            <div ref={mainCtaRef} className="grid grid-cols-1 sm:grid-cols-4 gap-3 pt-4">
               <button 
                 onClick={handleAddToCart}
                 disabled={isAdding || addedSuccess}
@@ -244,7 +367,7 @@ export default function PDP() {
             </div>
 
             {/* SPECIFICATIONS & REASSURANCE */}
-            <div className="rounded-2xl border border-[#E7C2B8]/30 bg-white/50 p-6 space-y-4 text-xs font-inter font-light text-[#8B6B61]">
+            <div className="rounded-2xl border border-[#E7C2B8]/30 bg-white/50 p-6 space-y-4 text-[11px] sm:text-xs font-inter font-light text-[#8B6B61]">
               <div className="grid grid-cols-2 gap-y-2 leading-relaxed">
                 <div>Fabric:</div>
                 <div className="text-[#3B2B28] font-medium">{product.fabric}</div>
@@ -274,12 +397,64 @@ export default function PDP() {
                 </p>
               </div>
             </div>
-
           </div>
-
         </div>
-
       </div>
+
+      {/* Sticky Bottom Add to Cart Bar for Mobile Viewports */}
+      <AnimatePresence>
+        {showStickyCta && (
+          <motion.div
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 100, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 260, damping: 26 }}
+            className="fixed bottom-0 inset-x-0 z-40 bg-[#FAF7F2]/95 backdrop-blur-md border-t border-[#E7C2B8]/20 px-4 py-3 flex items-center justify-between gap-4 lg:hidden shadow-[0_-8px_35px_rgba(61,43,38,0.08)]"
+          >
+            <div className="flex items-center gap-3">
+              <img
+                src={activeImage}
+                alt=""
+                className="w-10 h-14 object-cover rounded-lg border border-[#E7C2B8]/40 bg-white"
+              />
+              <div className="flex flex-col">
+                <span className="font-cormorant text-sm font-semibold truncate max-w-[120px] xs:max-w-[160px]">
+                  {product.title}
+                </span>
+                <span className="text-[10px] text-[#8B6B61] font-inter">
+                  Size: {size} • {activeVariant?.name || product.color}
+                </span>
+                <span className="font-cormorant text-xs font-semibold text-[#3B2B28] mt-0.5">
+                  {formatINR(product.price)}
+                </span>
+              </div>
+            </div>
+
+            <button
+              onClick={handleAddToCart}
+              disabled={isAdding || addedSuccess}
+              className="flex-grow max-w-[160px] py-3.5 bg-[#3B2B28] text-[#FAF7F2] rounded-xl font-cormorant text-[10px] uppercase tracking-[0.15em] font-semibold transition-all duration-300 hover:bg-[#8B6B61] active:scale-98 shadow-md flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-90 disabled:cursor-not-allowed"
+            >
+              {isAdding ? (
+                <>
+                  <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span>Adding...</span>
+                </>
+              ) : addedSuccess ? (
+                <>
+                  <Check className="w-3 h-3 text-white" />
+                  <span>Added</span>
+                </>
+              ) : (
+                <>
+                  <ShoppingBag className="w-3 h-3" />
+                  <span>Add to Cart</span>
+                </>
+              )}
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </main>
   );
 }

@@ -66,7 +66,7 @@ export default function EditorialProductCard({
       {/* WISHLIST BUTTON (TOP RIGHT) */}
       <button 
         onClick={() => toggleWishlist(product.id)}
-        className="absolute top-5 right-5 z-20 w-9 h-9 rounded-full bg-white/80 backdrop-blur-md border border-[#E7C2B8]/20 flex items-center justify-center text-[#8B6B61] hover:text-[#6D3B43] hover:scale-105 transition-all duration-300 shadow-sm"
+        className="absolute top-5 right-5 z-20 w-11 h-11 md:w-9 md:h-9 rounded-full bg-white/80 backdrop-blur-md border border-[#E7C2B8]/20 flex items-center justify-center text-[#8B6B61] hover:text-[#6D3B43] hover:scale-105 transition-all duration-300 shadow-sm cursor-pointer"
         aria-label="Add to wishlist"
       >
         <Heart 
@@ -140,12 +140,12 @@ export default function EditorialProductCard({
       <div className="mt-4 flex-1 flex flex-col justify-between px-1">
         <div>
           {/* Subcategory */}
-          <span className="font-inter text-[9px] tracking-[0.2em] text-[#C98E87] uppercase font-semibold">
+          <span className="font-inter text-[10px] sm:text-[9px] tracking-[0.2em] text-[#C98E87] uppercase font-semibold">
             {product.subcategory || product.category}
           </span>
 
           {/* Title */}
-          <h3 className="font-cormorant text-lg font-medium text-[#3B2B28] mt-1 hover:text-[#8B6B61] transition-colors leading-tight">
+          <h3 className="font-cormorant text-base sm:text-lg font-medium text-[#3B2B28] mt-1 hover:text-[#8B6B61] transition-colors leading-tight">
             <Link href={`/products/${product.slug}`}>
               {product.title}
             </Link>
@@ -153,7 +153,7 @@ export default function EditorialProductCard({
 
           {/* Price details */}
           <div className="flex items-center gap-2 mt-1.5">
-            <span className="font-cormorant text-base font-light text-[#3B2B28]">
+            <span className="font-cormorant text-sm sm:text-base font-light text-[#3B2B28]">
               {formatINR(product.price)}
             </span>
             {product.compareAtPrice && product.compareAtPrice > product.price && (
@@ -170,30 +170,34 @@ export default function EditorialProductCard({
           {colorVariants.length > 0 && (
             <div className="flex items-center justify-between">
               <span className="font-inter text-[9px] text-[#8B6B61] tracking-wider uppercase font-light">Colors</span>
-              <div className="flex gap-2">
+              <div className="flex gap-1 -mr-2">
                 {colorVariants.map((variant, idx) => (
                   <button
                     key={variant.name}
                     onClick={() => setSelectedColor(idx)}
                     title={variant.name}
-                    className={`h-4 w-4 rounded-full border transition-all duration-300 ${selectedColor === idx ? "ring-2 ring-[#3B2B28] ring-offset-2 scale-110" : "border-[#E7C2B8] hover:scale-105"}`}
-                    style={{ backgroundColor: variant.hex }}
+                    className="h-9 w-9 md:h-7 md:w-7 flex items-center justify-center rounded-full transition-all duration-300 cursor-pointer"
                     aria-label={`Select ${variant.name}`}
-                  />
+                  >
+                    <span
+                      className={`h-4.5 w-4.5 md:h-3.5 md:w-3.5 rounded-full border transition-all duration-300 ${selectedColor === idx ? "ring-2 ring-[#3B2B28] ring-offset-1 scale-110" : "border-[#E7C2B8]/80 hover:scale-105"}`}
+                      style={{ backgroundColor: variant.hex }}
+                    />
+                  </button>
                 ))}
               </div>
             </div>
           )}
 
           {/* Size Select & Quick Add in one sleek horizontal element */}
-          <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center justify-between gap-2 flex-wrap">
             <span className="font-inter text-[9px] text-[#8B6B61] tracking-wider uppercase font-light">Select Size</span>
-            <div className="flex gap-1.5">
+            <div className="flex flex-wrap gap-1.5 justify-end">
               {product.sizes.map((sz) => (
                 <button
                   key={sz}
                   onClick={() => handleQuickAdd(sz)}
-                  className="w-7 h-7 rounded-lg border border-[#E7C2B8]/30 hover:border-[#3B2B28] bg-white flex items-center justify-center font-inter text-[9px] font-bold text-[#3B2B28] hover:bg-[#FAF7F2] active:scale-95 transition-all duration-200 cursor-pointer"
+                  className="w-9 h-9 md:w-7 md:h-7 rounded-lg border border-[#E7C2B8]/30 hover:border-[#3B2B28] bg-white flex items-center justify-center font-inter text-xs md:text-[9px] font-bold text-[#3B2B28] hover:bg-[#FAF7F2] active:scale-95 transition-all duration-200 cursor-pointer"
                   title={`Quick add size ${sz}`}
                 >
                   {sz}

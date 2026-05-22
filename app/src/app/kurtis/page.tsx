@@ -29,7 +29,7 @@ export default function KurtisPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#FAF7F2] text-[#3B2B28] pt-32 pb-24 relative overflow-hidden soft-grain">
+    <main className="min-h-screen bg-[#FAF7F2] text-[#3B2B28] pt-24 sm:pt-28 md:pt-32 pb-20 sm:pb-24 relative overflow-hidden soft-grain">
       {/* BACKGROUND DECORATIVE GLOWS */}
       <div className="absolute top-[12%] right-[-10%] w-[45vw] h-[45vw] rounded-full bg-[#F4D7CF] opacity-25 filter blur-[140px] pointer-events-none" />
       <div className="absolute bottom-[25%] left-[-15%] w-[50vw] h-[50vw] rounded-full bg-[#E7C2B8] opacity-25 filter blur-[150px] pointer-events-none" />
@@ -37,7 +37,7 @@ export default function KurtisPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
         {/* EDITORIAL HERO HEADER */}
-        <div className="max-w-4xl mx-auto text-center mb-20 md:mb-28 flex flex-col items-center gap-4">
+        <div className="max-w-4xl mx-auto text-center mb-12 sm:mb-20 md:mb-28 flex flex-col items-center gap-4">
           <motion.span 
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
@@ -52,7 +52,7 @@ export default function KurtisPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.1 }}
-            className="font-cormorant text-5xl sm:text-6xl md:text-7xl font-light italic leading-[1.1] tracking-tight"
+            className="font-cormorant text-4xl sm:text-5xl md:text-6xl font-light italic leading-[1.1] tracking-tight"
           >
             Kurtis for Everyday Elegance
           </motion.h1>
@@ -80,7 +80,7 @@ export default function KurtisPage() {
 
         {/* FEATURED CAMPAIGN HERO PANEL */}
         {featuredHero && (
-          <section className="mb-24 md:mb-32">
+          <section className="mb-16 sm:mb-24 md:mb-32">
             <div className="editorial-card bg-white/70 backdrop-blur-md border border-[#E7C2B8]/40 rounded-3xl p-6 md:p-10 warm-shadow">
               <div className="grid gap-10 lg:grid-cols-12 items-center">
                 
@@ -147,8 +147,8 @@ export default function KurtisPage() {
         )}
 
         {/* CINEMATIC STORY PANEL: "QUIET ELEGANCE" */}
-        <section className="mt-32 md:mt-40 mb-12 -mx-4 sm:-mx-6 lg:-mx-8 relative overflow-hidden">
-          <div className="relative h-[65vh] sm:h-[75vh] w-full flex items-center justify-center">
+        <section className="mt-20 sm:mt-32 md:mt-40 mb-12 -mx-4 sm:-mx-6 lg:-mx-8 relative overflow-hidden">
+          <div className="relative h-[52vh] sm:h-[65vh] w-full flex items-center justify-center">
             {/* Dark editorial overlay for text contrast */}
             <div className="absolute inset-0 bg-gradient-to-t from-[#3B2B28]/95 via-[#3B2B28]/55 to-[#3B2B28]/70 z-10" />
             

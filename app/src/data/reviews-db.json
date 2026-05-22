@@ -1,0 +1,24 @@
+[
+  {
+    "id": "rev-1",
+    "productId": "p1",
+    "productTitle": "Elara Signature Kurti",
+    "customerName": "Kareena Kapoor",
+    "customerEmail": "kareena@example.com",
+    "rating": 5,
+    "comment": "The fabric quality of this Kurti is absolutely outstanding. Fits perfectly and looks incredibly premium. Highly recommend!",
+    "approved": true,
+    "createdAt": "2026-05-16T14:13:16.803Z"
+  },
+  {
+    "id": "rev-2",
+    "productId": "p3",
+    "productTitle": "Myra Classic Dress",
+    "customerName": "Alia Bhatt",
+    "customerEmail": "alia@example.com",
+    "rating": 5,
+    "comment": "Stunning dress! The drape is gorgeous and the design feels very luxury editorial. Will purchase again.",
+    "approved": false,
+    "createdAt": "2026-05-20T14:13:16.803Z"
+  }
+]

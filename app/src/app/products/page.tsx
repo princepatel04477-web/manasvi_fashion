@@ -18,19 +18,19 @@ export default function ProductsPage() {
   }, [products, query, category, sort]);
 
   return (
-    <main className="min-h-screen bg-[#FAF7F2] text-[#3B2B28] pt-32 pb-24 px-4 md:px-6 relative overflow-hidden soft-grain">
+    <main className="min-h-screen bg-[#FAF7F2] text-[#3B2B28] pt-24 sm:pt-28 md:pt-32 pb-20 sm:pb-24 px-4 md:px-6 relative overflow-hidden soft-grain">
       {/* BACKGROUND DECORATIVE GLOWS */}
       <div className="absolute top-[8%] left-[-15%] w-[50vw] h-[50vw] rounded-full bg-[#F4D7CF] opacity-20 filter blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[20%] right-[-10%] w-[45vw] h-[45vw] rounded-full bg-[#E7C2B8] opacity-20 filter blur-[130px] pointer-events-none" />
 
       <div className="max-w-7xl mx-auto relative z-10">
         {/* HERO SECTION */}
-        <div className="max-w-3xl mb-12 md:mb-16 flex flex-col gap-3 animate-slide-in">
-          <h1 className="font-cormorant text-4xl sm:text-5xl md:text-6xl font-light italic leading-tight">
+        <div className="max-w-3xl mb-10 sm:mb-12 md:mb-16 flex flex-col gap-3 animate-slide-in">
+          <h1 className="font-cormorant text-3xl sm:text-4xl md:text-5xl font-light italic leading-tight">
             Our Collection
           </h1>
           <div className="w-16 h-[1px] bg-[#C98E87] my-1" />
-          <p className="font-inter text-xs sm:text-sm text-[#8B6B61] tracking-wide font-light">
+          <p className="font-inter text-sm sm:text-base text-[#8B6B61] tracking-wide font-light">
             Explore all handcrafted silhouettes, curated to present quiet elegance and timeless sophistication.
           </p>
         </div>
@@ -41,12 +41,12 @@ export default function ProductsPage() {
             value={query} 
             onChange={(e) => setQuery(e.target.value)} 
             placeholder="Search Collection..." 
-            className="rounded-xl border border-[#E7C2B8]/40 bg-white/80 backdrop-blur-sm px-4 py-3 font-inter text-xs tracking-wider placeholder-[#8B6B61]/40 focus:outline-none focus:border-[#8B6B61]/60 warm-shadow text-[#3B2B28]" 
+            className="rounded-xl border border-[#E7C2B8]/40 bg-white/80 backdrop-blur-sm px-4 py-3 font-inter text-sm tracking-wider placeholder-[#8B6B61]/40 focus:outline-none focus:border-[#8B6B61]/60 warm-shadow text-[#3B2B28]" 
           />
           <select 
             value={category} 
             onChange={(e) => setCategory(e.target.value)} 
-            className="rounded-xl border border-[#E7C2B8]/40 bg-white/80 backdrop-blur-sm px-4 py-3 font-inter text-xs tracking-wider focus:outline-none focus:border-[#8B6B61]/60 warm-shadow text-[#3B2B28] cursor-pointer"
+            className="rounded-xl border border-[#E7C2B8]/40 bg-white/80 backdrop-blur-sm px-4 py-3 font-inter text-sm tracking-wider focus:outline-none focus:border-[#8B6B61]/60 warm-shadow text-[#3B2B28] cursor-pointer"
           >
             <option value="all">All Apparel</option>
             <option value="kurtis">Kurtis</option>
@@ -55,7 +55,7 @@ export default function ProductsPage() {
           <select 
             value={sort} 
             onChange={(e) => setSort(e.target.value)} 
-            className="rounded-xl border border-[#E7C2B8]/40 bg-white/80 backdrop-blur-sm px-4 py-3 font-inter text-xs tracking-wider focus:outline-none focus:border-[#8B6B61]/60 warm-shadow text-[#3B2B28] cursor-pointer"
+            className="rounded-xl border border-[#E7C2B8]/40 bg-white/80 backdrop-blur-sm px-4 py-3 font-inter text-sm tracking-wider focus:outline-none focus:border-[#8B6B61]/60 warm-shadow text-[#3B2B28] cursor-pointer"
           >
             <option value="new">Newest Arrivals</option>
             <option value="price-asc">Price Low-High</option>

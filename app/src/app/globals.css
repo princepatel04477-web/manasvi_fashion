@@ -209,3 +209,20 @@ body {
   animation: slideInLeft 600ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+/* Global mobile responsiveness & overflow guards */
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Hide scrollbars but keep functionality */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+

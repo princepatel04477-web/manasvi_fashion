@@ -36,17 +36,12 @@ export default function Home() {
     return { width: window.innerWidth, height: window.innerHeight };
   });
 
-  const tunicRef = useRef<HTMLElement | null>(null);
-  const kurtiRef = useRef<HTMLElement | null>(null);
-
   const heroImageRef = useRef<HTMLDivElement>(null);
   const vignetteRef = useRef<HTMLDivElement>(null);
   const grainRef = useRef<HTMLDivElement>(null);
   const brandWrapperRef = useRef<HTMLDivElement>(null);
   const brandHeaderRef = useRef<HTMLHeadingElement>(null);
   const brandSubtitleRef = useRef<HTMLParagraphElement>(null);
-  const tunicSectionRef = useRef<HTMLDivElement>(null);
-  const kurtiSectionRef = useRef<HTMLDivElement>(null);
 
   const introStateRef = useRef({ blur: 2.4, opacity: 0 });
 
@@ -60,16 +55,6 @@ export default function Home() {
   const heroScroll = 680;
   const heroFade = 720;
   const heroLong = 780;
-
-  function getElementScrollProgress(element: HTMLElement | null) {
-    if (!element) return 0;
-    const rect = element.getBoundingClientRect();
-    const viewportHeight = window.innerHeight;
-    const totalTravel = viewportHeight + rect.height;
-    const currentTravel = viewportHeight - rect.top;
-    const progress = currentTravel / totalTravel;
-    return Math.max(0, Math.min(1, progress));
-  }
 
   useEffect(() => {
     const updateViewport = () => {
@@ -148,27 +133,6 @@ export default function Home() {
         });
       }
 
-      // 6. Tunic Section
-      const tunicProg = getElementScrollProgress(tunicRef.current);
-      const xTunic = interpolate(tunicProg, { inputRange: [0, 0.45], outputRange: [120, 0], ease: luxuryEase });
-      const opTunic = interpolate(tunicProg, { inputRange: [0, 0.18, 0.45], outputRange: [0, 0.6, 1], ease: luxuryEase });
-      if (tunicSectionRef.current) {
-        set(tunicSectionRef.current, {
-          translateX: `${xTunic}px`,
-          opacity: opTunic
-        });
-      }
-
-      // 7. Kurti Section
-      const kurtiProg = getElementScrollProgress(kurtiRef.current);
-      const xKurti = interpolate(kurtiProg, { inputRange: [0, 0.45], outputRange: [-120, 0], ease: luxuryEase });
-      const opKurti = interpolate(kurtiProg, { inputRange: [0, 0.18, 0.45], outputRange: [0, 0.6, 1], ease: luxuryEase });
-      if (kurtiSectionRef.current) {
-        set(kurtiSectionRef.current, {
-          translateX: `${xKurti}px`,
-          opacity: opKurti
-        });
-      }
     };
 
     const handleScroll = () => {
@@ -195,8 +159,8 @@ export default function Home() {
   }, [viewport, brandTravelY, finalBrandScale]);
 
   return (
-    <main className="bg-[#f6eee8]">
-      <section className="relative h-[320vh] w-full">
+    <main className="min-h-screen bg-[#f6eee8]">
+      <section className="relative h-screen w-full">
         <div className="sticky top-0 h-screen overflow-hidden">
           <div className="absolute inset-0 bg-[#b89e86]" />
           <div ref={heroImageRef} className="absolute inset-0 [will-change:transform,opacity]">
@@ -221,7 +185,7 @@ export default function Home() {
 
           <div
             ref={brandWrapperRef}
-            className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center pt-24 text-center [transform-origin:50%_50%] [will-change:transform,opacity]"
+            className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center pt-20 sm:pt-24 text-center [transform-origin:50%_50%] [will-change:transform,opacity]"
           >
             <div>
               <h1
@@ -229,13 +193,13 @@ export default function Home() {
                 style={{
                   transformOrigin: "50% 42%",
                 }}
-                className="cormorant-garamond-manasvi text-[clamp(5.2rem,17vw,15rem)] leading-none text-[#fffaf5] transition-[filter] duration-300 [font-kerning:normal] [text-rendering:optimizeLegibility] [-webkit-font-smoothing:antialiased]"
+                className="cormorant-garamond-manasvi text-[clamp(3.6rem,16vw,12rem)] sm:text-[clamp(4.6rem,16vw,14rem)] leading-none text-[#fffaf5] transition-[filter] duration-300 [font-kerning:normal] [text-rendering:optimizeLegibility] [-webkit-font-smoothing:antialiased]"
               >
                 {cms.heroTitle}
               </h1>
               <p
                 ref={brandSubtitleRef}
-                className="-mt-3 im-fell-great-primer-regular text-[clamp(1.1rem,2.4vw,1.8rem)] font-normal uppercase tracking-[0.36em] text-white/90 sm:-mt-4"
+                className="-mt-2 sm:-mt-4 im-fell-great-primer-regular text-[clamp(0.95rem,2.6vw,1.6rem)] sm:text-[clamp(1.05rem,2.4vw,1.8rem)] font-normal uppercase tracking-[0.28em] sm:tracking-[0.36em] text-white/90"
               >
                 {cms.heroSubtitle}
               </p>
@@ -243,42 +207,45 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      <section ref={tunicRef} className="bg-[#f6eee8] py-0">
-        <div className="w-full overflow-hidden">
-          <div ref={tunicSectionRef} className="[will-change:transform,opacity]">
-            <Link href={cms.sectionTunicLink} className="group block">
+      <section className="bg-[#f6eee8] px-5 pb-16 pt-12 sm:px-8 sm:pb-24 sm:pt-16">
+        <div className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-10 md:grid-cols-2 md:gap-12">
+          <Link
+            href={cms.sectionTunicLink}
+            className="group relative overflow-hidden rounded-[28px] border border-white/60 bg-[#f9f2ec] shadow-[0_24px_55px_rgba(76,54,42,0.18)] transition-transform duration-500 hover:-translate-y-1"
+            aria-label="Shop Tunic Tops"
+          >
+            <div className="relative h-[320px] sm:h-[420px] md:h-[520px]">
               <img
                 src={cms.sectionTunicImage}
                 alt={cms.sectionTunicAlt}
-                className="block h-[76vw] max-h-[620px] w-full object-cover object-[54%_center] transition-transform duration-700 ease-out group-hover:scale-[1.06] sm:h-[70vw] md:hidden"
+                className="h-full w-full object-cover object-center transition-transform duration-700 group-hover:scale-[1.02]"
               />
-              <img
-                src={cms.sectionTunicImage}
-                alt={cms.sectionTunicAlt}
-                className="hidden w-full transition-transform duration-700 ease-out group-hover:scale-[1.04] md:block"
-              />
-            </Link>
-          </div>
-        </div>
-      </section>
+              <div className="absolute inset-0 bg-gradient-to-t from-[#1f140f]/65 via-[#1f140f]/10 to-transparent" />
+            </div>
+            <div className="absolute bottom-6 left-6 text-white">
+              <p className="im-fell-great-primer-regular text-sm uppercase tracking-[0.3em] text-white/75">Collection</p>
+              <h2 className="cormorant-garamond-manasvi text-3xl sm:text-4xl">Tunic Tops</h2>
+            </div>
+          </Link>
 
-      <section ref={kurtiRef} className="bg-[#f6eee8] py-0">
-        <div className="w-full overflow-hidden">
-          <div ref={kurtiSectionRef} className="[will-change:transform,opacity]">
-            <Link href={cms.sectionKurtiLink} className="group block">
+          <Link
+            href={cms.sectionKurtiLink}
+            className="group relative overflow-hidden rounded-[28px] border border-white/60 bg-[#f9f2ec] shadow-[0_24px_55px_rgba(76,54,42,0.18)] transition-transform duration-500 hover:-translate-y-1"
+            aria-label="Shop Kurtis Collection"
+          >
+            <div className="relative h-[320px] sm:h-[420px] md:h-[520px]">
               <img
                 src={cms.sectionKurtiImage}
                 alt={cms.sectionKurtiAlt}
-                className="block h-[76vw] max-h-[620px] w-full object-cover object-[52%_center] transition-transform duration-700 ease-out group-hover:scale-[1.06] sm:h-[70vw] md:hidden"
+                className="h-full w-full object-cover object-center transition-transform duration-700 group-hover:scale-[1.02]"
               />
-              <img
-                src={cms.sectionKurtiImage}
-                alt={cms.sectionKurtiAlt}
-                className="hidden w-full transition-transform duration-700 ease-out group-hover:scale-[1.04] md:block"
-              />
-            </Link>
-          </div>
+              <div className="absolute inset-0 bg-gradient-to-t from-[#1f140f]/65 via-[#1f140f]/10 to-transparent" />
+            </div>
+            <div className="absolute bottom-6 left-6 text-white">
+              <p className="im-fell-great-primer-regular text-sm uppercase tracking-[0.3em] text-white/75">Collection</p>
+              <h2 className="cormorant-garamond-manasvi text-3xl sm:text-4xl">Kurtis</h2>
+            </div>
+          </Link>
         </div>
       </section>
     </main>

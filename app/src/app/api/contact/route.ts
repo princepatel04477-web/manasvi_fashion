@@ -127,7 +127,7 @@ Manasvi Fashion Concierge Team
     // Log Admin Notification Email Mock
     console.log(`
 ========================================================================
-[EMAIL SENT] TO: admin@manasvifashion.com (New Concierge Notification)
+[EMAIL SENT] TO: manasvifashion1515@gmail.com (New Concierge Notification)
 SUBJECT: New Boutique Request - ${typeLabel} - ${validatedData.name}
 ------------------------------------------------------------------------
 New submission received:

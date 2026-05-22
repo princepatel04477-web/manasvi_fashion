@@ -222,7 +222,7 @@ export default function CartPage() {
     .slice(0, 4);
 
   return (
-    <main className="min-h-screen bg-[#FAF7F2] text-[#3B2B28] pt-32 pb-24 md:pb-36 px-4 md:px-6 relative overflow-hidden soft-grain">
+    <main className="min-h-screen bg-[#FAF7F2] text-[#3B2B28] pt-24 sm:pt-28 md:pt-32 pb-32 md:pb-36 px-4 md:px-6 relative overflow-hidden soft-grain">
       {/* BACKGROUND DECORATIVE GLOWS */}
       <div className="absolute top-[8%] left-[-15%] w-[50vw] h-[50vw] rounded-full bg-[#F4D7CF] opacity-20 filter blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[20%] right-[-10%] w-[45vw] h-[45vw] rounded-full bg-[#E7C2B8] opacity-20 filter blur-[130px] pointer-events-none" />
@@ -231,11 +231,11 @@ export default function CartPage() {
         
         {/* HERO SECTION */}
         <div className="max-w-3xl mb-12 md:mb-16 flex flex-col gap-3">
-          <h1 className="font-cormorant text-4xl sm:text-5xl md:text-6xl font-light italic leading-tight">
+          <h1 className="font-cormorant text-3xl sm:text-4xl md:text-5xl font-light italic leading-tight">
             Your Selection
           </h1>
           <div className="w-16 h-[1px] bg-[#C98E87] my-1" />
-          <p className="font-inter text-xs sm:text-sm text-[#8B6B61] tracking-wide font-light">
+          <p className="font-inter text-sm sm:text-base text-[#8B6B61] tracking-wide font-light">
             Thoughtfully chosen pieces, ready for your wardrobe.
           </p>
         </div>
@@ -301,7 +301,7 @@ export default function CartPage() {
                         transition={{ duration: 0.5 }}
                         className="overflow-hidden"
                       >
-                        <div className="editorial-card relative bg-white/80 backdrop-blur-md rounded-2xl border border-[#E7C2B8]/40 p-4 md:p-6 warm-shadow flex flex-col sm:flex-row gap-6 transition-all duration-300 hover:shadow-md">
+                        <div className="editorial-card relative bg-white/80 backdrop-blur-md rounded-2xl border border-[#E7C2B8]/40 p-4 md:p-6 warm-shadow flex flex-col sm:flex-row gap-4 sm:gap-6 transition-all duration-300 hover:shadow-md">
                           
                           {/* Image Box with hover alternate */}
                           <div 
@@ -337,10 +337,10 @@ export default function CartPage() {
                             <div>
                               <div className="flex justify-between items-start gap-3">
                                 <div>
-                                  <span className="font-inter text-[10px] tracking-widest text-[#C98E87] uppercase font-semibold">
+                                  <span className="font-inter text-[11px] sm:text-[10px] tracking-widest text-[#C98E87] uppercase font-semibold">
                                     {item.category}
                                   </span>
-                                  <h3 className="font-cormorant text-xl font-medium text-[#3B2B28] hover:text-[#8B6B61] transition-colors mt-0.5">
+                                  <h3 className="font-cormorant text-lg sm:text-xl font-medium text-[#3B2B28] hover:text-[#8B6B61] transition-colors mt-0.5">
                                     <Link href={`/products/${item.slug}`}>
                                       {item.title}
                                     </Link>
@@ -354,12 +354,12 @@ export default function CartPage() {
                               {/* Attributes */}
                               <div className="flex flex-wrap gap-4 mt-3">
                                 <div className="flex items-center gap-1.5 bg-[#FAF7F2] px-2.5 py-1 rounded-full border border-[#E7C2B8]/30">
-                                  <span className="font-inter text-[10px] text-[#8B6B61] font-medium">Size:</span>
-                                  <span className="font-inter text-[10px] text-[#3B2B28] font-bold uppercase">{item.size}</span>
+                                  <span className="font-inter text-[11px] sm:text-[10px] text-[#8B6B61] font-medium">Size:</span>
+                                  <span className="font-inter text-[11px] sm:text-[10px] text-[#3B2B28] font-bold uppercase">{item.size}</span>
                                 </div>
                                 <div className="flex items-center gap-1.5 bg-[#FAF7F2] px-2.5 py-1 rounded-full border border-[#E7C2B8]/30">
-                                  <span className="font-inter text-[10px] text-[#8B6B61] font-medium">Fabric:</span>
-                                  <span className="font-inter text-[10px] text-[#3B2B28] font-bold">{item.color}</span>
+                                  <span className="font-inter text-[11px] sm:text-[10px] text-[#8B6B61] font-medium">Fabric:</span>
+                                  <span className="font-inter text-[11px] sm:text-[10px] text-[#3B2B28] font-bold">{item.color}</span>
                                 </div>
                               </div>
                             </div>
@@ -389,14 +389,14 @@ export default function CartPage() {
                               <div className="flex gap-4">
                                 <button 
                                   onClick={() => saveForLater(item.productId, item.size)}
-                                  className="font-inter text-xs text-[#8B6B61] hover:text-[#3B2B28] transition-colors flex items-center gap-1 border-b border-transparent hover:border-[#3B2B28]/20 pb-0.5"
+                                  className="font-inter text-[11px] sm:text-xs text-[#8B6B61] hover:text-[#3B2B28] transition-colors flex items-center gap-1 border-b border-transparent hover:border-[#3B2B28]/20 pb-0.5"
                                 >
                                   <Heart className="w-3.5 h-3.5" />
                                   <span>Save for Later</span>
                                 </button>
                                 <button 
                                   onClick={() => handleRemoveItem(item.productId, item.size)}
-                                  className="font-inter text-xs text-[#C98E87] hover:text-[#3B2B28] transition-colors flex items-center gap-1 border-b border-transparent hover:border-[#3B2B28]/20 pb-0.5"
+                                  className="font-inter text-[11px] sm:text-xs text-[#C98E87] hover:text-[#3B2B28] transition-colors flex items-center gap-1 border-b border-transparent hover:border-[#3B2B28]/20 pb-0.5"
                                 >
                                   <Trash2 className="w-3.5 h-3.5" />
                                   <span>Remove</span>
@@ -561,7 +561,7 @@ export default function CartPage() {
                     className="editorial-card group overflow-hidden rounded-2xl p-3 transition-all duration-500 hover:shadow-lg hover:-translate-y-1 bg-white/70"
                   >
                     <Link href={`/products/${p.slug}`}>
-                      <div className="relative h-80 overflow-hidden rounded-xl bg-[#f6eee2]">
+                      <div className="relative h-64 sm:h-72 md:h-80 overflow-hidden rounded-xl bg-[#f6eee2]">
                         <img 
                           src={p.images[0]} 
                           alt={p.title} 
@@ -594,7 +594,7 @@ export default function CartPage() {
 
                     <button 
                       onClick={() => addToCart(p.id, p.sizes[0])} 
-                      className="luxury-btn mt-4 w-full rounded-xl py-3 text-[10px] uppercase font-semibold tracking-wider font-cormorant cursor-pointer flex items-center justify-center gap-1 bg-[#3B2B28] text-white"
+                      className="luxury-btn mt-4 w-full rounded-xl py-3 text-[11px] sm:text-[10px] uppercase font-semibold tracking-wider font-cormorant cursor-pointer flex items-center justify-center gap-1 bg-[#3B2B28] text-white"
                     >
                       <Gift className="w-3.5 h-3.5" />
                       <span>Quick Add</span>
@@ -635,7 +635,7 @@ export default function CartPage() {
       {cartItems.length > 0 && (
         <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-[#FAF7F2]/90 backdrop-blur-md border-t border-[#E7C2B8]/40 p-4 z-40 flex items-center justify-between gap-4 shadow-xl">
           <div>
-            <span className="font-inter text-[10px] text-[#8B6B61] tracking-wider uppercase block">Total Selection</span>
+            <span className="font-inter text-[11px] text-[#8B6B61] tracking-wider uppercase block">Total Selection</span>
             <span className="font-cormorant text-xl font-bold text-[#3B2B28]">{formatINR(finalTotal)}</span>
           </div>
           <Link 
