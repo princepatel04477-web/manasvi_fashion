@@ -7,10 +7,11 @@ import { useShop } from "@/context/shop-context";
 import { Heart, ShoppingBag, Check, Sparkles, ShieldCheck, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import { ProductDetailSkeleton, LuxuryTransition } from "@/components/ui/skeleton";
 
 export default function PDP() {
   const { slug } = useParams<{ slug: string }>();
-  const { addCustomToCart, toggleWishlist, wishlist, products } = useShop();
+  const { addCustomToCart, toggleWishlist, wishlist, products, loading } = useShop();
   const product = products.find((p) => p.slug === slug);
 
   const [size, setSize] = useState("S");
@@ -95,19 +96,6 @@ export default function PDP() {
     };
   }, []);
 
-  if (!product) {
-    return (
-      <main className="min-h-screen bg-[#FAF7F2] pt-24 sm:pt-28 md:pt-32 pb-24 px-6 flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="font-cormorant text-3xl italic text-[#8B6B61]">Garment not found in our studio.</h1>
-          <Link href="/collections" className="mt-4 inline-block text-xs uppercase tracking-widest text-[#3B2B28] underline">
-            Return to Collection
-          </Link>
-        </div>
-      </main>
-    );
-  }
-
   const handleAddToCart = async () => {
     if (!product) return;
     setIsAdding(true);
@@ -132,19 +120,29 @@ export default function PDP() {
   return (
     <main className="min-h-screen bg-[#FAF7F2] text-[#3B2B28] pt-24 sm:pt-28 md:pt-32 pb-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden soft-grain">
       {/* BACKGROUND DECORATIVE GLOWS */}
-      <div className="absolute top-[10%] left-[-15%] w-[50vw] h-[50vw] rounded-full bg-[#F4D7CF] opacity-20 filter blur-[130px] pointer-events-none" />
-      <div className="absolute bottom-[20%] right-[-10%] w-[45vw] h-[45vw] rounded-full bg-[#E7C2B8] opacity-20 filter blur-[120px] pointer-events-none" />
+      <div className="absolute top-[10%] left-[-15%] z-0 w-[50vw] h-[50vw] rounded-full bg-[#F4D7CF] opacity-20 filter blur-[130px] pointer-events-none" />
+      <div className="absolute bottom-[20%] right-[-10%] z-0 w-[45vw] h-[45vw] rounded-full bg-[#E7C2B8] opacity-20 filter blur-[120px] pointer-events-none" />
 
-      <div className="max-w-7xl mx-auto relative z-10">
-        
-        {/* BREADCRUMB */}
-        <div className="mb-8 font-inter text-[11px] sm:text-[10px] text-[#8B6B61] tracking-wider uppercase flex items-center gap-1.5 font-light">
-          <Link href="/" className="hover:text-[#3B2B28]">Atelier</Link>
-          <ChevronRight className="w-3 h-3" />
-          <Link href={`/${product.category}`} className="hover:text-[#3B2B28]">{product.category}</Link>
-          <ChevronRight className="w-3 h-3" />
-          <span className="text-[#3B2B28] font-medium">{product.title}</span>
-        </div>
+      <LuxuryTransition isLoading={loading} fallback={<ProductDetailSkeleton />}>
+        {!product ? (
+          <div className="text-center py-20 max-w-7xl mx-auto relative z-10">
+            <h1 className="font-cormorant text-3xl italic text-[#8B6B61]">Garment not found in our studio.</h1>
+            <Link href="/collections" className="mt-4 inline-block text-xs uppercase tracking-widest text-[#3B2B28] underline">
+              Return to Collection
+            </Link>
+          </div>
+        ) : (
+          <>
+            <div className="max-w-7xl mx-auto relative z-10">
+            
+            {/* BREADCRUMB */}
+            <div className="mb-8 font-inter text-[11px] sm:text-[10px] text-[#8B6B61] tracking-wider uppercase flex items-center gap-1.5 font-light">
+              <Link href="/" className="hover:text-[#3B2B28]">Atelier</Link>
+              <ChevronRight className="w-3 h-3" />
+              <Link href={`/${product.category}`} className="hover:text-[#3B2B28]">{product.category}</Link>
+              <ChevronRight className="w-3 h-3" />
+              <span className="text-[#3B2B28] font-medium">{product.title}</span>
+            </div>
 
         {/* DETAILS GRID */}
         <div className="grid gap-12 lg:grid-cols-12 items-start">
@@ -455,6 +453,9 @@ export default function PDP() {
           </motion.div>
         )}
       </AnimatePresence>
+          </>
+      )}
+      </LuxuryTransition>
     </main>
   );
 }

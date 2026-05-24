@@ -5,6 +5,8 @@ import EditorialProductCard from "@/components/editorial-product-card";
 import { Sparkles, ArrowDown } from "lucide-react";
 import { motion } from "framer-motion";
 
+import { Skeleton, ProductGridSkeleton } from "@/components/ui/skeleton";
+
 export default function KurtisPage() {
   const { products, loading } = useShop();
 
@@ -19,12 +21,52 @@ export default function KurtisPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#FAF7F2] flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-6 h-6 border-2 border-[#8B6B61] border-t-transparent rounded-full animate-spin" />
-          <span className="font-cormorant text-sm uppercase tracking-widest text-[#8B6B61]">Entering Atelier...</span>
+      <main className="min-h-screen bg-[#FAF7F2] text-[#3B2B28] pt-24 sm:pt-28 md:pt-32 pb-20 sm:pb-24 relative overflow-hidden soft-grain">
+        {/* BACKGROUND DECORATIVE GLOWS */}
+        <div className="absolute top-[12%] right-[-10%] w-[45vw] h-[45vw] rounded-full bg-[#F4D7CF] opacity-25 filter blur-[140px] pointer-events-none" />
+        <div className="absolute bottom-[25%] left-[-15%] w-[50vw] h-[50vw] rounded-full bg-[#E7C2B8] opacity-25 filter blur-[150px] pointer-events-none" />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          {/* EDITORIAL HERO HEADER */}
+          <div className="max-w-4xl mx-auto text-center mb-12 sm:mb-20 md:mb-28 flex flex-col items-center gap-4">
+            <Skeleton className="h-4 w-36 uppercase tracking-[0.25em]" variant="cream" />
+            <Skeleton className="h-10 sm:h-12 w-2/3 sm:w-1/2 rounded-xl" variant="nude" />
+            <div className="w-20 h-[1px] bg-[#C98E87] my-2" />
+            <Skeleton className="h-4 w-5/6 sm:w-2/3 rounded-md" variant="cream" />
+            <Skeleton className="h-4 w-2/3 sm:w-1/2 rounded-md" variant="cream" />
+          </div>
+
+          {/* FEATURED CAMPAIGN HERO SKELETON */}
+          <section className="mb-16 sm:mb-24 md:mb-32">
+            <div className="editorial-card bg-white/70 backdrop-blur-md border border-[#E7C2B8]/40 rounded-3xl p-6 md:p-10 warm-shadow">
+              <div className="grid gap-10 lg:grid-cols-12 items-center">
+                {/* Hero Product Photo Frame */}
+                <div className="lg:col-span-7">
+                  <div className="aspect-[4/3] rounded-2xl overflow-hidden relative">
+                    <Skeleton className="w-full h-full rounded-none" variant="nude" />
+                  </div>
+                </div>
+
+                {/* Hero Product Info Details */}
+                <div className="lg:col-span-5 flex flex-col justify-center space-y-4">
+                  <Skeleton className="h-3.5 w-24" variant="cream" />
+                  <Skeleton className="h-8 w-4/5 rounded-lg" variant="nude" />
+                  <Skeleton className="h-4 w-32" variant="cream" />
+                  <div className="space-y-2 pt-2">
+                    <Skeleton className="h-3.5 w-full" variant="cream" />
+                    <Skeleton className="h-3.5 w-full" variant="cream" />
+                    <Skeleton className="h-3.5 w-3/4" variant="cream" />
+                  </div>
+                  <Skeleton className="h-12 w-full rounded-xl" variant="cocoa" />
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* LOOKBOOK GRID SKELETON */}
+          <ProductGridSkeleton count={4} />
         </div>
-      </div>
+      </main>
     );
   }
 

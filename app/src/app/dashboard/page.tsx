@@ -14,6 +14,7 @@ import {
   Layers,
   ChevronRight
 } from "lucide-react";
+import { DashboardSkeleton, LuxuryTransition } from "@/components/ui/skeleton";
 
 interface StatItem {
   totalRevenue: number;
@@ -64,18 +65,7 @@ export default function DashboardOverviewPage() {
     fetchStats();
   }, []);
 
-  if (loading) {
-    return (
-      <div className="flex h-[60vh] items-center justify-center">
-        <div className="text-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#8b6b61] border-t-transparent mx-auto"></div>
-          <p className="mt-4 font-serif text-sm tracking-widest uppercase text-[#5c4a44]">Compiling Statistics...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error || !stats) {
+  if (error || (!loading && !stats)) {
     return (
       <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-red-800">
         <h3 className="font-serif text-lg font-semibold">Analytics Error</h3>
@@ -85,7 +75,9 @@ export default function DashboardOverviewPage() {
   }
 
   return (
-    <div className="space-y-8 animate-fadeIn">
+    <LuxuryTransition isLoading={loading} fallback={<DashboardSkeleton />}>
+      {stats && (
+        <div className="space-y-8 animate-fadeIn">
       {/* Header section */}
       <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between border-b border-[#d9a58f22] pb-6">
         <div>
@@ -366,5 +358,7 @@ export default function DashboardOverviewPage() {
         )}
       </div>
     </div>
+      )}
+    </LuxuryTransition>
   );
 }

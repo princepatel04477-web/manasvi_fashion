@@ -226,3 +226,53 @@ body {
   scrollbar-width: none; /* Firefox */
 }
 
+/* Luxury Cinematic Skeleton Loading System */
+@keyframes luxuryShimmer {
+  0% {
+    background-position: 150% 0;
+  }
+  100% {
+    background-position: -150% 0;
+  }
+}
+
+.shimmer-luxury-nude {
+  background: linear-gradient(
+    90deg,
+    #EAD6CF 0%,
+    #FAF7F2 30%,
+    #F4D7CF 50%,
+    #FAF7F2 70%,
+    #EAD6CF 100%
+  );
+  background-size: 300% 100%;
+  animation: luxuryShimmer 3.2s ease-in-out infinite;
+}
+
+.shimmer-luxury-cream {
+  background: linear-gradient(
+    90deg,
+    #FAF7F2 0%,
+    #F4D7CF 35%,
+    #EAD6CF 50%,
+    #F4D7CF 65%,
+    #FAF7F2 100%
+  );
+  background-size: 300% 100%;
+  animation: luxuryShimmer 3.4s ease-in-out infinite;
+}
+
+.shimmer-luxury-cocoa {
+  background: linear-gradient(
+    90deg,
+    rgba(139, 107, 97, 0.08) 0%,
+    rgba(139, 107, 97, 0.16) 35%,
+    rgba(139, 107, 97, 0.22) 50%,
+    rgba(139, 107, 97, 0.16) 65%,
+    rgba(139, 107, 97, 0.08) 100%
+  );
+  background-size: 300% 100%;
+  animation: luxuryShimmer 3.0s ease-in-out infinite;
+}
+
+

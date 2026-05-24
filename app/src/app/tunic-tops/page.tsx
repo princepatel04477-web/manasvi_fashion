@@ -6,6 +6,8 @@ import { Sparkles, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 
+import { Skeleton, ProductGridSkeleton } from "@/components/ui/skeleton";
+
 export default function TunicTopsPage() {
   const { products, loading } = useShop();
 
@@ -16,12 +18,25 @@ export default function TunicTopsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#FAF7F2] flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-6 h-6 border-2 border-[#8B6B61] border-t-transparent rounded-full animate-spin" />
-          <span className="font-cormorant text-sm uppercase tracking-widest text-[#8B6B61]">Entering Atelier...</span>
+      <main className="min-h-screen bg-[#FAF7F2] text-[#3B2B28] pt-24 sm:pt-28 md:pt-32 pb-20 sm:pb-24 relative overflow-hidden soft-grain">
+        {/* BACKGROUND DECORATIVE GLOWS */}
+        <div className="absolute top-[8%] left-[-15%] w-[50vw] h-[50vw] rounded-full bg-[#E7C2B8] opacity-20 filter blur-[120px] pointer-events-none" />
+        <div className="absolute bottom-[15%] right-[-10%] w-[45vw] h-[45vw] rounded-full bg-[#F4D7CF] opacity-20 filter blur-[130px] pointer-events-none" />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          {/* EDITORIAL HEADER SKELETON */}
+          <div className="max-w-3xl mb-12 sm:mb-16 md:mb-24 flex flex-col gap-3">
+            <Skeleton className="h-4 w-40" variant="cream" />
+            <Skeleton className="h-10 sm:h-12 w-2/3 rounded-xl" variant="nude" />
+            <div className="w-16 h-[1px] bg-[#C98E87] my-1" />
+            <Skeleton className="h-4 w-1/2" variant="cream" />
+            <Skeleton className="h-4 w-1/3" variant="cream" />
+          </div>
+
+          {/* LOOKBOOK GRID SKELETON */}
+          <ProductGridSkeleton count={3} />
         </div>
-      </div>
+      </main>
     );
   }
 

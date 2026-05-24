@@ -5,6 +5,8 @@ import EditorialProductCard from "@/components/editorial-product-card";
 import { Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 
+import { Skeleton, ProductGridSkeleton } from "@/components/ui/skeleton";
+
 export default function DressesPage() {
   const { products, loading } = useShop();
 
@@ -19,12 +21,25 @@ export default function DressesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#FAF7F2] flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-6 h-6 border-2 border-[#8B6B61] border-t-transparent rounded-full animate-spin" />
-          <span className="font-cormorant text-sm uppercase tracking-widest text-[#8B6B61]">Entering Atelier...</span>
+      <main className="min-h-screen bg-[#FAF7F2] text-[#3B2B28] pt-24 sm:pt-28 md:pt-32 pb-20 sm:pb-24 relative overflow-hidden soft-grain">
+        {/* BACKGROUND DECORATIVE GLOWS */}
+        <div className="absolute top-[10%] left-[-15%] w-[55vw] h-[55vw] rounded-full bg-[#F4D7CF] opacity-20 filter blur-[150px] pointer-events-none" />
+        <div className="absolute bottom-[20%] right-[-10%] w-[45vw] h-[45vw] rounded-full bg-[#E7C2B8] opacity-25 filter blur-[130px] pointer-events-none" />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          {/* EDITORIAL HERO HEADER */}
+          <div className="max-w-4xl mx-auto text-center mb-12 sm:mb-20 md:mb-28 flex flex-col items-center gap-4">
+            <Skeleton className="h-4 w-36 uppercase tracking-[0.25em]" variant="cream" />
+            <Skeleton className="h-10 sm:h-12 w-2/3 sm:w-1/2 rounded-xl" variant="nude" />
+            <div className="w-20 h-[1px] bg-[#C98E87] my-2" />
+            <Skeleton className="h-4 w-5/6 sm:w-2/3 rounded-md" variant="cream" />
+            <Skeleton className="h-4 w-2/3 sm:w-1/2 rounded-md" variant="cream" />
+          </div>
+
+          {/* LOOKBOOK GRID SKELETON */}
+          <ProductGridSkeleton count={3} />
         </div>
-      </div>
+      </main>
     );
   }
 

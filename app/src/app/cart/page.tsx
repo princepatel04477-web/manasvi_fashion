@@ -22,6 +22,7 @@ import {
   ChevronRight 
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { CartSkeleton, LuxuryTransition } from "@/components/ui/skeleton";
 
 interface Coupon {
   code: string;
@@ -55,7 +56,8 @@ export default function CartPage() {
     products, 
     wishlist, 
     toggleWishlist, 
-    addToCart 
+    addToCart,
+    loading
   } = useShop();
 
   const { data: session } = useSession();
@@ -240,8 +242,9 @@ export default function CartPage() {
           </p>
         </div>
 
-        <AnimatePresence mode="wait">
-          {cartItems.length === 0 ? (
+        <LuxuryTransition isLoading={loading} fallback={<CartSkeleton />}>
+          <AnimatePresence mode="wait">
+            {cartItems.length === 0 ? (
             /* BEAUTIFUL EMPTY STATE */
             <motion.div
               key="empty-cart"
@@ -605,6 +608,7 @@ export default function CartPage() {
             </div>
           </div>
         )}
+      </LuxuryTransition>
       </div>
 
       {/* FLOATING UNDO REMOVAL TOAST */}
@@ -632,7 +636,7 @@ export default function CartPage() {
       </AnimatePresence>
 
       {/* MOBILE STICKY FOOTER ACTION */}
-      {cartItems.length > 0 && (
+      {cartItems.length > 0 && !loading && (
         <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-[#FAF7F2]/90 backdrop-blur-md border-t border-[#E7C2B8]/40 p-4 z-40 flex items-center justify-between gap-4 shadow-xl">
           <div>
             <span className="font-inter text-[11px] text-[#8B6B61] tracking-wider uppercase block">Total Selection</span>

@@ -4,8 +4,10 @@ import { useMemo, useState } from "react";
 import ProductCard from "@/components/product-card";
 import { useShop } from "@/context/shop-context";
 
+import { ProductGridSkeleton } from "@/components/ui/skeleton";
+
 export default function ProductsPage() {
-  const { products } = useShop();
+  const { products, loading } = useShop();
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("all");
   const [sort, setSort] = useState("new");
@@ -64,7 +66,9 @@ export default function ProductsPage() {
         </div>
 
         {/* PRODUCTS GRID */}
-        {filtered.length === 0 ? (
+        {loading ? (
+          <ProductGridSkeleton count={6} />
+        ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center text-center py-16 md:py-24 max-w-xl mx-auto">
             <h2 className="font-cormorant text-2xl font-light italic text-[#8B6B61] mb-2">
               No matching pieces found.

@@ -18,6 +18,7 @@ import {
   X,
   User
 } from "lucide-react";
+import { Skeleton, DashboardSkeleton, LuxuryTransition } from "@/components/ui/skeleton";
 
 export const dynamic = "force-dynamic";
 
@@ -47,17 +48,7 @@ export default function DashboardLayout({
     { name: "Settings", href: "/dashboard/settings", icon: Settings },
   ];
 
-  if (status === "loading") {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-[#faf7f2] text-[#2a1d19]">
-        <div className="text-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#8b6b61] border-t-transparent mx-auto"></div>
-          <p className="mt-4 font-serif text-sm tracking-widest uppercase">Loading Studio...</p>
-        </div>
-      </div>
-    );
-  }
-
+  const isLoading = status === "loading";
   const userRole = (session?.user as { role?: string })?.role || "customer";
 
   return (
@@ -96,8 +87,17 @@ export default function DashboardLayout({
             <User size={18} />
           </div>
           <div className="overflow-hidden">
-            <h4 className="truncate text-sm font-semibold">{session?.user?.name || "Administrator"}</h4>
-            <p className="truncate text-xs font-semibold uppercase tracking-wider text-[#8b6b61] opacity-90">{userRole}</p>
+            {isLoading ? (
+              <div className="space-y-1.5">
+                <Skeleton className="h-4 w-28" variant="cream" />
+                <Skeleton className="h-3 w-16" variant="nude" />
+              </div>
+            ) : (
+              <>
+                <h4 className="truncate text-sm font-semibold">{session?.user?.name || "Administrator"}</h4>
+                <p className="truncate text-xs font-semibold uppercase tracking-wider text-[#8b6b61] opacity-90">{userRole}</p>
+              </>
+            )}
           </div>
         </div>
 
@@ -148,7 +148,9 @@ export default function DashboardLayout({
 
         {/* Content Wrapper */}
         <main className="flex-1 p-6 md:p-8 pt-20 md:pt-8 overflow-y-auto max-w-7xl w-full mx-auto">
-          {children}
+          <LuxuryTransition isLoading={isLoading} fallback={<DashboardSkeleton />}>
+            {children}
+          </LuxuryTransition>
         </main>
       </div>
     </div>
