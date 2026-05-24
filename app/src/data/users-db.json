@@ -4,7 +4,7 @@
     "name": "Prince Patel",
     "email": "princepatel01258@gmail.com",
     "passwordHash": "$2b$10$D104JeM1aPXftYnLw18BvO.PY0s76F9BJPXfQe/Z8pbUSOuoqoqBK",
-    "role": "customer",
+    "role": "admin",
     "phone": "9106139666",
     "shippingAddress": "19 Duttkrupa Society",
     "city": "Surat",

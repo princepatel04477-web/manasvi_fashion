@@ -8,9 +8,14 @@ import { Heart, ShoppingBag, Check, Sparkles, ShieldCheck, ChevronRight } from "
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { ProductDetailSkeleton, LuxuryTransition } from "@/components/ui/skeleton";
+import StickyCartBar from "@/components/StickyCartBar";
+import TrustBadges from "@/components/TrustBadges";
+import SizeGuideModal from "@/components/SizeGuideModal";
+import PageTransition from "@/components/PageTransition";
 
 export default function PDP() {
-  const { slug } = useParams<{ slug: string }>();
+  const slugParams = useParams();
+  const slug = slugParams?.slug as string;
   const { addCustomToCart, toggleWishlist, wishlist, products, loading } = useShop();
   const product = products.find((p) => p.slug === slug);
 
@@ -18,6 +23,7 @@ export default function PDP() {
   const [selectedColor, setSelectedColor] = useState(0);
   const [isAdding, setIsAdding] = useState(false);
   const [addedSuccess, setAddedSuccess] = useState(false);
+  const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
 
   const colorVariants = product ? (product.colorVariants || []) : [];
   const activeVariant = colorVariants[selectedColor] || null;
@@ -32,9 +38,7 @@ export default function PDP() {
   }, [product]);
 
   const [activeImageIndex, setActiveImageIndex] = useState(0);
-  const [showStickyCta, setShowStickyCta] = useState(false);
   const galleryScrollRef = useRef<HTMLDivElement>(null);
-  const mainCtaRef = useRef<HTMLDivElement>(null);
 
   // Sync scroll position when color variant is changed
   useEffect(() => {
@@ -74,27 +78,7 @@ export default function PDP() {
     }
   };
 
-  // Intersection Observer for sticky Add to Cart bar
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        const isPast = entry.boundingClientRect.top < 0;
-        setShowStickyCta(!entry.isIntersecting && isPast);
-      },
-      { threshold: 0 }
-    );
-
-    const currentRef = mainCtaRef.current;
-    if (currentRef) {
-      observer.observe(currentRef);
-    }
-
-    return () => {
-      if (currentRef) {
-        observer.unobserve(currentRef);
-      }
-    };
-  }, []);
+  // Intersection Observer has been replaced by GSAP ScrollTrigger inside StickyCartBar
 
   const handleAddToCart = async () => {
     if (!product) return;
@@ -118,12 +102,13 @@ export default function PDP() {
   };
 
   return (
-    <main className="min-h-screen bg-[#FAF7F2] text-[#3B2B28] pt-24 sm:pt-28 md:pt-32 pb-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden soft-grain">
-      {/* BACKGROUND DECORATIVE GLOWS */}
-      <div className="absolute top-[10%] left-[-15%] z-0 w-[50vw] h-[50vw] rounded-full bg-[#F4D7CF] opacity-20 filter blur-[130px] pointer-events-none" />
-      <div className="absolute bottom-[20%] right-[-10%] z-0 w-[45vw] h-[45vw] rounded-full bg-[#E7C2B8] opacity-20 filter blur-[120px] pointer-events-none" />
+    <PageTransition>
+      <main className="min-h-screen bg-[#FAF7F2] text-[#3B2B28] pt-24 sm:pt-28 md:pt-32 pb-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden soft-grain">
+        {/* BACKGROUND DECORATIVE GLOWS */}
+        <div className="absolute top-[10%] left-[-15%] z-0 w-[50vw] h-[50vw] rounded-full bg-[#F4D7CF] opacity-20 filter blur-[130px] pointer-events-none" />
+        <div className="absolute bottom-[20%] right-[-10%] z-0 w-[45vw] h-[45vw] rounded-full bg-[#E7C2B8] opacity-20 filter blur-[120px] pointer-events-none" />
 
-      <LuxuryTransition isLoading={loading} fallback={<ProductDetailSkeleton />}>
+        <LuxuryTransition isLoading={loading} fallback={<ProductDetailSkeleton />}>
         {!product ? (
           <div className="text-center py-20 max-w-7xl mx-auto relative z-10">
             <h1 className="font-cormorant text-3xl italic text-[#8B6B61]">Garment not found in our studio.</h1>
@@ -309,12 +294,20 @@ export default function PDP() {
             {/* SIZING SECTOR */}
             <div className="space-y-3">
               <div className="flex justify-between items-center text-xs">
-                <span className="font-inter tracking-wider text-[#8B6B61] uppercase font-light">
-                  Select Size
-                </span>
-                <span className="font-inter font-bold text-[#3B2B28]">
-                  {size}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="font-inter tracking-wider text-[#8B6B61] uppercase font-light">
+                    Select Size
+                  </span>
+                  <span className="font-inter font-bold text-[#3B2B28]">
+                    ({size})
+                  </span>
+                </div>
+                <button
+                  onClick={() => setIsSizeGuideOpen(true)}
+                  className="font-inter text-[10px] sm:text-xs text-[#C98E87] hover:text-[#8B6B61] underline uppercase tracking-wider font-semibold cursor-pointer"
+                >
+                  Size Guide
+                </button>
               </div>
               
               <div className="flex flex-wrap gap-2">
@@ -331,11 +324,11 @@ export default function PDP() {
             </div>
 
             {/* ACTION CTAS */}
-            <div ref={mainCtaRef} className="grid grid-cols-1 sm:grid-cols-4 gap-3 pt-4">
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 pt-4">
               <button 
                 onClick={handleAddToCart}
                 disabled={isAdding || addedSuccess}
-                className="sm:col-span-3 py-4 bg-[#3B2B28] text-[#FAF7F2] rounded-2xl font-cormorant text-xs uppercase tracking-[0.2em] font-semibold transition-all duration-300 hover:bg-[#8B6B61] hover:shadow-lg shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-90 disabled:cursor-not-allowed"
+                className="main-add-to-cart-btn sm:col-span-3 py-4 bg-[#3B2B28] text-[#FAF7F2] rounded-2xl font-cormorant text-xs uppercase tracking-[0.2em] font-semibold transition-all duration-300 hover:bg-[#8B6B61] hover:shadow-lg shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-90 disabled:cursor-not-allowed"
               >
                 {isAdding ? (
                   <>
@@ -363,6 +356,8 @@ export default function PDP() {
                 <Heart size={16} fill={liked ? "#C98E87" : "none"} className={liked ? "text-[#C98E87] scale-110" : "text-[#8B6B61]"} />
               </button>
             </div>
+
+            <TrustBadges />
 
             {/* SPECIFICATIONS & REASSURANCE */}
             <div className="rounded-2xl border border-[#E7C2B8]/30 bg-white/50 p-6 space-y-4 text-[11px] sm:text-xs font-inter font-light text-[#8B6B61]">
@@ -399,63 +394,27 @@ export default function PDP() {
         </div>
       </div>
 
-      {/* Sticky Bottom Add to Cart Bar for Mobile Viewports */}
-      <AnimatePresence>
-        {showStickyCta && (
-          <motion.div
-            initial={{ y: 100, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 100, opacity: 0 }}
-            transition={{ type: "spring", stiffness: 260, damping: 26 }}
-            className="fixed bottom-0 inset-x-0 z-40 bg-[#FAF7F2]/95 backdrop-blur-md border-t border-[#E7C2B8]/20 px-4 py-3 flex items-center justify-between gap-4 lg:hidden shadow-[0_-8px_35px_rgba(61,43,38,0.08)]"
-          >
-            <div className="flex items-center gap-3">
-              <img
-                src={activeImage}
-                alt=""
-                className="w-10 h-14 object-cover rounded-lg border border-[#E7C2B8]/40 bg-white"
-              />
-              <div className="flex flex-col">
-                <span className="font-cormorant text-sm font-semibold truncate max-w-[120px] xs:max-w-[160px]">
-                  {product.title}
-                </span>
-                <span className="text-[10px] text-[#8B6B61] font-inter">
-                  Size: {size} • {activeVariant?.name || product.color}
-                </span>
-                <span className="font-cormorant text-xs font-semibold text-[#3B2B28] mt-0.5">
-                  {formatINR(product.price)}
-                </span>
-              </div>
-            </div>
+      {/* Sticky Bottom Add to Cart Bar */}
+      <StickyCartBar
+        productName={product.title}
+        price={product.price}
+        sizes={product.sizes}
+        selectedSize={size}
+        setSelectedSize={setSize}
+        onAddToCart={handleAddToCart}
+        imageUrl={activeImage}
+        isAdding={isAdding}
+        addedSuccess={addedSuccess}
+      />
 
-            <button
-              onClick={handleAddToCart}
-              disabled={isAdding || addedSuccess}
-              className="flex-grow max-w-[160px] py-3.5 bg-[#3B2B28] text-[#FAF7F2] rounded-xl font-cormorant text-[10px] uppercase tracking-[0.15em] font-semibold transition-all duration-300 hover:bg-[#8B6B61] active:scale-98 shadow-md flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-90 disabled:cursor-not-allowed"
-            >
-              {isAdding ? (
-                <>
-                  <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  <span>Adding...</span>
-                </>
-              ) : addedSuccess ? (
-                <>
-                  <Check className="w-3 h-3 text-white" />
-                  <span>Added</span>
-                </>
-              ) : (
-                <>
-                  <ShoppingBag className="w-3 h-3" />
-                  <span>Add to Cart</span>
-                </>
-              )}
-            </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <SizeGuideModal
+        isOpen={isSizeGuideOpen}
+        onClose={() => setIsSizeGuideOpen(false)}
+      />
           </>
       )}
       </LuxuryTransition>
     </main>
+    </PageTransition>
   );
 }

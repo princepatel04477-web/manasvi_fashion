@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { animate, set } from "animejs";
 import { useScrollY, interpolate, luxuryEase } from "@/lib/use-anime-scroll";
 import { Heart, Sparkles, Feather, Compass, ArrowRight } from "lucide-react";
+import PageTransition from "@/components/PageTransition";
 
 export default function AboutPage() {
   const scrollY = useScrollY();
@@ -136,7 +137,8 @@ export default function AboutPage() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-[#FAF7F2] text-[#3B2B28] overflow-x-hidden selection:bg-[#FAF7F2]/30 selection:text-[#FAF7F2] soft-grain">
+    <PageTransition>
+      <main className="min-h-screen bg-[#FAF7F2] text-[#3B2B28] overflow-x-hidden selection:bg-[#FAF7F2]/30 selection:text-[#FAF7F2] soft-grain">
       
       {/* HERO SECTION — Cinematic Full-Screen Bleed */}
       <section className="relative h-screen w-full flex items-center justify-center overflow-hidden">
@@ -392,5 +394,6 @@ export default function AboutPage() {
       </section>
 
     </main>
+    </PageTransition>
   );
 }

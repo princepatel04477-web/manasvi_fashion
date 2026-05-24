@@ -2,6 +2,46 @@
 -- MANASVI FASHION — SUPABASE DATABASE SCHEMA
 -- ==========================================
 
+-- ============================================================
+-- 0. Products Table (Public catalogue — no auth required to read)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS public.products (
+    id TEXT PRIMARY KEY DEFAULT 'p-' || extract(epoch from now())::text,
+    slug TEXT UNIQUE NOT NULL,
+    title TEXT NOT NULL,
+    category TEXT NOT NULL,                           -- 'kurtis' | 'dresses'
+    product_type TEXT NOT NULL,                       -- 'kurti' | 'tunic_top' | 'dress'
+    subcategory TEXT,
+    description TEXT NOT NULL DEFAULT '',
+    fabric TEXT,
+    sleeve_type TEXT,
+    color TEXT,
+    price NUMERIC(10, 2) NOT NULL DEFAULT 0,
+    compare_at_price NUMERIC(10, 2),
+    sizes JSONB NOT NULL DEFAULT '[]',                -- string[] e.g. ["S","M","L"]
+    images JSONB NOT NULL DEFAULT '[]',               -- string[] of image paths
+    stock INTEGER NOT NULL DEFAULT 0,
+    rating NUMERIC(3, 1) DEFAULT 5.0,
+    reviews INTEGER DEFAULT 0,
+    is_new BOOLEAN DEFAULT false,
+    color_variants JSONB DEFAULT '[]',                -- [{name, hex, image}]
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()) NOT NULL
+);
+
+-- Enable RLS
+ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
+
+-- Allow ANYONE (anon + authenticated) to read products — public catalogue
+CREATE POLICY "Public can read products" ON public.products
+    FOR SELECT TO anon, authenticated
+    USING (true);
+
+-- Only authenticated admins can insert/update/delete products
+CREATE POLICY "Admins can manage products" ON public.products
+    FOR ALL TO authenticated
+    USING (true)
+    WITH CHECK (true);
+
 -- 1. Users Table (Secure authentication & authorization profiles)
 CREATE TABLE IF NOT EXISTS public.users (
     id TEXT PRIMARY KEY,

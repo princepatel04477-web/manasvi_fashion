@@ -276,3 +276,18 @@ body {
 }
 
 
+/* ─── GSAP SplitText Character Animation ─────────────────────────── */
+/*
+ * SplitText wraps each character in a span with charsClass="gsap-char".
+ * inline-block is required so GSAP can apply independent transforms
+ * (translateY, rotateX, opacity) per character without line-break artefacts.
+ */
+.gsap-char {
+  display: inline-block;
+  will-change: transform, opacity;
+}
+
+/* Preserve 3D context on the title so rotateX renders with real depth */
+.cormorant-garamond-manasvi {
+  transform-style: preserve-3d;
+}

@@ -5,6 +5,7 @@ import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
+import PageTransition from "@/components/PageTransition";
 
 const CAMPAIGN_IMAGES = [
   "/manasvi-hero.png",
@@ -158,7 +159,7 @@ function SignInForm() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              placeholder="e.g. manasvifashion1515@gmail.com"
+              placeholder="e.g. princepatel01258@gmail.com"
               className="w-full bg-transparent border-b border-[#E7C2B8]/40 py-3 text-base md:text-sm text-[#3B2B28] outline-none transition-all duration-300 focus:border-[#8B6B61] focus:shadow-[0_4px_12px_-4px_rgba(231,194,184,0.15)] placeholder-[#8B6B61]/35 font-light"
             />
           </div>
@@ -274,11 +275,11 @@ function SignInForm() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-white/70 p-3 rounded-lg border border-[#E7C2B8]/20 font-mono text-[11px]">
                 <div>
                   <span className="block text-[8px] uppercase tracking-wider text-[#8B6B61]/60 mb-0.5">Email</span>
-                  <span className="font-semibold text-[#3B2B28] select-all">manasvifashion1515@gmail.com</span>
+                  <span className="font-semibold text-[#3B2B28] select-all">princepatel01258@gmail.com</span>
                 </div>
                 <div>
                   <span className="block text-[8px] uppercase tracking-wider text-[#8B6B61]/60 mb-0.5">Password</span>
-                  <span className="font-semibold text-[#3B2B28] select-all">manu@1515</span>
+                  <span className="font-semibold text-[#3B2B28] select-all">Prince_1258</span>
                 </div>
               </div>
             </div>
@@ -299,27 +300,29 @@ function SignInForm() {
 
 export default function SignInPage() {
   return (
-    <main className="min-h-screen flex flex-col md:flex-row bg-[#FAF7F2] relative">
-      {/* Left side: Cinematic lookbook film loop viewport */}
-      <div className="w-full md:w-1/2 h-[45vh] md:h-screen sticky top-0 z-0">
-        <CinematicSlideshow />
-      </div>
+    <PageTransition>
+      <main className="min-h-screen flex flex-col md:flex-row bg-[#FAF7F2] relative">
+        {/* Left side: Cinematic lookbook film loop viewport */}
+        <div className="w-full md:w-1/2 h-[45vh] md:h-screen sticky top-0 z-0">
+          <CinematicSlideshow />
+        </div>
 
-      {/* Right side: Editorial form viewport */}
-      <div className="w-full md:w-1/2 min-h-[55vh] md:min-h-screen flex items-center justify-center bg-[#FAF7F2] z-10 shadow-[-20px_0_40px_rgba(59,43,40,0.03)] border-t md:border-t-0 md:border-l border-[#E7C2B8]/20 relative">
-        <Suspense
-          fallback={
-            <div className="flex flex-col items-center justify-center p-12 text-[#2a1d19]">
-              <span className="font-serif text-xs uppercase tracking-[0.25em] text-[#8B6B61] animate-pulse">
-                Manasvi Fashion
-              </span>
-              <p className="mt-4 font-serif text-sm text-[#8B6B61] font-light">Loading portal...</p>
-            </div>
-          }
-        >
-          <SignInForm />
-        </Suspense>
-      </div>
-    </main>
+        {/* Right side: Editorial form viewport */}
+        <div className="w-full md:w-1/2 min-h-[55vh] md:min-h-screen flex items-center justify-center bg-[#FAF7F2] z-10 shadow-[-20px_0_40px_rgba(59,43,40,0.03)] border-t md:border-t-0 md:border-l border-[#E7C2B8]/20 relative">
+          <Suspense
+            fallback={
+              <div className="flex flex-col items-center justify-center p-12 text-[#2a1d19]">
+                <span className="font-serif text-xs uppercase tracking-[0.25em] text-[#8B6B61] animate-pulse">
+                  Manasvi Fashion
+                </span>
+                <p className="mt-4 font-serif text-sm text-[#8B6B61] font-light">Loading portal...</p>
+              </div>
+            }
+          >
+            <SignInForm />
+          </Suspense>
+        </div>
+      </main>
+    </PageTransition>
   );
 }

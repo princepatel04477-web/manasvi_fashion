@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { animate } from "animejs";
 import { Mail, Phone, Clock, MapPin, Check, AlertCircle, ChevronDown, ArrowRight } from "lucide-react";
+import PageTransition from "@/components/PageTransition";
 
 type InquiryType = "styling" | "order" | "collaboration" | "general";
 
@@ -186,7 +187,8 @@ export default function ContactPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#FAF7F2] text-[#3B2B28] pt-32 pb-24 md:pb-36 px-6 relative overflow-hidden soft-grain">
+    <PageTransition>
+      <main className="min-h-screen bg-[#FAF7F2] text-[#3B2B28] pt-32 pb-24 md:pb-36 px-6 relative overflow-hidden soft-grain">
       
       {/* BACKGROUND DECORATIVE GLOWS */}
       <div className="absolute top-[10%] left-[-10%] w-[45vw] h-[45vw] rounded-full bg-[#F4D7CF] opacity-25 filter blur-[120px] pointer-events-none" />
@@ -519,5 +521,6 @@ export default function ContactPage() {
       </div>
 
     </main>
+    </PageTransition>
   );
 }

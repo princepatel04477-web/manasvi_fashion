@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowUp, ChevronDown, Globe, Mail, Check } from "lucide-react";
+import { useLenis } from "@/lib/lenis";
 
 // Reusable animated footer link with premium slide-in underline
 const FooterLink = ({ href, children }: { href: string; children: React.ReactNode }) => (
@@ -25,6 +26,7 @@ export default function Footer() {
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [newsletterEmail, setNewsletterEmail] = useState("");
   const [newsletterSubmitted, setNewsletterSubmitted] = useState(false);
+  const lenis = useLenis();
 
   // Scroll listener for Back to Top button
   useEffect(() => {
@@ -59,8 +61,8 @@ export default function Footer() {
   };
 
   const scrollToTop = () => {
-    if (typeof window !== "undefined" && (window as any).lenis) {
-      (window as any).lenis.scrollTo(0, { duration: 1.2 });
+    if (lenis) {
+      lenis.scrollTo(0, { duration: 1.2 });
     } else {
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
@@ -93,20 +95,20 @@ export default function Footer() {
       links: [
         { label: "About Us", href: "/about" },
         { label: "Contact", href: "/contact" },
-        { label: "Careers", href: "/" },
+        { label: "Careers", href: "/careers" },
         { label: "Blogs", href: "/journal" },
-        { label: "Privacy Policy", href: "/" },
-        { label: "Terms & Conditions", href: "/" }
+        { label: "Privacy Policy", href: "/privacy-policy" },
+        { label: "Terms & Conditions", href: "/terms" }
       ]
     },
     support: {
       title: "Customer Support",
       links: [
-        { label: "Shipping Policy", href: "/" },
-        { label: "Return & Exchange", href: "/" },
+        { label: "Shipping Policy", href: "/shipping" },
+        { label: "Return & Exchange", href: "/returns" },
         { label: "Track Order", href: "/order-tracking" },
-        { label: "FAQs", href: "/" },
-        { label: "Size Guide", href: "/" }
+        { label: "FAQs", href: "/faqs" },
+        { label: "Size Guide", href: "/size-guide" }
       ]
     },
     account: {
@@ -164,7 +166,7 @@ export default function Footer() {
               {[
                 {
                   name: "Instagram",
-                  href: "https://instagram.com",
+                  href: "https://instagram.com/manasvi.fashion",
                   viewBox: "0 0 24 24",
                   svg: (
                     <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.051C.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
@@ -172,7 +174,7 @@ export default function Footer() {
                 },
                 {
                   name: "Pinterest",
-                  href: "https://pinterest.com",
+                  href: "https://pinterest.com/manasvifashion",
                   viewBox: "0 0 32 32",
                   svg: (
                     <path d="M16 2C8.268 2 2 8.268 2 16c0 5.922 3.67 10.988 8.847 13.018-.122-1.107-.23-2.805.048-4.013.25-1.088 1.613-6.837 1.613-6.837s-.412-.824-.412-2.043c0-1.913 1.11-3.34 2.49-3.34 1.173 0 1.74.88 1.74 1.937 0 1.18-.752 2.943-1.14 4.577-.323 1.369.69 2.485 2.04 2.485 2.447 0 4.33-2.58 4.33-6.305 0-3.298-2.37-5.602-5.753-5.602-3.92 0-6.22 2.94-6.22 5.98 0 1.183.456 2.453 1.025 3.143.113.137.13.257.095.395-.104.433-.336 1.37-.38 1.558-.06.248-.194.3-.448.182-1.67-.777-2.715-3.218-2.715-5.18 0-4.217 3.064-8.09 8.834-8.09 4.638 0 8.243 3.305 8.243 7.723 0 4.607-2.905 8.31-6.94 8.31-1.355 0-2.63-.703-3.065-1.533 0 0-.67 2.553-.833 3.178-.3.115-.6.257-.9.385C11.968 29.56 13.916 30 16 30c7.732 0 14-6.268 14-14S23.732 2 16 2z" />
@@ -180,7 +182,7 @@ export default function Footer() {
                 },
                 {
                   name: "Facebook",
-                  href: "https://facebook.com",
+                  href: "https://facebook.com/manasvifashion",
                   viewBox: "0 0 32 32",
                   svg: (
                     <path d="M29 16c0-7.18-5.82-13-13-13S3 8.82 3 16c0 6.49 4.75 11.87 11 12.87v-9.1h-3.3v-3.77H14v-2.87c0-3.27 1.94-5.07 4.9-5.07 1.42 0 2.9.25 2.9.25v3.2h-1.64c-1.62 0-2.12 1.01-2.12 2.04v2.45h3.6l-.57 3.77h-3.03v9.1c6.25-1 11-6.38 11-12.87z" />
@@ -188,7 +190,7 @@ export default function Footer() {
                 },
                 {
                   name: "YouTube",
-                  href: "https://youtube.com",
+                  href: "https://youtube.com/@manasvifashion",
                   viewBox: "0 0 32 32",
                   svg: (
                     <path d="M29.58 9.48a3.64 3.64 0 00-2.56-2.58C24.76 6.3 16 6.3 16 6.3s-8.76 0-11.02.6a3.64 3.64 0 00-2.56 2.58C1.82 11.76 1.82 16 1.82 16s0 4.24.6 6.52a3.64 3.64 0 002.56 2.58c2.26.6 11.02.6 11.02.6s8.76 0 11.02-.6a3.64 3.64 0 002.56-2.58c.6-2.28.6-6.52.6-6.52s0-4.24-.6-6.52zM13.2 20.36V11.64L20.8 16l-7.6 4.36z" />

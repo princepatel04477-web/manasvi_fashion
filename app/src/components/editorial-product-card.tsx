@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import SizeGuideModal from "@/components/SizeGuideModal";
 import { Heart, ShoppingBag, Check } from "lucide-react";
 import { Product } from "@/types";
 import { formatINR } from "@/lib/store";
@@ -21,6 +22,7 @@ export default function EditorialProductCard({
   const [isAdding, setIsAdding] = useState(false);
   const [addedSuccess, setAddedSuccess] = useState(false);
   const [hovered, setHovered] = useState(false);
+  const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
 
   const liked = wishlist.includes(product.id);
 
@@ -56,7 +58,7 @@ export default function EditorialProductCard({
 
   return (
     <div 
-      className="group relative flex flex-col bg-[#FAF7F2]/40 rounded-3xl border border-[#E7C2B8]/20 p-3 transition-all duration-500 hover:shadow-[0_20px_40px_rgba(59,43,40,0.06)] hover:border-[#C98E87]/40 [will-change:transform,box-shadow]"
+      className="product-card group relative flex flex-col bg-[#FAF7F2]/40 rounded-3xl border border-[#E7C2B8]/20 p-3 transition-all duration-500 hover:shadow-[0_20px_40px_rgba(59,43,40,0.06)] hover:border-[#C98E87]/40 [will-change:transform,box-shadow]"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => {
         setHovered(false);
@@ -191,7 +193,19 @@ export default function EditorialProductCard({
 
           {/* Size Select & Quick Add in one sleek horizontal element */}
           <div className="flex items-center justify-between gap-2 flex-wrap">
-            <span className="font-inter text-[9px] text-[#8B6B61] tracking-wider uppercase font-light">Select Size</span>
+            <div className="flex items-center gap-1.5">
+              <span className="font-inter text-[9px] text-[#8B6B61] tracking-wider uppercase font-light">Select Size</span>
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setIsSizeGuideOpen(true);
+                }}
+                className="font-inter text-[8px] text-[#C98E87] hover:text-[#8B6B61] underline uppercase tracking-wider font-semibold cursor-pointer z-10"
+              >
+                Size Guide
+              </button>
+            </div>
             <div className="flex flex-wrap gap-1.5 justify-end">
               {product.sizes.map((sz) => (
                 <button
@@ -207,6 +221,11 @@ export default function EditorialProductCard({
           </div>
         </div>
       </div>
+
+      <SizeGuideModal
+        isOpen={isSizeGuideOpen}
+        onClose={() => setIsSizeGuideOpen(false)}
+      />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { products as staticProducts } from "@/data/products";
 import { CartItem, Product } from "@/types";
 import { useSession } from "next-auth/react";
@@ -41,25 +41,56 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
     return saved ? JSON.parse(saved) : [];
   });
 
+  // Track if component is mounted to avoid state updates after unmount
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
+
   const refetchProducts = async () => {
+    const controller = new AbortController();
+    // 5-second timeout — if Supabase or the API hangs, we fall back to static data
+    const timeoutId = setTimeout(() => {
+      console.warn("[shop-context] /api/products fetch timed out after 5s — using fallback data");
+      controller.abort();
+    }, 5000);
+
     try {
-      const res = await fetch("/api/products");
+      const res = await fetch("/api/products", { signal: controller.signal });
+      clearTimeout(timeoutId);
+
+      if (!mountedRef.current) return;
+
       if (res.ok) {
         const data = await res.json();
+        console.log("[shop-context] /api/products response — count:", Array.isArray(data) ? data.length : "not an array", data);
         if (Array.isArray(data) && data.length > 0) {
           setProductsList(data);
+        } else {
+          console.warn("[shop-context] API returned empty/invalid data, keeping static fallback");
         }
+      } else {
+        const errorBody = await res.text().catch(() => "(unreadable)");
+        console.error(`[shop-context] /api/products responded ${res.status}:`, errorBody);
       }
     } catch (err) {
-      console.error("Failed to fetch dynamic products:", err);
+      clearTimeout(timeoutId);
+      if ((err as Error)?.name === "AbortError") {
+        console.warn("[shop-context] Fetch aborted (timeout) — products will use static fallback");
+      } else {
+        console.error("[shop-context] Failed to fetch dynamic products:", err);
+      }
     } finally {
-      setLoading(false);
+      if (mountedRef.current) {
+        setLoading(false);
+      }
     }
   };
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     refetchProducts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => localStorage.setItem("mf-cart", JSON.stringify(cart)), [cart]);

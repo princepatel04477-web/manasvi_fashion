@@ -17,6 +17,7 @@ export default function Header() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [drawerTab, setDrawerTab] = useState<"menu" | "cart">("menu");
   const { cart, products: productsList, cartCount, cartTotal, updateQty, removeFromCart } = useShop();
+  const [isScrolledPastSlides, setIsScrolledPastSlides] = useState(false);
   const navRef1 = useRef<HTMLElement>(null);
   const navRef2 = useRef<HTMLElement>(null);
   const logoRef = useRef<HTMLDivElement>(null);
@@ -46,9 +47,14 @@ export default function Header() {
     if (pathname.startsWith("/dashboard") || pathname.startsWith("/auth")) {
       return;
     }
-    if (!isHome) return;
 
     const handleScroll = () => {
+      const sy = window.scrollY;
+      const threshold = window.innerHeight * 3 - 80;
+      setIsScrolledPastSlides(sy > threshold);
+
+      if (!isHome) return;
+
       const hasScroll = document.documentElement.scrollHeight > window.innerHeight + 4;
       if (!hasScroll) {
         if (navRef1.current) {
@@ -63,7 +69,6 @@ export default function Header() {
         return;
       }
 
-      const sy = window.scrollY;
       const navOpacity = interpolate(sy, { inputRange: [190, 360], outputRange: [0, 1], ease: luxuryEase });
       const navY = interpolate(sy, { inputRange: [190, 360], outputRange: [20, 0], ease: luxuryEase });
       const logoOpacity = interpolate(sy, { inputRange: [650, 730], outputRange: [0, 1], ease: luxuryEase });
@@ -88,11 +93,10 @@ export default function Header() {
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
-    // Call immediately to initialize nav visibility
-    setTimeout(handleScroll, 0);
+    handleScroll();
 
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [isHome]);
+  }, [isHome, pathname]);
 
   if (pathname.startsWith("/dashboard") || pathname.startsWith("/auth")) {
     return null;
@@ -101,72 +105,98 @@ export default function Header() {
   if (!isHome) {
     return (
       <>
-        <header className="fixed inset-x-0 top-0 z-50 bg-[#FAF7F2]/90 backdrop-blur-md border-b border-[#E7C2B8]/10">
-          <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5 sm:px-8">
+        <header className="fixed inset-x-0 top-0 z-50 bg-[#FAF7F2]/92 backdrop-blur-md border-b border-[#C98E87]/15 text-[#3B2B28]">
+          <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-8">
+            {/* Logo */}
             <div>
-              <Link href="/" className="flex flex-col items-center gap-1 font-[var(--font-grance)] text-2xl font-semibold tracking-[0.04em] text-[#3d2b26]">
-                <span>MANASVI</span>
-                <span className="font-[var(--font-cormorant)] text-xs font-semibold uppercase tracking-[0.22em] opacity-90">Fashion</span>
+              <Link href="/" className="flex flex-col items-center gap-0.5 group">
+                <span className="font-[var(--font-bodoni)] text-[1.35rem] leading-none tracking-[0.06em] text-[#3B2B28] group-hover:text-[#8B6B61] transition-colors duration-300 [-webkit-font-smoothing:antialiased]">
+                  MANASVI
+                </span>
+                <span className="font-[var(--font-im-fell)] italic text-[0.6rem] tracking-[0.35em] text-[#8B6B61] uppercase leading-none">
+                  Fashion
+                </span>
               </Link>
             </div>
-            <div className="flex items-center gap-6">
-              <nav className="hidden gap-6 text-xs uppercase tracking-[0.22em] text-[#3d2b26] md:flex [text-rendering:optimizeLegibility] items-center">
-                {["/kurtis", "/tunic-tops", "/dresses", "/cart"].map((path, i) => (
-                  <Link key={path} href={path} className="opacity-90 transition-colors duration-300 hover:text-black">
-                    {["Kurtis", "Tunics", "Dresses", "Cart"][i]}
+
+            <div className="flex items-center gap-8">
+              {/* Desktop Nav Links */}
+              <nav className="hidden gap-7 md:flex [text-rendering:optimizeLegibility] items-center">
+                {["/kurtis", "/tunic-tops", "/dresses"].map((path, i) => (
+                  <Link
+                    key={path}
+                    href={path}
+                    className="font-[var(--font-cormorant)] text-[0.8rem] font-medium italic tracking-[0.18em] text-[#3B2B28]/75 uppercase hover:text-[#8B6B61] transition-colors duration-300"
+                  >
+                    {["Kurtis", "Tunics", "Dresses"][i]}
                   </Link>
                 ))}
                 {isAdmin && (
-                  <Link href="/dashboard" className="opacity-90 transition-colors duration-300 hover:text-black">
+                  <Link
+                    href="/dashboard"
+                    className="font-[var(--font-cormorant)] text-[0.8rem] font-medium italic tracking-[0.18em] text-[#3B2B28]/75 uppercase hover:text-[#8B6B61] transition-colors duration-300"
+                  >
                     Dashboard
                   </Link>
                 )}
               </nav>
 
-              <div className="hidden md:flex text-xs uppercase tracking-[0.22em] text-[#3d2b26] [text-rendering:optimizeLegibility] items-center">
+              {/* Divider */}
+              <span className="hidden md:block w-px h-4 bg-[#C98E87]/30" />
+
+              {/* Sign In / Out */}
+              <div className="hidden md:flex items-center">
                 {session ? (
                   <button
                     onClick={() => signOut({ callbackUrl: "/" })}
-                    className="opacity-90 transition-colors duration-300 hover:text-black uppercase tracking-[0.22em] text-xs font-medium cursor-pointer"
+                    className="font-[var(--font-cormorant)] text-[0.78rem] italic tracking-[0.18em] text-[#3B2B28]/70 uppercase hover:text-[#8B6B61] transition-colors duration-300 cursor-pointer"
                   >
-                    Sign Out {firstName ? `(${firstName})` : ""}
+                    Sign Out {firstName ? `· ${firstName}` : ""}
                   </button>
                 ) : (
-                  <Link href="/auth/signin" className="opacity-90 transition-colors duration-300 hover:text-black font-medium">
+                  <Link
+                    href="/auth/signin"
+                    className="font-[var(--font-cormorant)] text-[0.78rem] italic tracking-[0.18em] text-[#3B2B28]/70 uppercase hover:text-[#8B6B61] transition-colors duration-300"
+                  >
                     Sign In
                   </Link>
                 )}
               </div>
 
+              {/* Cart icon — desktop */}
+              <button
+                onClick={() => { setDrawerTab("cart"); setIsDrawerOpen(true); }}
+                className="hidden md:flex text-[#3B2B28]/70 hover:text-[#8B6B61] transition-colors p-1 relative cursor-pointer"
+                aria-label="Open shopping bag"
+              >
+                <ShoppingBag className="w-4.5 h-4.5" strokeWidth={1.5} />
+                {cartCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-[#C98E87] text-white text-[7px] font-bold w-3.5 h-3.5 flex items-center justify-center rounded-full">
+                    {cartCount}
+                  </span>
+                )}
+              </button>
+
               {/* Mobile controls */}
               <div className="flex items-center gap-2 md:hidden">
-                {/* Mobile Cart Button */}
                 <button
-                  onClick={() => {
-                    setDrawerTab("cart");
-                    setIsDrawerOpen(true);
-                  }}
-                  className="text-[#3d2b26] hover:text-[#8B6B61] transition-colors p-2 relative cursor-pointer"
+                  onClick={() => { setDrawerTab("cart"); setIsDrawerOpen(true); }}
+                  className="text-[#3B2B28]/70 hover:text-[#8B6B61] transition-colors p-2 relative cursor-pointer"
                   aria-label="Open shopping bag"
                 >
-                  <ShoppingBag className="w-5.5 h-5.5" />
+                  <ShoppingBag className="w-5 h-5" strokeWidth={1.5} />
                   {cartCount > 0 && (
-                    <span className="absolute top-1 right-1 bg-[#C98E87] text-white text-[8px] font-bold w-4 h-4 flex items-center justify-center rounded-full scale-90 animate-pulse">
+                    <span className="absolute top-1 right-1 bg-[#C98E87] text-white text-[8px] font-bold w-4 h-4 flex items-center justify-center rounded-full">
                       {cartCount}
                     </span>
                   )}
                 </button>
-
-                {/* Mobile Hamburger Button */}
                 <button
-                  onClick={() => {
-                    setDrawerTab("menu");
-                    setIsDrawerOpen(!isDrawerOpen);
-                  }}
-                  className="text-[#3d2b26] hover:text-[#8B6B61] transition-colors focus:outline-none z-50 relative p-2 cursor-pointer"
+                  onClick={() => { setDrawerTab("menu"); setIsDrawerOpen(!isDrawerOpen); }}
+                  className="text-[#3B2B28]/70 hover:text-[#8B6B61] transition-colors focus:outline-none z-50 relative p-2 cursor-pointer"
                   aria-label="Toggle navigation menu"
                 >
-                  {isDrawerOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                  {isDrawerOpen ? <X className="w-5 h-5" strokeWidth={1.5} /> : <Menu className="w-5 h-5" strokeWidth={1.5} />}
                 </button>
               </div>
             </div>
@@ -181,26 +211,36 @@ export default function Header() {
 
   return (
     <>
-      <header className="fixed inset-x-0 top-0 z-50">
+      <header className="fixed inset-x-0 top-0 z-50 bg-transparent py-5">
         <div
-          className="mx-auto grid max-w-7xl grid-cols-3 items-center px-6 py-4 text-[#fff8f2] [text-shadow:0_1px_8px_rgba(0,0,0,0.45)] [will-change:transform,opacity]"
+          className={`mx-auto grid max-w-7xl grid-cols-3 items-center px-6 transition-colors duration-500 ${
+            isScrolledPastSlides
+              ? "text-[#3B2B28]"
+              : "text-[#fff8f2] [text-shadow:0_1px_10px_rgba(0,0,0,0.5)]"
+          }`}
         >
+          {/* Left nav */}
           <nav
             ref={navRef1}
             style={{ opacity: 0, transform: "translateY(20px)" }}
-            className="col-start-1 hidden items-center gap-6 font-[var(--font-cormorant)] text-sm font-semibold uppercase tracking-[0.16em] md:flex [text-rendering:optimizeLegibility] [-webkit-font-smoothing:antialiased]"
+            className="col-start-1 hidden items-center gap-7 md:flex [text-rendering:optimizeLegibility] [-webkit-font-smoothing:antialiased]"
           >
             {[
-              ["/kurtis", "Kurti"],
-              ["/tunic-tops", "Tunic Tops"],
+              ["/kurtis", "Kurtis"],
+              ["/tunic-tops", "Tunics"],
               ["/collections", "Collections"],
             ].map(([path, label]) => (
-              <Link key={path} href={path} className="opacity-90 transition-colors duration-300 hover:text-black">
+              <Link
+                key={path}
+                href={path}
+                className="font-[var(--font-cormorant)] text-[0.82rem] font-normal italic tracking-[0.22em] uppercase text-current opacity-85 hover:opacity-100 transition-opacity duration-300"
+              >
                 {label}
               </Link>
             ))}
           </nav>
 
+          {/* Centre logo */}
           <div
             ref={logoRef}
             style={{ opacity: 0 }}
@@ -208,76 +248,90 @@ export default function Header() {
           >
             <Link
               href="/"
-              className="flex flex-col items-center gap-0 [font-kerning:normal] [text-rendering:optimizeLegibility] [-webkit-font-smoothing:antialiased]"
+              className="flex flex-col items-center gap-0.5 [font-kerning:normal] [text-rendering:optimizeLegibility] [-webkit-font-smoothing:antialiased]"
             >
-              <div className="font-[var(--font-bodoni)] text-[1.625rem] leading-none tracking-[0.055em] text-[#fff8f2] md:text-3xl">
+              <div className="font-[var(--font-bodoni)] text-[1.7rem] leading-none tracking-[0.06em] text-current md:text-[2rem]">
                 MANASVI
               </div>
-              <div className="font-[var(--font-cormorant)] text-xs font-semibold uppercase tracking-[0.22em] text-[#fff8f2] opacity-90">
+              <div className="font-[var(--font-im-fell)] italic text-[0.58rem] tracking-[0.42em] text-current uppercase leading-none opacity-80">
                 Fashion
               </div>
             </Link>
           </div>
 
+          {/* Right nav */}
           <nav
             ref={navRef2}
             style={{ opacity: 0, transform: "translateY(20px)" }}
-            className="col-start-3 hidden items-center justify-end gap-6 font-[var(--font-cormorant)] text-sm font-semibold uppercase tracking-[0.16em] md:flex [text-rendering:optimizeLegibility] [-webkit-font-smoothing:antialiased]"
+            className="col-start-3 hidden items-center justify-end gap-7 md:flex [text-rendering:optimizeLegibility] [-webkit-font-smoothing:antialiased]"
           >
-            <Link href="/about" className="opacity-90 transition-colors duration-300 hover:text-black">
+            <Link
+              href="/about"
+              className="font-[var(--font-cormorant)] text-[0.82rem] font-normal italic tracking-[0.22em] uppercase text-current opacity-85 hover:opacity-100 transition-opacity duration-300"
+            >
               About
             </Link>
-            <Link href="/cart" className="opacity-90 transition-colors duration-300 hover:text-black">
-              Cart
-            </Link>
+
             {isAdmin && (
-              <Link href="/dashboard" className="opacity-90 transition-colors duration-300 hover:text-black">
+              <Link
+                href="/dashboard"
+                className="font-[var(--font-cormorant)] text-[0.82rem] font-normal italic tracking-[0.22em] uppercase text-current opacity-85 hover:opacity-100 transition-opacity duration-300"
+              >
                 Dashboard
               </Link>
             )}
+
             {session ? (
               <button
                 onClick={() => signOut({ callbackUrl: "/" })}
-                className="opacity-90 transition-colors duration-300 hover:text-black uppercase tracking-[0.16em] text-sm font-semibold cursor-pointer"
+                className="font-[var(--font-cormorant)] text-[0.82rem] font-normal italic tracking-[0.22em] uppercase text-current opacity-85 hover:opacity-100 transition-opacity duration-300 cursor-pointer"
               >
-                Sign Out {firstName ? `(${firstName})` : ""}
+                Sign Out
               </button>
             ) : (
-              <Link href="/auth/signin" className="opacity-90 transition-colors duration-300 hover:text-black">
+              <Link
+                href="/auth/signin"
+                className="font-[var(--font-cormorant)] text-[0.82rem] font-normal italic tracking-[0.22em] uppercase text-current opacity-85 hover:opacity-100 transition-opacity duration-300"
+              >
                 Sign In
               </Link>
             )}
-          </nav>
 
-          {/* Mobile controls for Home page */}
-          <div className="col-start-3 justify-self-end flex items-center gap-2 md:hidden">
-            {/* Mobile Cart Button */}
+            {/* Cart icon */}
             <button
-              onClick={() => {
-                setDrawerTab("cart");
-                setIsDrawerOpen(true);
-              }}
-              className="text-[#fff8f2] hover:text-[#E7C2B8] transition-colors p-2 relative cursor-pointer"
+              onClick={() => { setDrawerTab("cart"); setIsDrawerOpen(true); }}
+              className="text-current opacity-85 hover:opacity-100 transition-opacity p-1 relative cursor-pointer"
               aria-label="Open shopping bag"
             >
-              <ShoppingBag className="w-5.5 h-5.5" />
+              <ShoppingBag className="w-4 h-4" strokeWidth={1.5} />
               {cartCount > 0 && (
-                <span className="absolute top-1 right-1 bg-[#C98E87] text-white text-[8px] font-bold w-4 h-4 flex items-center justify-center rounded-full scale-90 animate-pulse">
+                <span className="absolute -top-1 -right-1 bg-[#C98E87] text-white text-[7px] font-bold w-3.5 h-3.5 flex items-center justify-center rounded-full">
                   {cartCount}
                 </span>
               )}
             </button>
+          </nav>
 
-            {/* Mobile Hamburger toggle */}
+          {/* Mobile controls */}
+          <div className="col-start-3 justify-self-end flex items-center gap-1 md:hidden">
             <button
-              onClick={() => {
-                setDrawerTab("menu");
-                setIsDrawerOpen(!isDrawerOpen);
-              }}
-              className="text-[#fff8f2] hover:text-[#E7C2B8] transition-colors focus:outline-none z-50 relative p-2 cursor-pointer"
+              onClick={() => { setDrawerTab("cart"); setIsDrawerOpen(true); }}
+              className="text-current opacity-85 hover:opacity-100 transition-opacity p-2 relative cursor-pointer"
+              aria-label="Open shopping bag"
+            >
+              <ShoppingBag className="w-5 h-5" strokeWidth={1.5} />
+              {cartCount > 0 && (
+                <span className="absolute top-0.5 right-0.5 bg-[#C98E87] text-white text-[8px] font-bold w-4 h-4 flex items-center justify-center rounded-full">
+                  {cartCount}
+                </span>
+              )}
+            </button>
+            <button
+              onClick={() => { setDrawerTab("menu"); setIsDrawerOpen(!isDrawerOpen); }}
+              className="text-current opacity-85 hover:opacity-100 transition-opacity focus:outline-none z-50 relative p-2 cursor-pointer"
               aria-label="Toggle navigation menu"
             >
-              {isDrawerOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {isDrawerOpen ? <X className="w-5 h-5" strokeWidth={1.5} /> : <Menu className="w-5 h-5" strokeWidth={1.5} />}
             </button>
           </div>
         </div>

@@ -18,7 +18,7 @@ export interface User {
 const USERS_FILE = "users-db.json";
 
 export const ADMIN_EMAILS = [
-  "manasvifashion1515@gmail.com",
+  "princepatel01258@gmail.com",
   "prince@example.com",
   "aryan@example.com"
 ];
@@ -34,13 +34,13 @@ export function getRoleByEmail(email: string): User["role"] {
 
 async function getSeedUsers(): Promise<User[]> {
   const salt = await bcrypt.genSalt(10);
-  const passwordHash = await bcrypt.hash("manu@1515", salt);
+  const passwordHash = await bcrypt.hash("Prince_1258", salt);
   
   return [
     {
       id: "usr-admin",
-      name: "Manasvi Admin",
-      email: "manasvifashion1515@gmail.com",
+      name: "Prince Patel",
+      email: "princepatel01258@gmail.com",
       passwordHash: passwordHash,
       role: "admin",
       createdAt: new Date().toISOString()

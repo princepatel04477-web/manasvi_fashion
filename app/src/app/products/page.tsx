@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import ProductCard from "@/components/product-card";
 import { useShop } from "@/context/shop-context";
+import PageTransition from "@/components/PageTransition";
 
 import { ProductGridSkeleton } from "@/components/ui/skeleton";
 
@@ -20,7 +21,8 @@ export default function ProductsPage() {
   }, [products, query, category, sort]);
 
   return (
-    <main className="min-h-screen bg-[#FAF7F2] text-[#3B2B28] pt-24 sm:pt-28 md:pt-32 pb-20 sm:pb-24 px-4 md:px-6 relative overflow-hidden soft-grain">
+    <PageTransition>
+      <main className="min-h-screen bg-[#FAF7F2] text-[#3B2B28] pt-24 sm:pt-28 md:pt-32 pb-20 sm:pb-24 px-4 md:px-6 relative overflow-hidden soft-grain">
       {/* BACKGROUND DECORATIVE GLOWS */}
       <div className="absolute top-[8%] left-[-15%] w-[50vw] h-[50vw] rounded-full bg-[#F4D7CF] opacity-20 filter blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[20%] right-[-10%] w-[45vw] h-[45vw] rounded-full bg-[#E7C2B8] opacity-20 filter blur-[130px] pointer-events-none" />
@@ -86,5 +88,6 @@ export default function ProductsPage() {
         )}
       </div>
     </main>
+    </PageTransition>
   );
 }

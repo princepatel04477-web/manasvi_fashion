@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
+import PageTransition from "@/components/PageTransition";
 
 const CAMPAIGN_IMAGES = [
   "/photos/Gemini_Generated_Image_h8k8lch8k8lch8k8.png",
@@ -120,7 +121,8 @@ export default function SignUpPage() {
   };
 
   return (
-    <main className="min-h-screen flex flex-col md:flex-row bg-[#FAF7F2] relative">
+    <PageTransition>
+      <main className="min-h-screen flex flex-col md:flex-row bg-[#FAF7F2] relative">
       {/* Left side: Cinematic slideshow */}
       <div className="w-full md:w-1/2 h-[45vh] md:h-screen sticky top-0 z-0">
         <CinematicSlideshow />
@@ -303,5 +305,6 @@ export default function SignUpPage() {
         </div>
       </div>
     </main>
+    </PageTransition>
   );
 }

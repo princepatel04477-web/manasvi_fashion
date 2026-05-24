@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { formatINR } from "@/lib/store";
 import { Check, Sparkles, ShoppingBag, ArrowRight, Printer, MapPin, Calendar } from "lucide-react";
 import Link from "next/link";
+import PageTransition from "@/components/PageTransition";
 
 interface OrderItem {
   productId: string;
@@ -322,34 +323,36 @@ function SuccessContent() {
 
 export default function CheckoutSuccessPage() {
   return (
-    <main className="min-h-screen bg-[#FAF7F2] text-[#3B2B28] pt-24 sm:pt-28 md:pt-32 pb-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden soft-grain">
-      {/* Dynamic luxury gradient filters */}
-      <div className="absolute top-[8%] left-[-15%] w-[50vw] h-[50vw] rounded-full bg-[#F4D7CF] opacity-20 filter blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[20%] right-[-10%] w-[45vw] h-[45vw] rounded-full bg-[#E7C2B8] opacity-20 filter blur-[130px] pointer-events-none" />
+    <PageTransition>
+      <main className="min-h-screen bg-[#FAF7F2] text-[#3B2B28] pt-24 sm:pt-28 md:pt-32 pb-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden soft-grain">
+        {/* Dynamic luxury gradient filters */}
+        <div className="absolute top-[8%] left-[-15%] w-[50vw] h-[50vw] rounded-full bg-[#F4D7CF] opacity-20 filter blur-[120px] pointer-events-none" />
+        <div className="absolute bottom-[20%] right-[-10%] w-[45vw] h-[45vw] rounded-full bg-[#E7C2B8] opacity-20 filter blur-[130px] pointer-events-none" />
 
-      <div className="max-w-7xl mx-auto relative z-10">
-        
-        {/* Title Studio Header */}
-        <div className="max-w-3xl mb-12 flex flex-col gap-3">
-          <h1 className="font-cormorant text-4xl sm:text-5xl font-light italic leading-tight">
-            Order Confirmation
-          </h1>
-          <div className="w-16 h-[1.5px] bg-[#C98E87]" />
+        <div className="max-w-7xl mx-auto relative z-10">
+          
+          {/* Title Studio Header */}
+          <div className="max-w-3xl mb-12 flex flex-col gap-3">
+            <h1 className="font-cormorant text-4xl sm:text-5xl font-light italic leading-tight">
+              Order Confirmation
+            </h1>
+            <div className="w-16 h-[1.5px] bg-[#C98E87]" />
+          </div>
+
+          {/* Suspense Wrapper to protect useSearchParams */}
+          <Suspense
+            fallback={
+              <div className="flex flex-col items-center justify-center py-20 min-h-[50vh]">
+                <div className="w-12 h-12 rounded-full border border-[#E7C2B8]/40 border-t-[#C98E87] animate-spin mb-4" />
+                <p className="font-cormorant text-lg italic text-[#8B6B61]">Preparing signature atelier access...</p>
+              </div>
+            }
+          >
+            <SuccessContent />
+          </Suspense>
+
         </div>
-
-        {/* Suspense Wrapper to protect useSearchParams */}
-        <Suspense
-          fallback={
-            <div className="flex flex-col items-center justify-center py-20 min-h-[50vh]">
-              <div className="w-12 h-12 rounded-full border border-[#E7C2B8]/40 border-t-[#C98E87] animate-spin mb-4" />
-              <p className="font-cormorant text-lg italic text-[#8B6B61]">Preparing signature atelier access...</p>
-            </div>
-          }
-        >
-          <SuccessContent />
-        </Suspense>
-
-      </div>
-    </main>
+      </main>
+    </PageTransition>
   );
 }

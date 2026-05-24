@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { CheckoutSkeleton, LuxuryTransition } from "@/components/ui/skeleton";
 import { Lock, Ticket, Trash2, Loader2, Sparkles, ChevronRight } from "lucide-react";
 import Link from "next/link";
+import PageTransition from "@/components/PageTransition";
 
 export default function CheckoutPage() {
   const { data: session, status: sessionStatus } = useSession();
@@ -255,7 +256,8 @@ export default function CheckoutPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#FAF7F2] text-[#3B2B28] pt-24 sm:pt-28 md:pt-32 pb-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden soft-grain">
+    <PageTransition>
+      <main className="min-h-screen bg-[#FAF7F2] text-[#3B2B28] pt-24 sm:pt-28 md:pt-32 pb-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden soft-grain">
       {/* Dynamic Background Accents */}
       <div className="absolute top-[8%] left-[-15%] w-[50vw] h-[50vw] rounded-full bg-[#F4D7CF] opacity-20 filter blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[20%] right-[-10%] w-[45vw] h-[45vw] rounded-full bg-[#E7C2B8] opacity-20 filter blur-[130px] pointer-events-none" />
@@ -572,5 +574,6 @@ export default function CheckoutPage() {
         </LuxuryTransition>
       </div>
     </main>
+    </PageTransition>
   );
 }
