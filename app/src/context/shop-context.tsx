@@ -30,16 +30,24 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
   const { data: session } = useSession();
   const router = useRouter();
 
-  const [cart, setCart] = useState<CartItem[]>(() => {
-    if (typeof window === "undefined") return [];
-    const saved = localStorage.getItem("mf-cart");
-    return saved ? JSON.parse(saved) : [];
-  });
-  const [wishlist, setWishlist] = useState<string[]>(() => {
-    if (typeof window === "undefined") return [];
-    const saved = localStorage.getItem("mf-wishlist");
-    return saved ? JSON.parse(saved) : [];
-  });
+  // Always start with empty arrays so SSR and initial client render match (no hydration mismatch).
+  // The real localStorage values are loaded in useEffect below, after hydration.
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [wishlist, setWishlist] = useState<string[]>([]);
+  const [hydrated, setHydrated] = useState(false);
+
+  // Hydrate cart & wishlist from localStorage after mount (avoids SSR/client mismatch)
+  useEffect(() => {
+    try {
+      const savedCart = localStorage.getItem("mf-cart");
+      if (savedCart) setCart(JSON.parse(savedCart));
+      const savedWishlist = localStorage.getItem("mf-wishlist");
+      if (savedWishlist) setWishlist(JSON.parse(savedWishlist));
+    } catch {
+      // ignore malformed JSON
+    }
+    setHydrated(true);
+  }, []);
 
   // Track if component is mounted to avoid state updates after unmount
   const mountedRef = useRef(true);
@@ -93,8 +101,9 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => localStorage.setItem("mf-cart", JSON.stringify(cart)), [cart]);
-  useEffect(() => localStorage.setItem("mf-wishlist", JSON.stringify(wishlist)), [wishlist]);
+  // Only persist after hydration — avoids overwriting real data with the empty [] initial state
+  useEffect(() => { if (hydrated) localStorage.setItem("mf-cart", JSON.stringify(cart)); }, [cart, hydrated]);
+  useEffect(() => { if (hydrated) localStorage.setItem("mf-wishlist", JSON.stringify(wishlist)); }, [wishlist, hydrated]);
 
   const addToCart = (productId: string, size: string) => {
     if (!session) {

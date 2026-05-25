@@ -9,9 +9,11 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 // Register all GSAP plugins once at module level
 gsap.registerPlugin(SplitText, ScrollTrigger);
 
-// SSR-safe hook: useLayoutEffect on client, useEffect on server
+// SSR-safe hook: always useEffect on the server, useLayoutEffect on the client.
+// MUST be defined inside a module-scoped constant — NOT conditionally per render.
+// Using `typeof window` at module level is safe because modules are evaluated once.
 const useIsomorphicLayoutEffect =
-  typeof window !== "undefined" ? useLayoutEffect : useEffect;
+  typeof window === "undefined" ? useEffect : useLayoutEffect;
 
 interface HeroSectionProps {
   cms: {

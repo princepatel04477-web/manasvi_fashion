@@ -42,13 +42,6 @@ function VariantLayout({ group, slideFromRight }: { group: DesignGroup; slideFro
   const mainImage = group.images[active] || group.images[0];
   const { addCustomToCart } = useShop();
   const articleRef = useRef<HTMLElement>(null);
-  const [translateDistance, setTranslateDistance] = useState(120);
-
-  useEffect(() => {
-    if (typeof window !== "undefined" && window.innerWidth < 768) {
-      setTranslateDistance(30);
-    }
-  }, []);
 
   useEffect(() => {
     if (!slideFromRight) return;
@@ -57,8 +50,10 @@ function VariantLayout({ group, slideFromRight }: { group: DesignGroup; slideFro
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting && articleRef.current) {
+            // Read the real distance at animation time — no state needed
+            const dist = window.innerWidth < 768 ? 30 : 120;
             animate(articleRef.current, {
-              translateX: [translateDistance, 0],
+              translateX: [dist, 0],
               opacity: [0, 1],
               duration: 900,
               easing: "cubicBezier(0.16, 1, 0.3, 1)",
@@ -77,12 +72,12 @@ function VariantLayout({ group, slideFromRight }: { group: DesignGroup; slideFro
     return () => {
       observer.disconnect();
     };
-  }, [slideFromRight, translateDistance]);
+  }, [slideFromRight]);
 
   return (
     <article
       ref={articleRef}
-      style={slideFromRight ? { opacity: 0, transform: `translateX(${translateDistance}px)` } : undefined}
+      style={slideFromRight ? { opacity: 0 } : undefined}
       className="rounded-2xl border border-[#d9cfbf] bg-[#fffdf9] p-4 shadow-[0_10px_28px_rgba(63,52,44,0.08)]"
     >
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">

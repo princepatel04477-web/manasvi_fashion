@@ -21,18 +21,11 @@ export default function AboutPage() {
   const galleryContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const handleResize = () => {
-        setWindowHeight(window.innerHeight);
-      };
-      
-      const frameId = requestAnimationFrame(handleResize);
-      window.addEventListener("resize", handleResize);
-      return () => {
-        cancelAnimationFrame(frameId);
-        window.removeEventListener("resize", handleResize);
-      };
-    }
+    const handleResize = () => setWindowHeight(window.innerHeight);
+    // Set real height immediately on mount
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   // Set up scroll animations using the native interpolate/luxuryEase system

@@ -42,13 +42,14 @@ export default function Home() {
   }, []);
 
   // ─── Viewport dimensions (drive brand shrink calculations) ───────────────
-  const [viewport, setViewport] = useState(() =>
-    typeof window === "undefined"
-      ? { width: 1440, height: 900 }
-      : { width: window.innerWidth, height: window.innerHeight }
-  );
+  // Use a static SSR-safe default so server & client initial renders match.
+  // The real window dimensions are applied in useEffect after hydration.
+  const [viewport, setViewport] = useState({ width: 1440, height: 900 });
 
   useEffect(() => {
+    // Set real dimensions on mount (after SSR hydration is safe)
+    setViewport({ width: window.innerWidth, height: window.innerHeight });
+
     const onResize = () => {
       setViewport((c) =>
         c.width === window.innerWidth && c.height === window.innerHeight
