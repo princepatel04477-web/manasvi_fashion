@@ -291,3 +291,94 @@ body {
 .cormorant-garamond-manasvi {
   transform-style: preserve-3d;
 }
+
+/* ──────────────────────────────────────────────────────────────────────────
+   STUDIO OPERATIONS PANEL — PREMIUM DARK EXPERIENCE OVERRIDES
+   ────────────────────────────────────────────────────────────────────────── */
+.admin-theme {
+  --admin-bg: #0c0807;
+  --admin-panel: #130d0c;
+  --admin-panel-light: #1c1412;
+  --admin-border: rgba(217, 165, 143, 0.12);
+  --admin-text-primary: #faf7f2;
+  --admin-text-secondary: #dfae9f;
+  --admin-text-muted: #8b6b61;
+  --admin-accent: #6e2b38;
+}
+
+/* Force dark background and light text in admin theme */
+.admin-theme.min-h-screen {
+  background-color: var(--admin-bg) !important;
+  color: var(--admin-text-primary) !important;
+}
+
+.admin-theme .bg-white {
+  background-color: var(--admin-panel) !important;
+}
+
+/* Literal class color overrides for cards & text */
+.admin-theme .text-\[\#2a1d19\] {
+  color: var(--admin-text-primary) !important;
+}
+
+.admin-theme .text-\[\#8b6b61\] {
+  color: var(--admin-text-secondary) !important;
+}
+
+.admin-theme .text-\[\#5c4a44\] {
+  color: var(--admin-text-secondary) !important;
+}
+
+.admin-theme .bg-\[\#faf7f2\] {
+  background-color: var(--admin-panel-light) !important;
+}
+
+.admin-theme .bg-\[\#faf7f2\]\/30 {
+  background-color: rgba(28, 20, 18, 0.3) !important;
+}
+
+.admin-theme .bg-\[\#faf7f2\]\/20 {
+  background-color: rgba(28, 20, 18, 0.2) !important;
+}
+
+.admin-theme .hover\:bg-\[\#faf7f2\]:hover {
+  background-color: var(--admin-panel-light) !important;
+}
+
+.admin-theme .border-\[\#d9a58f22\] {
+  border-color: var(--admin-border) !important;
+}
+
+.admin-theme .border-\[\#d9a58f33\] {
+  border-color: rgba(217, 165, 143, 0.18) !important;
+}
+
+.admin-theme .border-\[\#d9a58f44\] {
+  border-color: rgba(217, 165, 143, 0.25) !important;
+}
+
+/* Dark mode overrides for inputs, select, and textarea boxes */
+.admin-theme input, 
+.admin-theme select, 
+.admin-theme textarea {
+  background-color: var(--admin-panel-light) !important;
+  color: var(--admin-text-primary) !important;
+  border-color: rgba(217, 165, 143, 0.2) !important;
+}
+
+.admin-theme input:focus, 
+.admin-theme select:focus, 
+.admin-theme textarea:focus {
+  border-color: var(--admin-accent) !important;
+  outline: none;
+}
+
+.admin-theme tr:hover {
+  background-color: rgba(28, 20, 18, 0.4) !important;
+}
+
+.admin-theme th {
+  background-color: rgba(28, 20, 18, 0.8) !important;
+  color: var(--admin-text-primary) !important;
+}
+

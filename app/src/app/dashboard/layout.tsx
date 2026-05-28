@@ -52,7 +52,7 @@ export default function DashboardLayout({
   const userRole = (session?.user as { role?: string })?.role || "customer";
 
   return (
-    <div className="flex min-h-screen bg-[#faf7f2] text-[#2a1d19]">
+    <div className="admin-theme flex min-h-screen bg-[#0c0807] text-[#faf7f2] font-[var(--font-inter)]">
       {/* Mobile Top Bar */}
       <div className="fixed top-0 left-0 right-0 z-40 flex h-16 items-center justify-between border-b border-[#d9a58f33] bg-white px-4 md:hidden shadow-sm">
         <Link href="/" className="flex flex-col items-start leading-none">
