@@ -259,38 +259,6 @@ export default function PDP() {
               {product.description}
             </p>
 
-            {/* COLOR VARIANT SECTOR */}
-            {colorVariants.length > 0 && (
-              <div className="space-y-3">
-                <div className="flex justify-between items-center text-xs">
-                  <span className="font-inter tracking-wider text-[#8B6B61] uppercase font-light">
-                    Select Color
-                  </span>
-                  <span className="font-inter font-medium text-[#3B2B28]">
-                    {activeVariant?.name || product.color}
-                  </span>
-                </div>
-                
-                <div className="flex flex-wrap gap-3">
-                  {colorVariants.map((variant, index) => (
-                    <button
-                      key={variant.name}
-                      onClick={() => setSelectedColor(index)}
-                      className={`relative h-12 w-12 rounded-full border-2 bg-white transition-all duration-300 ${selectedColor === index ? "scale-105 border-[#3B2B28] shadow-md ring-2 ring-[#3B2B28]/10" : "border-[#E7C2B8] hover:scale-102"}`}
-                      title={variant.name}
-                      aria-label={`Select ${variant.name}`}
-                    >
-                      <img src={variant.image} alt="" className="h-full w-full object-cover rounded-full" />
-                      <span 
-                        className="absolute bottom-0 left-1/2 -translate-x-1/2 h-1.5 w-6 rounded-full" 
-                        style={{ backgroundColor: variant.hex }} 
-                      />
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
             {/* SIZING SECTOR */}
             <div className="space-y-3">
               <div className="flex justify-between items-center text-xs">

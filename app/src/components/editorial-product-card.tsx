@@ -166,31 +166,8 @@ export default function EditorialProductCard({
           </div>
         </div>
 
-        {/* INTERACTIVE SWATCHES & SIZES SECTION */}
-        <div className="mt-4 pt-3.5 border-t border-[#E7C2B8]/30 space-y-3">
-          {/* Color swatches */}
-          {colorVariants.length > 0 && (
-            <div className="flex items-center justify-between">
-              <span className="font-inter text-[9px] text-[#8B6B61] tracking-wider uppercase font-light">Colors</span>
-              <div className="flex gap-1 -mr-2">
-                {colorVariants.map((variant, idx) => (
-                  <button
-                    key={variant.name}
-                    onClick={() => setSelectedColor(idx)}
-                    title={variant.name}
-                    className="h-9 w-9 md:h-7 md:w-7 flex items-center justify-center rounded-full transition-all duration-300 cursor-pointer"
-                    aria-label={`Select ${variant.name}`}
-                  >
-                    <span
-                      className={`h-4.5 w-4.5 md:h-3.5 md:w-3.5 rounded-full border transition-all duration-300 ${selectedColor === idx ? "ring-2 ring-[#3B2B28] ring-offset-1 scale-110" : "border-[#E7C2B8]/80 hover:scale-105"}`}
-                      style={{ backgroundColor: variant.hex }}
-                    />
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
+        {/* INTERACTIVE SIZES SECTION */}
+        <div className="mt-4 pt-3.5 border-t border-[#E7C2B8]/30">
           {/* Size Select & Quick Add in one sleek horizontal element */}
           <div className="flex items-center justify-between gap-2 flex-wrap">
             <div className="flex items-center gap-1.5">

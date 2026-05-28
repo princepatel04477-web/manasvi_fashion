@@ -149,12 +149,7 @@ export default function ProductCard({ product }: { product: Product }) {
         </div>
       </Link>
 
-      <div className="mt-3 px-1 flex items-center justify-between">
-        <div className="flex items-center gap-1">
-          {(product.colorVariants || []).slice(0, 5).map((v) => (
-            <span key={v.name} className="h-3 w-3 rounded-full border border-[#d9a58f]" style={{ backgroundColor: v.hex }} />
-          ))}
-        </div>
+      <div className="mt-3 px-1 flex justify-end">
         <button
           onClick={(e) => {
             e.preventDefault();
