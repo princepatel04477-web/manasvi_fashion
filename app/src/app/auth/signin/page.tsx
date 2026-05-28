@@ -78,7 +78,7 @@ function CinematicSlideshow() {
 function SignInForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
+  const rawCallbackUrl = searchParams.get("callbackUrl");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -86,23 +86,34 @@ function SignInForm() {
   const [error, setError] = useState(searchParams.get("error") || "");
   const isRegistered = searchParams.get("registered") === "true";
 
+  const ADMIN_EMAILS = [
+    "princepatel01258@gmail.com",
+    "prince@example.com",
+    "aryan@example.com"
+  ];
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
+
+    // Resolve target callback url
+    const targetCallbackUrl = rawCallbackUrl 
+      ? rawCallbackUrl 
+      : (ADMIN_EMAILS.includes(email.toLowerCase()) ? "/dashboard" : "/");
 
     try {
       const res = await signIn("credentials", {
         redirect: false,
         email,
         password,
-        callbackUrl,
+        callbackUrl: targetCallbackUrl,
       });
 
       if (res?.error) {
         setError(res.error);
       } else {
-        router.push(callbackUrl);
+        router.push(targetCallbackUrl);
         router.refresh();
       }
     } catch (err) {
@@ -228,11 +239,9 @@ function SignInForm() {
             or connect with
           </span>
         </div>
-
-        {/* Google OAuth Stub */}
         <button
           type="button"
-          onClick={() => signIn("google", { callbackUrl })}
+          onClick={() => signIn("google", { callbackUrl: rawCallbackUrl || "/" })}
           className="w-full border border-[#E7C2B8]/60 bg-transparent text-[#3B2B28] py-3.5 rounded-full text-[10px] font-medium tracking-[0.2em] uppercase hover:bg-white hover:border-[#8B6B61] transition-all duration-300 flex items-center justify-center gap-3 cursor-pointer"
         >
           <svg className="w-4 h-4 text-[#8B6B61]" viewBox="0 0 24 24">
