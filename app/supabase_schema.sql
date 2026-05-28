@@ -289,3 +289,32 @@ SELECT
     item->>'slug' AS product_slug
 FROM public.orders o,
 LATERAL jsonb_array_elements(o.items) AS item;
+
+
+-- ==============================================================================
+-- 4. Storage Bucket & Policies for Product Images
+-- ==============================================================================
+
+-- Create a public bucket for product images if it does not exist
+INSERT INTO storage.buckets (id, name, public) 
+VALUES ('products', 'products', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- Enable permissions to read product images publicly
+DROP POLICY IF EXISTS "Public Read Access on Products Bucket" ON storage.objects;
+CREATE POLICY "Public Read Access on Products Bucket" ON storage.objects
+    FOR SELECT USING (bucket_id = 'products');
+
+-- Enable permissions to upload product images publicly/from dashboard
+DROP POLICY IF EXISTS "Allow public uploads on Products Bucket" ON storage.objects;
+CREATE POLICY "Allow public uploads on Products Bucket" ON storage.objects
+    FOR INSERT WITH CHECK (bucket_id = 'products');
+
+DROP POLICY IF EXISTS "Allow public updates on Products Bucket" ON storage.objects;
+CREATE POLICY "Allow public updates on Products Bucket" ON storage.objects
+    FOR UPDATE USING (bucket_id = 'products');
+
+DROP POLICY IF EXISTS "Allow public deletes on Products Bucket" ON storage.objects;
+CREATE POLICY "Allow public deletes on Products Bucket" ON storage.objects
+    FOR DELETE USING (bucket_id = 'products');
+

@@ -1,7 +1,13 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { getUserByEmail } from "@/lib/db-users";
+import { ensureNextAuthUrl, nextAuthSecret } from "@/lib/auth-constants";
 import bcrypt from "bcryptjs";
+
+export const runtime = "nodejs";
+
+// Dynamically resolve deployment URL if running on Vercel and NEXTAUTH_URL is pointing to localhost or missing
+ensureNextAuthUrl();
 
 const handler = NextAuth({
   providers: [
@@ -74,7 +80,7 @@ const handler = NextAuth({
   session: {
     strategy: "jwt"
   },
-  secret: process.env.NEXTAUTH_SECRET || "manasvi-fashion-secret-key-12345"
+  secret: nextAuthSecret
 });
 
 export { handler as GET, handler as POST };

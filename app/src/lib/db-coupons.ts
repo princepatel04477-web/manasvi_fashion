@@ -1,4 +1,4 @@
-import { supabase } from "./supabase";
+import { supabaseAdmin } from "./supabase";
 import { readJson, writeJson } from "./db-helper";
 
 export interface Coupon {
@@ -38,9 +38,9 @@ const defaultCoupons: Coupon[] = [
 ];
 
 export async function getCoupons(): Promise<Coupon[]> {
-  if (supabase) {
+  if (supabaseAdmin) {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseAdmin
         .from("coupons")
         .select("*")
         .order("code", { ascending: true });
@@ -77,9 +77,9 @@ export async function getCoupons(): Promise<Coupon[]> {
 }
 
 export async function createCoupon(coupon: Coupon): Promise<Coupon> {
-  if (supabase) {
+  if (supabaseAdmin) {
     try {
-      const { error } = await supabase
+      const { error } = await supabaseAdmin
         .from("coupons")
         .insert([
           {
@@ -111,9 +111,9 @@ export async function createCoupon(coupon: Coupon): Promise<Coupon> {
 }
 
 export async function toggleCouponActive(code: string, active: boolean): Promise<boolean> {
-  if (supabase) {
+  if (supabaseAdmin) {
     try {
-      const { error } = await supabase
+      const { error } = await supabaseAdmin
         .from("coupons")
         .update({ active })
         .eq("code", code);
@@ -138,9 +138,9 @@ export async function toggleCouponActive(code: string, active: boolean): Promise
 }
 
 export async function deleteCoupon(code: string): Promise<boolean> {
-  if (supabase) {
+  if (supabaseAdmin) {
     try {
-      const { error } = await supabase
+      const { error } = await supabaseAdmin
         .from("coupons")
         .delete()
         .eq("code", code);

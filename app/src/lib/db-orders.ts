@@ -1,4 +1,4 @@
-import { supabase } from "./supabase";
+import { supabaseAdmin } from "./supabase";
 import { readJson, writeJson } from "./db-helper";
 
 export interface OrderItem {
@@ -106,9 +106,9 @@ const defaultOrders: Order[] = [
 ];
 
 export async function getOrders(): Promise<Order[]> {
-  if (supabase) {
+  if (supabaseAdmin) {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseAdmin
         .from("orders")
         .select("*")
         .order("created_at", { ascending: false });
@@ -156,9 +156,9 @@ export async function createOrder(input: Omit<Order, "id" | "createdAt">): Promi
     createdAt: new Date().toISOString()
   };
 
-  if (supabase) {
+  if (supabaseAdmin) {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseAdmin
         .from("orders")
         .insert([
           {
@@ -196,12 +196,12 @@ export async function updateOrderStatus(
   status: Order["status"],
   paymentStatus?: Order["paymentStatus"]
 ): Promise<Order | undefined> {
-  if (supabase) {
+  if (supabaseAdmin) {
     try {
       const dbUpdates: { status: string; payment_status?: string } = { status };
       if (paymentStatus) dbUpdates.payment_status = paymentStatus;
 
-      const { data, error } = await supabase
+      const { data, error } = await supabaseAdmin
         .from("orders")
         .update(dbUpdates)
         .eq("id", id)

@@ -1,4 +1,4 @@
-import { supabase } from "./supabase";
+import { supabaseAdmin } from "./supabase";
 import { readJson, writeJson } from "./db-helper";
 import bcrypt from "bcryptjs";
 
@@ -50,9 +50,9 @@ async function getSeedUsers(): Promise<User[]> {
 
 export async function getUsers(): Promise<User[]> {
   let dbUsers: User[] = [];
-  if (supabase) {
+  if (supabaseAdmin) {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseAdmin
         .from("users")
         .select("*");
 
@@ -109,8 +109,37 @@ export async function getUsers(): Promise<User[]> {
 }
 
 export async function getUserByEmail(email: string): Promise<User | undefined> {
+  const normalizedEmail = email.toLowerCase();
+  
+  if (supabaseAdmin) {
+    try {
+      const { data, error } = await supabaseAdmin
+        .from("users")
+        .select("*")
+        .eq("email", normalizedEmail);
+
+      if (!error && data && data.length > 0) {
+        const item = data[0];
+        return {
+          id: String(item.id),
+          name: item.name,
+          email: item.email,
+          passwordHash: item.password_hash,
+          role: item.role,
+          phone: item.phone,
+          shippingAddress: item.shipping_address,
+          city: item.city,
+          postalCode: item.postal_code,
+          createdAt: item.created_at || item.createdAt
+        };
+      }
+    } catch (err) {
+      console.warn("[db-users] Supabase getUserByEmail error:", err);
+    }
+  }
+
   const all = await getUsers();
-  return all.find((u) => u.email.toLowerCase() === email.toLowerCase());
+  return all.find((u) => u.email.toLowerCase() === normalizedEmail);
 }
 
 export async function registerUser(
@@ -139,9 +168,9 @@ export async function registerUser(
     createdAt: new Date().toISOString()
   };
 
-  if (supabase) {
+  if (supabaseAdmin) {
     try {
-      const { error } = await supabase
+      const { error } = await supabaseAdmin
         .from("users")
         .insert([
           {

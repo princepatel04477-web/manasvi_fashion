@@ -1,5 +1,6 @@
 import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
+import { nextAuthSecret } from "@/lib/auth-constants";
 
 export default withAuth(
   function middleware(req) {
@@ -36,7 +37,8 @@ export default withAuth(
     },
     pages: {
       signIn: "/auth/signin"
-    }
+    },
+    secret: nextAuthSecret
   }
 );
 

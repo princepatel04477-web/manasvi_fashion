@@ -1,4 +1,4 @@
-import { supabase } from "./supabase";
+import { supabaseAdmin } from "./supabase";
 import { readJson, writeJson } from "./db-helper";
 
 export interface Review {
@@ -41,9 +41,9 @@ const defaultReviews: Review[] = [
 ];
 
 export async function getReviews(): Promise<Review[]> {
-  if (supabase) {
+  if (supabaseAdmin) {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseAdmin
         .from("reviews")
         .select("*")
         .order("created_at", { ascending: false });
@@ -89,9 +89,9 @@ export async function createReview(review: Omit<Review, "id" | "createdAt">): Pr
     createdAt: new Date().toISOString()
   };
 
-  if (supabase) {
+  if (supabaseAdmin) {
     try {
-      const { error } = await supabase
+      const { error } = await supabaseAdmin
         .from("reviews")
         .insert([
           {
@@ -123,9 +123,9 @@ export async function createReview(review: Omit<Review, "id" | "createdAt">): Pr
 }
 
 export async function approveReview(id: string, approved: boolean): Promise<boolean> {
-  if (supabase) {
+  if (supabaseAdmin) {
     try {
-      const { error } = await supabase
+      const { error } = await supabaseAdmin
         .from("reviews")
         .update({ approved })
         .eq("id", id);
@@ -150,9 +150,9 @@ export async function approveReview(id: string, approved: boolean): Promise<bool
 }
 
 export async function deleteReview(id: string): Promise<boolean> {
-  if (supabase) {
+  if (supabaseAdmin) {
     try {
-      const { error } = await supabase
+      const { error } = await supabaseAdmin
         .from("reviews")
         .delete()
         .eq("id", id);

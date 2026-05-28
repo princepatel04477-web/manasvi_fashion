@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Plus, Trash, ArrowLeft, Image as ImageIcon, Sparkles } from "lucide-react";
+import { Plus, Trash, ArrowLeft, Image as ImageIcon, Sparkles, Upload } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Product, ColorVariant, Category, ProductType } from "@/types";
+import { supabase } from "@/lib/supabase";
 
 interface ProductFormProps {
   initialData?: Product;
@@ -46,6 +47,57 @@ export default function ProductForm({ initialData, isEdit = false }: ProductForm
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [validationErrors, setValidationErrors] = useState<Array<{ field: string; message: string }>>([]);
+
+  // Image Uploading States
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [uploadingVariantImage, setUploadingVariantImage] = useState(false);
+
+  // File Upload Handler
+  async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>, isVariant = false) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!supabase) {
+      alert("Supabase client is not initialized. Please verify your NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in your env configuration.");
+      return;
+    }
+
+    const setUploading = isVariant ? setUploadingVariantImage : setUploadingImage;
+    setUploading(true);
+
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 11)}.${fileExt}`;
+      const filePath = fileName;
+
+      const { data, error } = await supabase.storage
+        .from("products")
+        .upload(filePath, file, {
+          cacheControl: "3600",
+          upsert: false
+        });
+
+      if (error) throw error;
+
+      // Get public URL
+      const { data: urlData } = supabase.storage
+        .from("products")
+        .getPublicUrl(filePath);
+
+      if (urlData?.publicUrl) {
+        if (isVariant) {
+          setVarImage(urlData.publicUrl);
+        } else {
+          setImages(prev => [...prev, urlData.publicUrl]);
+        }
+      }
+    } catch (err: any) {
+      console.error("Upload error:", err);
+      alert(`Upload failed: ${err.message || "Unknown error"}. Make sure you have created the 'products' bucket in your Supabase Storage with public access policies.`);
+    } finally {
+      setUploading(false);
+    }
+  }
 
   // Slug auto-generated via title input change
 
@@ -394,7 +446,7 @@ export default function ProductForm({ initialData, isEdit = false }: ProductForm
                     className="w-full rounded-lg border border-[#d9a58f44] px-3 py-2 text-xs font-mono text-[#2a1d19] focus:outline-none"
                   />
                 </div>
-                <div>
+                <div className="space-y-1.5">
                   <input
                     type="text"
                     value={varImage}
@@ -402,6 +454,23 @@ export default function ProductForm({ initialData, isEdit = false }: ProductForm
                     placeholder="Variant Image URL"
                     className="w-full rounded-lg border border-[#d9a58f44] px-3 py-2 text-xs text-[#2a1d19] focus:outline-none"
                   />
+                  <div className="flex gap-1.5">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleImageUpload(e, true)}
+                      disabled={uploadingVariantImage}
+                      className="hidden"
+                      id="variant-image-upload"
+                    />
+                    <label
+                      htmlFor="variant-image-upload"
+                      className="w-full flex items-center justify-center gap-1.5 rounded-lg border border-dashed border-[#d9a58f44] hover:border-[#6e2b38] hover:bg-[#faf7f2]/45 text-[10px] text-[#5c4a44] p-1.5 cursor-pointer transition-colors"
+                    >
+                      <Upload size={11} className="text-[#8b6b61]" />
+                      {uploadingVariantImage ? "Uploading..." : "Upload File"}
+                    </label>
+                  </div>
                 </div>
               </div>
 
@@ -581,22 +650,53 @@ export default function ProductForm({ initialData, isEdit = false }: ProductForm
             )}
 
             {/* Add Image input */}
-            <div className="space-y-2 pt-2 border-t border-[#d9a58f11]">
-              <input
-                type="text"
-                placeholder="Paste high-res image URL..."
-                value={newImageUrl}
-                onChange={(e) => setNewImageUrl(e.target.value)}
-                className="w-full rounded-xl border border-[#d9a58f44] px-3.5 py-2 text-xs focus:outline-none"
-              />
-              <button
-                type="button"
-                onClick={handleAddImageUrl}
-                className="w-full flex items-center justify-center gap-1.5 rounded-xl bg-[#faf7f2] hover:bg-[#6e2b38] hover:text-white border border-[#d9a58f33] text-[#6e2b38] py-2 text-xs font-semibold uppercase tracking-wider transition-all"
-              >
-                <Plus size={14} />
-                Add Image URL
-              </button>
+            <div className="space-y-3 pt-2 border-t border-[#d9a58f11]">
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-[#8b6b61] mb-1">
+                  Upload Product Image
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => handleImageUpload(e, false)}
+                    disabled={uploadingImage}
+                    className="hidden"
+                    id="product-image-upload"
+                  />
+                  <label
+                    htmlFor="product-image-upload"
+                    className="flex-1 flex items-center justify-center gap-2 rounded-xl border border-dashed border-[#d9a58f66] hover:border-[#6e2b38] hover:bg-[#faf7f2] text-xs text-[#5c4a44] p-3 cursor-pointer transition-colors font-semibold"
+                  >
+                    <Upload size={14} className="text-[#8b6b61]" />
+                    {uploadingImage ? "Uploading to Supabase..." : "Choose Image File"}
+                  </label>
+                </div>
+              </div>
+
+              <div className="relative flex py-1 items-center">
+                <div className="flex-grow border-t border-[#d9a58f11]"></div>
+                <span className="flex-shrink mx-2 text-[9px] text-[#8b6b61] uppercase font-bold tracking-wider">Or Paste URL</span>
+                <div className="flex-grow border-t border-[#d9a58f11]"></div>
+              </div>
+
+              <div className="space-y-2">
+                <input
+                  type="text"
+                  placeholder="Paste high-res image URL..."
+                  value={newImageUrl}
+                  onChange={(e) => setNewImageUrl(e.target.value)}
+                  className="w-full rounded-xl border border-[#d9a58f44] px-3.5 py-2 text-xs focus:outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={handleAddImageUrl}
+                  className="w-full flex items-center justify-center gap-1.5 rounded-xl bg-[#faf7f2] hover:bg-[#6e2b38] hover:text-white border border-[#d9a58f33] text-[#6e2b38] py-2 text-xs font-semibold uppercase tracking-wider transition-all"
+                >
+                  <Plus size={14} />
+                  Add Image URL
+                </button>
+              </div>
             </div>
           </div>
         </div>

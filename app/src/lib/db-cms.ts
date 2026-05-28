@@ -1,4 +1,4 @@
-import { supabase } from "./supabase";
+import { supabaseAdmin } from "./supabase";
 import { readJson, writeJson } from "./db-helper";
 
 export interface HomepageCmsConfig {
@@ -28,9 +28,9 @@ const defaultConfig: HomepageCmsConfig = {
 };
 
 export async function getCmsConfig(): Promise<HomepageCmsConfig> {
-  if (supabase) {
+  if (supabaseAdmin) {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseAdmin
         .from("homepage_cms")
         .select("*")
         .eq("id", "singleton")
@@ -59,9 +59,9 @@ export async function getCmsConfig(): Promise<HomepageCmsConfig> {
 }
 
 export async function saveCmsConfig(config: HomepageCmsConfig): Promise<void> {
-  if (supabase) {
+  if (supabaseAdmin) {
     try {
-      const { error } = await supabase
+      const { error } = await supabaseAdmin
         .from("homepage_cms")
         .upsert({
           id: "singleton",

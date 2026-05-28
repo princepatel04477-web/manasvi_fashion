@@ -1,4 +1,4 @@
-import { supabase } from "./supabase";
+import { supabaseAdmin } from "./supabase";
 import { readJson, writeJson } from "./db-helper";
 import { products as defaultProducts } from "@/data/products";
 import { Product } from "@/types";
@@ -15,9 +15,9 @@ async function saveLocalProducts(products: Product[]): Promise<void> {
 }
 
 export async function getProducts(): Promise<Product[]> {
-  if (supabase) {
+  if (supabaseAdmin) {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseAdmin
         .from("products")
         .select("*")
         .order("created_at", { ascending: false });
@@ -97,9 +97,9 @@ export async function createProduct(input: Omit<Product, "id" | "rating" | "revi
     reviews: 0,
   };
 
-  if (supabase) {
+  if (supabaseAdmin) {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseAdmin
         .from("products")
         .insert([
           {
@@ -143,7 +143,7 @@ export async function createProduct(input: Omit<Product, "id" | "rating" | "revi
 }
 
 export async function updateProduct(id: string, updates: Partial<Product>): Promise<Product | undefined> {
-  if (supabase) {
+  if (supabaseAdmin) {
     try {
       const dbUpdates: Record<string, string | number | boolean | undefined> = {};
       if (updates.slug !== undefined) dbUpdates.slug = updates.slug;
@@ -163,7 +163,7 @@ export async function updateProduct(id: string, updates: Partial<Product>): Prom
       if (updates.isNew !== undefined) dbUpdates.is_new = updates.isNew;
       if (updates.colorVariants !== undefined) dbUpdates.color_variants = JSON.stringify(updates.colorVariants);
 
-      const { data, error } = await supabase
+      const { data, error } = await supabaseAdmin
         .from("products")
         .update(dbUpdates)
         .eq("id", id)
@@ -196,9 +196,9 @@ export async function updateProduct(id: string, updates: Partial<Product>): Prom
 
 export async function deleteProduct(id: string): Promise<boolean> {
   let success = false;
-  if (supabase) {
+  if (supabaseAdmin) {
     try {
-      const { error } = await supabase
+      const { error } = await supabaseAdmin
         .from("products")
         .delete()
         .eq("id", id);
