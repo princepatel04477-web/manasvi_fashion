@@ -151,16 +151,6 @@ export function ProductCardSkeleton({ aspectRatio = "aspect-[3/4]" }: { aspectRa
         <div className="h-[1px] bg-[#E7C2B8]/20" />
 
         <div className="space-y-3">
-          {/* Swatches label and dots */}
-          <div className="flex items-center justify-between">
-            <Skeleton className="h-3 w-10" variant="cream" />
-            <div className="flex gap-1">
-              <Skeleton className="h-4 w-4 rounded-full" variant="cream" />
-              <Skeleton className="h-4 w-4 rounded-full" variant="cream" />
-              <Skeleton className="h-4 w-4 rounded-full" variant="cream" />
-            </div>
-          </div>
-
           {/* Sizes and Add buttons */}
           <div className="flex items-center justify-between gap-2">
             <Skeleton className="h-3 w-16" variant="cream" />

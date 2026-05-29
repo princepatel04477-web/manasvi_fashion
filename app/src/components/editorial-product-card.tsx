@@ -17,7 +17,6 @@ export default function EditorialProductCard({
   aspectRatio?: string;
 }) {
   const { addCustomToCart, toggleWishlist, wishlist } = useShop();
-  const [selectedColor, setSelectedColor] = useState(0);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
   const [addedSuccess, setAddedSuccess] = useState(false);
@@ -26,12 +25,8 @@ export default function EditorialProductCard({
 
   const liked = wishlist.includes(product.id);
 
-  // Safely extract active variant and images
-  const colorVariants = product.colorVariants || [];
-  const activeVariant = colorVariants[selectedColor] || null;
-  
   // Dynamic image switching
-  const mainImage = activeVariant?.image || product.images[0];
+  const mainImage = product.images[0];
   // Alternate view is a different image of the same design (if available) to show visual variety on hover
   const hoverImage = product.images.find((img) => img !== mainImage) || product.images[0];
 
@@ -39,8 +34,8 @@ export default function EditorialProductCard({
     setSelectedSize(sizeToBuy);
     setIsAdding(true);
     
-    // Add to cart with specific color variant detail appended to the title
-    const colorName = activeVariant?.name || product.color;
+    // Add to cart with default product color
+    const colorName = product.color;
     addCustomToCart({
       productId: product.id,
       title: `${product.title} - ${colorName}`,

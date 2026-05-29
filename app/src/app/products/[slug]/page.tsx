@@ -338,15 +338,6 @@ export default function PDP() {
                 
                 <div>Colorway:</div>
                 <div className="text-[#3B2B28] font-medium">{activeVariant?.name || product.color}</div>
-                
-                <div>Stock Status:</div>
-                <div className="text-[#3B2B28] font-medium">
-                  {product.stock > 0 ? (
-                    <span className="text-[#C98E87] font-semibold">In Stock ({product.stock} left)</span>
-                  ) : (
-                    <span className="text-red-500 font-semibold">Temporarily Out of Stock</span>
-                  )}
-                </div>
               </div>
 
               <div className="h-[1px] bg-[#E7C2B8]/30" />
