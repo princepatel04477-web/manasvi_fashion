@@ -5,14 +5,20 @@ import { z } from "zod";
 const colorVariantSchema = z.object({
   name: z.string().min(1),
   hex: z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/),
-  image: z.string().min(1)
+  image: z.string().optional(),
+  modelImage: z.string().optional(),
+  sku: z.string().optional(),
+  stock: z.number().int().nonnegative().optional(),
+  priceAdjustment: z.number().optional(),
+  frontImage: z.string().optional(),
+  backImage: z.string().optional()
 });
 
 const productUpdateSchema = z.object({
   title: z.string().min(2).optional(),
   slug: z.string().min(2).regex(/^[a-z0-9-]+$/).optional(),
   description: z.string().min(10).optional(),
-  category: z.enum(["kurtis", "dresses"]).optional(),
+  category: z.enum(["kurtis", "dresses", "tunic-tops"]).optional(),
   productType: z.enum(["kurti", "tunic_top", "dress"]).optional(),
   subcategory: z.string().min(2).optional(),
   fabric: z.string().min(2).optional(),

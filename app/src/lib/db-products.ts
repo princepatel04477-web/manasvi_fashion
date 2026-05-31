@@ -22,7 +22,7 @@ export async function getProducts(): Promise<Product[]> {
         .select("*")
         .order("created_at", { ascending: false });
 
-      if (!error && data) {
+      if (!error && data && data.length > 0) {
         // Map database fields to typescript types if needed
         interface DbProductRow {
           id: string | number;
@@ -69,7 +69,11 @@ export async function getProducts(): Promise<Product[]> {
             : JSON.parse((item.color_variants as string) || "[]")
         })) as Product[];
       }
-      console.warn("[db-products] Supabase select failed:", error?.message);
+      if (!error && Array.isArray(data) && data.length === 0) {
+        console.warn("[db-products] Supabase returned 0 products. Falling back to local JSON data.");
+      } else {
+        console.warn("[db-products] Supabase select failed:", error?.message);
+      }
     } catch (err) {
       console.warn("[db-products] Supabase get error:", err);
     }

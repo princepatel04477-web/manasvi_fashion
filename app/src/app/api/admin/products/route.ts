@@ -5,14 +5,20 @@ import { z } from "zod";
 const colorVariantSchema = z.object({
   name: z.string().min(1, "Color name is required."),
   hex: z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, "Valid hex color code is required."),
-  image: z.string().min(1, "Variant image is required.")
+  image: z.string().optional(),
+  modelImage: z.string().optional(),
+  sku: z.string().optional(),
+  stock: z.number().int().nonnegative("Stock cannot be negative.").optional(),
+  priceAdjustment: z.number().optional(),
+  frontImage: z.string().optional(),
+  backImage: z.string().optional()
 });
 
 const productInputSchema = z.object({
   title: z.string().min(2, "Title must be at least 2 characters."),
   slug: z.string().min(2, "Slug must be at least 2 characters.").regex(/^[a-z0-9-]+$/, "Slug must only contain lowercase alphanumeric characters and hyphens."),
   description: z.string().min(10, "Description must be at least 10 characters."),
-  category: z.enum(["kurtis", "dresses"]),
+  category: z.enum(["kurtis", "dresses", "tunic-tops"]),
   productType: z.enum(["kurti", "tunic_top", "dress"]),
   subcategory: z.string().min(2, "Subcategory is required."),
   fabric: z.string().min(2, "Fabric details are required."),

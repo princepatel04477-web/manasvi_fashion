@@ -18,10 +18,22 @@ export default function TunicTopsPage() {
   useScrollReveal(headerRef, 90);
   useScrollReveal(gridRef, 90);
 
-  // Filter Tunic Tops dynamically
-  const tunicTops = products.filter(
-    (p) => p.productType === "tunic_top"
-  );
+  // Filter Tunic Tops dynamically and tolerate naming variations.
+  const tunicTops = products.filter((p) => {
+    const productType = (p.productType || "").toLowerCase();
+    const category = (p.category || "").toLowerCase();
+    const subcategory = (p.subcategory || "").toLowerCase();
+    return (
+      productType === "tunic_top" ||
+      productType === "tunic" ||
+      category === "tunic-tops" ||
+      category === "tunic-top" ||
+      category === "tunic" ||
+      subcategory === "tunic-tops" ||
+      subcategory === "tunic-top" ||
+      subcategory === "tunic"
+    );
+  });
 
   console.log("[/tunic-tops] Total products:", products.length, "| Tunic tops found:", tunicTops.length, "| Loading:", loading);
 

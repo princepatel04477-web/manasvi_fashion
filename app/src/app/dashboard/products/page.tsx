@@ -14,8 +14,10 @@ import {
   Layers
 } from "lucide-react";
 import { Product } from "@/types";
+import { useShop } from "@/context/shop-context";
 
 export default function ProductsManagerPage() {
+  const { refetchProducts } = useShop() || {};
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -74,6 +76,9 @@ export default function ProductsManagerPage() {
         setProducts(prev => prev.map(p => p.id === productId ? { ...p, stock: tempStockValue } : p));
         setEditingStockId(null);
         showNotification("success", "Inventory updated successfully.");
+        if (refetchProducts) {
+          refetchProducts();
+        }
       } else {
         showNotification("error", data.message || "Failed to update stock.");
       }
@@ -97,6 +102,9 @@ export default function ProductsManagerPage() {
         setProducts(prev => prev.filter(p => p.id !== deleteTarget.id));
         showNotification("success", `Product "${deleteTarget.title}" deleted.`);
         setDeleteTarget(null);
+        if (refetchProducts) {
+          refetchProducts();
+        }
       } else {
         showNotification("error", data.message || "Failed to delete product.");
       }

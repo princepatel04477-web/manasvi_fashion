@@ -3,11 +3,12 @@
 import { useRef, useState } from "react";
 import SizeGuideModal from "@/components/SizeGuideModal";
 import Link from "next/link";
-import { Heart } from "lucide-react";
+import { Heart, Check } from "lucide-react";
 import { Product } from "@/types";
 import { formatINR } from "@/lib/store";
 import { useShop } from "@/context/shop-context";
 import { animate } from "animejs";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function ProductCard({ product }: { product: Product }) {
   const { addToCart, toggleWishlist, wishlist } = useShop();
@@ -16,13 +17,14 @@ export default function ProductCard({ product }: { product: Product }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const heartRef = useRef<HTMLButtonElement>(null);
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
+  const [isAdding, setIsAdding] = useState(false);
+  const [addedSuccess, setAddedSuccess] = useState(false);
 
   const handleMouseEnter = () => {
     const card = cardRef.current;
     if (!card) return;
     
     const img = card.querySelector("img");
-    const quickAddBtn = card.querySelector(".quick-add-btn");
     const overlay = card.querySelector(".product-overlay");
 
     if (img) {
@@ -30,15 +32,6 @@ export default function ProductCard({ product }: { product: Product }) {
         scale: 1.07,
         duration: 450,
         easing: "easeOutQuad",
-      });
-    }
-
-    if (quickAddBtn) {
-      animate(quickAddBtn, {
-        translateY: [20, 0],
-        opacity: [0, 1],
-        duration: 300,
-        easing: "easeOutQuart",
       });
     }
 
@@ -55,7 +48,6 @@ export default function ProductCard({ product }: { product: Product }) {
     if (!card) return;
 
     const img = card.querySelector("img");
-    const quickAddBtn = card.querySelector(".quick-add-btn");
     const overlay = card.querySelector(".product-overlay");
 
     if (img) {
@@ -63,14 +55,6 @@ export default function ProductCard({ product }: { product: Product }) {
         scale: 1.0,
         duration: 400,
         easing: "easeOutQuad",
-      });
-    }
-
-    if (quickAddBtn) {
-      animate(quickAddBtn, {
-        translateY: 20,
-        opacity: 0,
-        duration: 200,
       });
     }
 
@@ -93,6 +77,15 @@ export default function ProductCard({ product }: { product: Product }) {
         easing: "easeOutBack",
       });
     }
+  };
+
+  const handleQuickAdd = async (sizeToBuy: string) => {
+    setIsAdding(true);
+    addToCart(product.id, sizeToBuy);
+    await new Promise((resolve) => setTimeout(resolve, 600));
+    setIsAdding(false);
+    setAddedSuccess(true);
+    setTimeout(() => setAddedSuccess(false), 2000);
   };
 
   return (
@@ -128,38 +121,88 @@ export default function ProductCard({ product }: { product: Product }) {
           />
         </button>
 
-        {/* Quick Add Button absolute overlay */}
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            addToCart(product.id, product.sizes[0]);
-          }}
-          className="quick-add-btn absolute bottom-3 left-0 right-0 mx-auto w-fit opacity-0 px-4 py-2 bg-[#3B2B28] text-white text-[10px] tracking-[0.2em] font-inter uppercase font-semibold rounded-lg shadow-md hover:bg-[#6D3B43] active:scale-95 transition-all cursor-pointer z-10"
-        >
-          Quick Add
-        </button>
+        {/* Quick-overlay overlay when success or adding */}
+        <AnimatePresence>
+          {(isAdding || addedSuccess) && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-[#3B2B28]/25 backdrop-blur-[2px] flex items-center justify-center z-10"
+            >
+              <div className="bg-[#FAF7F2] rounded-2xl py-2.5 px-4 border border-[#E7C2B8]/40 shadow-md flex items-center gap-2">
+                {isAdding ? (
+                  <>
+                    <div className="w-3.5 h-3.5 border-2 border-[#8B6B61] border-t-transparent rounded-full animate-spin" />
+                    <span className="font-cormorant text-xs uppercase tracking-wider text-[#3B2B28]">Curating...</span>
+                  </>
+                ) : (
+                  <>
+                    <Check className="w-3.5 h-3.5 text-[#6e2b38]" />
+                    <span className="font-cormorant text-xs uppercase tracking-wider text-[#3B2B28]">Added</span>
+                  </>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Info details below the image */}
       <Link href={`/products/${product.slug}`} className="block mt-4 px-1">
         <div>
-          <p className="text-[11px] sm:text-xs text-[#6b5a4d]">{product.subcategory}</p>
-          <h3 className="font-serif text-base sm:text-lg text-[#3B2B28] leading-tight mt-0.5">{product.title}</h3>
-          <p className="text-sm text-[#3B2B28] font-light mt-1">{formatINR(product.price)}</p>
+          <span className="font-inter text-[10px] sm:text-[9px] tracking-[0.2em] text-[#C98E87] uppercase font-semibold block">
+            {product.subcategory || product.category}
+          </span>
+          <h3 className="font-serif text-base sm:text-lg text-[#3B2B28] leading-tight font-medium mt-1">
+            {product.title}
+          </h3>
+          <div className="flex items-center gap-2 mt-1.5">
+            <span className="font-serif text-sm sm:text-base font-light text-[#3B2B28]">
+              {formatINR(product.price)}
+            </span>
+            {product.compareAtPrice && product.compareAtPrice > product.price && (
+              <span className="font-serif text-xs text-[#8B6B61] line-through">
+                {formatINR(product.compareAtPrice)}
+              </span>
+            )}
+          </div>
         </div>
       </Link>
 
-      <div className="mt-3 px-1 flex justify-end">
-        <button
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            setIsSizeGuideOpen(true);
-          }}
-          className="text-[10px] text-[#C98E87] hover:text-[#8B6B61] underline uppercase tracking-wider font-semibold cursor-pointer z-10"
-        >
-          Size Guide
-        </button>
+      {/* INTERACTIVE SIZES SECTION */}
+      <div className="mt-4 pt-3.5 border-t border-[#E7C2B8]/30">
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <div className="flex items-center gap-1.5">
+            <span className="font-inter text-[9px] text-[#8B6B61] tracking-wider uppercase font-light">Select Size</span>
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setIsSizeGuideOpen(true);
+              }}
+              className="font-inter text-[8px] text-[#C98E87] hover:text-[#8B6B61] underline uppercase tracking-wider font-semibold cursor-pointer z-10"
+            >
+              Size Guide
+            </button>
+          </div>
+          <div className="flex flex-wrap gap-1.5 justify-end">
+            {product.sizes.map((sz) => (
+              <button
+                key={sz}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleQuickAdd(sz);
+                }}
+                className="w-9 h-9 md:w-7 md:h-7 rounded-lg border border-[#E7C2B8]/30 hover:border-[#3B2B28] bg-white flex items-center justify-center font-inter text-xs md:text-[9px] font-bold text-[#3B2B28] hover:bg-[#FAF7F2] active:scale-95 transition-all duration-200 cursor-pointer z-10"
+                title={`Quick add size ${sz}`}
+              >
+                {sz}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
       <SizeGuideModal

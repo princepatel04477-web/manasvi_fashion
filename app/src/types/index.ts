@@ -1,10 +1,16 @@
-export type Category = "kurtis" | "dresses";
+export type Category = "kurtis" | "dresses" | "tunic-tops";
 export type ProductType = "kurti" | "tunic_top" | "dress";
 
 export interface ColorVariant {
   name: string;
   hex: string;
-  image: string;
+  image?: string;
+  modelImage?: string;
+  sku?: string;
+  stock?: number;
+  priceAdjustment?: number;
+  frontImage?: string;
+  backImage?: string;
 }
 
 export interface Product {

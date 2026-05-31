@@ -11,21 +11,24 @@ import { Skeleton, ProductGridSkeleton } from "@/components/ui/skeleton";
 export default function DressesPage() {
   const { products, loading } = useShop();
   const headerRef = useRef<HTMLDivElement>(null);
-  const campaignRef = useRef<HTMLElement>(null);
-  const secondaryRef = useRef<HTMLElement>(null);
+  const gridRef = useRef<HTMLElement>(null);
 
   useScrollReveal(headerRef, 90);
-  useScrollReveal(campaignRef, 90);
-  useScrollReveal(secondaryRef, 90);
+  useScrollReveal(gridRef, 90);
 
-  // Filter Dresses dynamically
-  const dresses = products.filter(
-    (p) => p.productType === "dress"
-  );
-
-  // Group dresses for creative asymmetrical pairings
-  const campaignPairs = dresses.slice(0, 2);
-  const secondaryPairs = dresses.slice(2);
+  // Filter Dresses dynamically and tolerate naming variations.
+  const dresses = products.filter((p) => {
+    const productType = (p.productType || "").toLowerCase();
+    const category = (p.category || "").toLowerCase();
+    const subcategory = (p.subcategory || "").toLowerCase();
+    return (
+      productType === "dress" ||
+      category === "dresses" ||
+      category === "dress" ||
+      subcategory === "dresses" ||
+      subcategory === "dress"
+    );
+  });
 
   if (loading) {
     return (
@@ -85,31 +88,22 @@ export default function DressesPage() {
             </p>
           </div>
 
-          {/* PRIMARY CAMPAIGN SPREAD */}
-          {campaignPairs.length > 0 && (
-            <section ref={campaignRef} className="max-w-5xl mx-auto mb-20 sm:mb-28">
-              <div className="grid gap-12 md:grid-cols-12 items-center">
-                
-                {/* Card 1: Left column - larger */}
-                <div 
-                  className="product-card md:col-span-7 flex flex-col gap-6"
-                >
-                  <EditorialProductCard product={campaignPairs[0]} aspectRatio="aspect-[3/4]" />
-                  <div className="pl-6 border-l border-[#C98E87]/40 py-2">
-                    <p className="font-cormorant text-lg italic text-[#8B6B61]">"Sculpted for movement."</p>
-                    <p className="font-inter text-[11px] text-[#8B6B61] mt-1 font-light leading-relaxed">
-                      Designed to flow with your body naturally, featuring organic textures and elegant sleeve finishes.
-                    </p>
-                  </div>
-                </div>
-
-                {/* Card 2: Right column - offset with margin */}
-                <div 
-                  className="product-card md:col-span-5 flex flex-col gap-6 md:pb-16"
-                >
-                  <EditorialProductCard product={campaignPairs[1]} aspectRatio="aspect-[2/3]" />
-                </div>
-
+          {/* DRESSES GRID */}
+          {dresses.length > 0 && (
+            <section ref={gridRef} className="max-w-5xl mx-auto mb-20 sm:mb-28">
+              <div className="grid grid-cols-1 gap-12 sm:grid-cols-2 items-stretch">
+                {dresses.map((dress, index) => {
+                  const isEven = index % 2 === 0;
+                  const alignmentClass = isEven ? "md:translate-y-8" : "md:-translate-y-8";
+                  return (
+                    <div
+                      key={dress.id}
+                      className={`product-card transition-all duration-700 ${alignmentClass} hover:translate-y-0`}
+                    >
+                      <EditorialProductCard product={dress} aspectRatio="aspect-[3/4]" />
+                    </div>
+                  );
+                })}
               </div>
             </section>
           )}
@@ -145,35 +139,6 @@ export default function DressesPage() {
               </div>
             </div>
           </section>
-
-          {/* SECONDARY CAMPAIGN SPREAD */}
-          {secondaryPairs.length > 0 && (
-          <section ref={secondaryRef} className="mt-20 sm:mt-28 max-w-5xl mx-auto">
-              <div className="grid gap-12 md:grid-cols-2 items-start">
-                
-                {/* Card 3: Left column - offset with padding */}
-                <div 
-                  className="product-card flex flex-col gap-6 md:pt-16"
-                >
-                  <EditorialProductCard product={secondaryPairs[0]} aspectRatio="aspect-[2/3]" />
-                </div>
-
-                {/* Card 4: Right column - standard aspect ratio */}
-                <div 
-                  className="product-card flex flex-col gap-6"
-                >
-                  <EditorialProductCard product={secondaryPairs[1]} aspectRatio="aspect-[3/4]" />
-                  <div className="pl-6 border-l border-[#C98E87]/40 py-2">
-                    <p className="font-cormorant text-lg italic text-[#8B6B61]">"Crafted for modern grace."</p>
-                    <p className="font-inter text-[11px] text-[#8B6B61] mt-1 font-light leading-relaxed">
-                      Sculpted to present elegant silhouettes with fluid movement, perfect for day styling or wedding celebrations.
-                    </p>
-                  </div>
-                </div>
-
-              </div>
-            </section>
-          )}
 
         </div>
       </main>

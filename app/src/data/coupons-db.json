@@ -7,7 +7,7 @@
     "usageLimit": 500,
     "usedCount": 124,
     "minOrderValue": 1999,
-    "active": true
+    "active": false
   },
   {
     "code": "FESTIVE500",
@@ -17,6 +17,6 @@
     "usageLimit": 200,
     "usedCount": 45,
     "minOrderValue": 4999,
-    "active": true
+    "active": false
   }
 ]

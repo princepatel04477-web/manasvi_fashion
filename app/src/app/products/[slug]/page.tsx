@@ -1,10 +1,10 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { formatINR } from "@/lib/store";
 import { useShop } from "@/context/shop-context";
-import { Heart, ShoppingBag, Check, Sparkles, ShieldCheck, ChevronRight } from "lucide-react";
+import { Heart, ShoppingBag, Check, Sparkles, ShieldCheck, ChevronRight, ChevronLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { ProductDetailSkeleton, LuxuryTransition } from "@/components/ui/skeleton";
@@ -27,7 +27,87 @@ export default function PDP() {
 
   const colorVariants = product ? (product.colorVariants || []) : [];
   const activeVariant = colorVariants[selectedColor] || null;
-  const activeImage = activeVariant?.image || (product ? product.images[0] : "");
+
+  // Combined list of images (active variant images or fallback to main product images)
+  const imagesList = useMemo(() => {
+    if (!product) return [];
+    
+    if (activeVariant) {
+      const list: string[] = [];
+      if (activeVariant.frontImage) list.push(activeVariant.frontImage);
+      if (activeVariant.backImage) list.push(activeVariant.backImage);
+      
+      // Legacy compatibility fallbacks
+      if (list.length === 0 && activeVariant.image) {
+        list.push(activeVariant.image);
+      }
+      if (activeVariant.modelImage) {
+        list.push(activeVariant.modelImage);
+      }
+      
+      if (list.length > 0) {
+        return list;
+      }
+    }
+    
+    return product.images || [];
+  }, [product, activeVariant]);
+
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const galleryScrollRef = useRef<HTMLDivElement>(null);
+
+  const activeImage = useMemo(() => {
+    if (imagesList.length === 0) return product ? product.images[0] : "";
+    const index = activeImageIndex >= imagesList.length ? 0 : activeImageIndex;
+    return imagesList[index] || "";
+  }, [imagesList, activeImageIndex, product]);
+
+  const scrollMobileGalleryToIndex = (index: number) => {
+    const container = galleryScrollRef.current;
+    if (!container) return;
+    container.scrollTo({
+      left: index * container.clientWidth,
+      behavior: "smooth"
+    });
+  };
+
+  const goToImage = (index: number) => {
+    if (imagesList.length === 0) return;
+    const safeIndex = ((index % imagesList.length) + imagesList.length) % imagesList.length;
+    setActiveImageIndex(safeIndex);
+    scrollMobileGalleryToIndex(safeIndex);
+  };
+
+  const goToPrevImage = () => {
+    if (imagesList.length <= 1) return;
+    goToImage(activeImageIndex - 1);
+  };
+
+  const goToNextImage = () => {
+    if (imagesList.length <= 1) return;
+    goToImage(activeImageIndex + 1);
+  };
+
+  const displayPrice = useMemo(() => {
+    if (!product) return 0;
+    const basePrice = product.price;
+    const adjustment = activeVariant?.priceAdjustment || 0;
+    return basePrice + adjustment;
+  }, [product, activeVariant]);
+
+  const displayCompareAtPrice = useMemo(() => {
+    if (!product) return undefined;
+    if (!product.compareAtPrice) return undefined;
+    const baseCompare = product.compareAtPrice;
+    const adjustment = activeVariant?.priceAdjustment || 0;
+    return baseCompare + adjustment;
+  }, [product, activeVariant]);
+
+  // Reset activeImageIndex when color changes
+  useEffect(() => {
+      goToImage(0);
+  }, [selectedColor]);
+
   const liked = product ? wishlist.includes(product.id) : false;
 
   // Set default size dynamically when product loads
@@ -37,27 +117,17 @@ export default function PDP() {
     }
   }, [product]);
 
-  const [activeImageIndex, setActiveImageIndex] = useState(0);
-  const galleryScrollRef = useRef<HTMLDivElement>(null);
-
-  // Sync scroll position when color variant is changed
+  // Sync mobile scroll position when activeImageIndex changes
   useEffect(() => {
-    if (!product) return;
-    if (activeImage && galleryScrollRef.current) {
-      const idx = product.images.indexOf(activeImage);
-      if (idx !== -1) {
-        const container = galleryScrollRef.current;
-        // Wait briefly for client layout to establish container clientWidth
-        setTimeout(() => {
-          container.scrollTo({
-            left: idx * container.clientWidth,
-            behavior: "smooth"
-          });
-        }, 50);
-        setActiveImageIndex(idx);
-      }
+    if (galleryScrollRef.current) {
+      const container = galleryScrollRef.current;
+      setTimeout(() => {
+        if (container) {
+          scrollMobileGalleryToIndex(activeImageIndex);
+        }
+      }, 50);
     }
-  }, [selectedColor, product, activeImage]);
+  }, [activeImageIndex]);
 
   // Track gallery scroll for dots indicator on mobile
   const handleGalleryScroll = (e: React.UIEvent<HTMLDivElement>) => {
@@ -67,13 +137,8 @@ export default function PDP() {
     const width = container.clientWidth;
     if (width > 0) {
       const index = Math.round(scrollPosition / width);
-      if (index !== activeImageIndex && index >= 0 && index < product.images.length) {
+      if (index !== activeImageIndex && index >= 0 && index < imagesList.length) {
         setActiveImageIndex(index);
-        const swipedImg = product.images[index];
-        const variantIdx = colorVariants.findIndex(v => v.image === swipedImg);
-        if (variantIdx !== -1) {
-          setSelectedColor(variantIdx);
-        }
       }
     }
   };
@@ -90,7 +155,7 @@ export default function PDP() {
       productId: product.id,
       title: `${product.title} - ${colorName}`,
       image: activeImage,
-      price: product.price,
+      price: displayPrice,
       size: size,
       slug: product.slug
     });
@@ -137,38 +202,52 @@ export default function PDP() {
             
             {/* Mobile swipe-friendly gallery */}
             <div className="lg:hidden space-y-4">
-              <div 
-                ref={galleryScrollRef}
-                onScroll={handleGalleryScroll}
-                className="flex overflow-x-auto snap-x snap-mandatory scrollbar-none w-full aspect-[3/4] rounded-3xl bg-white border border-[#E7C2B8]/30 warm-shadow"
-              >
-                {product.images.map((img, idx) => (
-                  <div key={img} className="w-full h-full flex-shrink-0 snap-center relative aspect-[3/4]">
-                    <div className="absolute inset-0 bg-[#3B2B28]/5 mix-blend-overlay z-10" />
-                    <img
-                      src={img}
-                      alt={`${product.title} View ${idx + 1}`}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                ))}
+              <div className="relative">
+                <div 
+                  ref={galleryScrollRef}
+                  onScroll={handleGalleryScroll}
+                  className="flex overflow-x-auto snap-x snap-mandatory scrollbar-none w-full aspect-[3/4] rounded-3xl bg-white border border-[#E7C2B8]/30 warm-shadow"
+                >
+                  {imagesList.map((img: string, idx: number) => (
+                    <div key={img} className="w-full h-full flex-shrink-0 snap-center relative aspect-[3/4]">
+                      <div className="absolute inset-0 bg-[#3B2B28]/5 mix-blend-overlay z-10" />
+                      <img
+                        src={img}
+                        alt={`${product.title} View ${idx + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  ))}
+                </div>
+
+                {imagesList.length > 1 && (
+                  <>
+                    <button
+                      onClick={goToPrevImage}
+                      aria-label="Previous photo"
+                      className="absolute left-2 top-1/2 -translate-y-1/2 z-20 h-9 w-9 rounded-full bg-white/90 border border-[#E7C2B8]/50 text-[#3B2B28] flex items-center justify-center shadow-sm"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={goToNextImage}
+                      aria-label="Next photo"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 z-20 h-9 w-9 rounded-full bg-white/90 border border-[#E7C2B8]/50 text-[#3B2B28] flex items-center justify-center shadow-sm"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </>
+                )}
               </div>
               
               {/* Swipe indicator dots */}
-              {product.images.length > 1 && (
+              {imagesList.length > 1 && (
                 <div className="flex justify-center gap-2 pt-1">
-                  {product.images.map((_, idx) => (
+                  {imagesList.map((_: string, idx: number) => (
                     <button
                       key={idx}
                       onClick={() => {
-                        const container = galleryScrollRef.current;
-                        if (container) {
-                          container.scrollTo({
-                            left: idx * container.clientWidth,
-                            behavior: "smooth"
-                          });
-                          setActiveImageIndex(idx);
-                        }
+                        goToImage(idx);
                       }}
                       className={`h-1.5 rounded-full transition-all duration-300 ${activeImageIndex === idx ? "w-6 bg-[#3B2B28]" : "w-1.5 bg-[#8B6B61]/40"}`}
                       aria-label={`Go to slide ${idx + 1}`}
@@ -195,32 +274,105 @@ export default function PDP() {
                     className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-[1.03]"
                   />
                 </AnimatePresence>
+
+                {imagesList.length > 1 && (
+                  <>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        goToPrevImage();
+                      }}
+                      aria-label="Previous photo"
+                      className="absolute left-3 top-1/2 -translate-y-1/2 z-20 h-10 w-10 rounded-full bg-white/90 border border-[#E7C2B8]/50 text-[#3B2B28] flex items-center justify-center shadow-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        goToNextImage();
+                      }}
+                      aria-label="Next photo"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 z-20 h-10 w-10 rounded-full bg-white/90 border border-[#E7C2B8]/50 text-[#3B2B28] flex items-center justify-center shadow-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </>
+                )}
+
+                {/* Desktop View Switcher Overlay */}
+                {activeVariant && (
+                  <div className="absolute bottom-4 left-4 z-20 flex gap-1 bg-white/90 backdrop-blur-sm p-1 rounded-xl border border-[#E7C2B8]/40 shadow-sm">
+                    {activeVariant.frontImage && activeVariant.backImage ? (
+                      <>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            goToImage(0);
+                          }}
+                          className={`px-3 py-1.5 rounded-lg text-[9px] font-semibold uppercase tracking-wider transition-all duration-300 ${activeImageIndex === 0 ? "bg-[#3B2B28] text-white" : "text-[#5C4A44] hover:bg-[#FAF7F2]"}`}
+                        >
+                          Front View
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            goToImage(1);
+                          }}
+                          className={`px-3 py-1.5 rounded-lg text-[9px] font-semibold uppercase tracking-wider transition-all duration-300 ${activeImageIndex === 1 ? "bg-[#3B2B28] text-white" : "text-[#5C4A44] hover:bg-[#FAF7F2]"}`}
+                        >
+                          Back View
+                        </button>
+                        {activeVariant.modelImage && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              goToImage(2);
+                            }}
+                            className={`px-3 py-1.5 rounded-lg text-[9px] font-semibold uppercase tracking-wider transition-all duration-300 ${activeImageIndex === 2 ? "bg-[#3B2B28] text-white" : "text-[#5C4A44] hover:bg-[#FAF7F2]"}`}
+                          >
+                            On Model
+                          </button>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            goToImage(0);
+                          }}
+                          className={`px-3 py-1.5 rounded-lg text-[9px] font-semibold uppercase tracking-wider transition-all duration-300 ${activeImageIndex === 0 ? "bg-[#3B2B28] text-white" : "text-[#5C4A44] hover:bg-[#FAF7F2]"}`}
+                        >
+                          Flat View
+                        </button>
+                        {imagesList.length > 1 && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              goToImage(1);
+                            }}
+                            className={`px-3 py-1.5 rounded-lg text-[9px] font-semibold uppercase tracking-wider transition-all duration-300 ${activeImageIndex === 1 ? "bg-[#3B2B28] text-white" : "text-[#5C4A44] hover:bg-[#FAF7F2]"}`}
+                          >
+                            {activeVariant.modelImage ? "On Model" : "Alternate View"}
+                          </button>
+                        )}
+                      </>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Alternating Angle Thumbnail Previews */}
-              {product.images.length > 1 && (
+              {imagesList.length > 1 && (
                 <div className="flex gap-3 justify-center">
-                  {product.images.map((img, idx) => (
+                  {imagesList.map((img: string, idx: number) => (
                     <button
                       key={img}
                       onClick={() => {
-                        // Find if this image matches one of the color variants
-                        const variantIdx = colorVariants.findIndex(v => v.image === img);
-                        if (variantIdx !== -1) {
-                          setSelectedColor(variantIdx);
-                        } else {
-                          // If it is just another angle, scroll mobile container too if active
-                          const container = galleryScrollRef.current;
-                          if (container) {
-                            container.scrollTo({
-                              left: idx * container.clientWidth,
-                              behavior: "smooth"
-                            });
-                          }
-                          setActiveImageIndex(idx);
-                        }
+                        goToImage(idx);
                       }}
-                      className={`w-16 h-20 rounded-xl overflow-hidden border transition bg-white ${activeImage === img || (activeImageIndex === idx && !colorVariants.some(v => v.image === activeImage)) ? "border-[#3B2B28] ring-2 ring-[#3B2B28]/10 scale-105" : "border-[#E7C2B8]/40 hover:scale-102"}`}
+                      className={`w-16 h-20 rounded-xl overflow-hidden border transition bg-white ${activeImageIndex === idx ? "border-[#3B2B28] ring-2 ring-[#3B2B28]/10 scale-105" : "border-[#E7C2B8]/40 hover:scale-102"}`}
                     >
                       <img src={img} alt="" className="w-full h-full object-cover" />
                     </button>
@@ -244,11 +396,11 @@ export default function PDP() {
               
               <div className="flex items-baseline gap-3 pt-2">
                 <span className="font-cormorant text-3xl font-medium text-[#3B2B28]">
-                  {formatINR(product.price)}
+                  {formatINR(displayPrice)}
                 </span>
-                {product.compareAtPrice && product.compareAtPrice > product.price && (
+                {displayCompareAtPrice && displayCompareAtPrice > displayPrice && (
                   <span className="font-cormorant text-lg text-[#8B6B61] line-through">
-                    {formatINR(product.compareAtPrice)}
+                    {formatINR(displayCompareAtPrice)}
                   </span>
                 )}
               </div>
@@ -258,6 +410,32 @@ export default function PDP() {
             <p className="font-inter text-sm sm:text-base text-[#8B6B61] leading-relaxed font-light">
               {product.description}
             </p>
+
+            {/* COLORWAY SECTOR */}
+            {colorVariants.length > 0 && (
+              <div className="space-y-3">
+                <span className="font-inter text-xs tracking-wider text-[#8B6B61] uppercase font-light">
+                  Select Colorway
+                </span>
+                <div className="flex flex-wrap gap-3">
+                  {colorVariants.map((variant, idx) => (
+                    <button
+                      key={variant.name + '-' + idx}
+                      onClick={() => {
+                        setSelectedColor(idx);
+                      }}
+                      className={`h-9 px-4 rounded-xl border flex items-center gap-2 transition-all duration-300 cursor-pointer ${selectedColor === idx ? "bg-[#3B2B28] border-[#3B2B28] text-[#FAF7F2] shadow-sm scale-102" : "bg-white border-[#E7C2B8]/40 text-[#3B2B28] hover:border-[#3B2B28]"}`}
+                    >
+                      <span 
+                        className="w-4 h-4 rounded-full border border-black/10 flex-shrink-0" 
+                        style={{ backgroundColor: variant.hex || '#000' }}
+                      />
+                      <span className="font-inter text-xs font-semibold text-[#3B2B28] group-hover:text-white transition-colors duration-300">{variant.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* SIZING SECTOR */}
             <div className="space-y-3">
@@ -338,6 +516,26 @@ export default function PDP() {
                 
                 <div>Colorway:</div>
                 <div className="text-[#3B2B28] font-medium">{activeVariant?.name || product.color}</div>
+
+                {activeVariant?.sku && (
+                  <>
+                    <div>SKU:</div>
+                    <div className="text-[#3B2B28] font-medium tracking-wider">{activeVariant.sku}</div>
+                  </>
+                )}
+
+                {activeVariant?.stock !== undefined && (
+                  <>
+                    <div>Stock:</div>
+                    <div className="text-[#3B2B28] font-medium">
+                      {activeVariant.stock > 0 ? (
+                        <span className="text-emerald-700 font-semibold">{activeVariant.stock} available</span>
+                      ) : (
+                        <span className="text-rose-700 font-semibold">Out of stock</span>
+                      )}
+                    </div>
+                  </>
+                )}
               </div>
 
               <div className="h-[1px] bg-[#E7C2B8]/30" />
@@ -356,7 +554,7 @@ export default function PDP() {
       {/* Sticky Bottom Add to Cart Bar */}
       <StickyCartBar
         productName={product.title}
-        price={product.price}
+        price={displayPrice}
         sizes={product.sizes}
         selectedSize={size}
         setSelectedSize={setSize}

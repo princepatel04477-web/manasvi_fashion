@@ -3,13 +3,12 @@
 import { useRef } from "react";
 import { useShop } from "@/context/shop-context";
 import EditorialProductCard from "@/components/editorial-product-card";
-import { Sparkles, ArrowDown, ArrowLeft } from "lucide-react";
+import { Sparkles, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import useScrollReveal from "@/hooks/useScrollReveal";
 import PageLoader from "@/components/page-loader";
 import PageTransition from "@/components/PageTransition";
 import { Skeleton, ProductGridSkeleton } from "@/components/ui/skeleton";
-import { formatINR } from "@/lib/store";
 
 export default function KurtisPage() {
   const { products, loading } = useShop();
@@ -19,16 +18,21 @@ export default function KurtisPage() {
   useScrollReveal(headerRef, 90);
   useScrollReveal(gridRef, 90);
 
-  // Filter Kurtis dynamically
-  const kurtis = products.filter(
-    (p) => p.productType === "kurti"
-  );
+  // Filter Kurtis dynamically and tolerate naming variations.
+  const kurtis = products.filter((p) => {
+    const productType = (p.productType || "").toLowerCase();
+    const category = (p.category || "").toLowerCase();
+    const subcategory = (p.subcategory || "").toLowerCase();
+    return (
+      productType === "kurti" ||
+      category === "kurtis" ||
+      category === "kurti" ||
+      subcategory === "kurtis" ||
+      subcategory === "kurti"
+    );
+  });
 
   console.log("[/kurtis] Total products:", products.length, "| Kurtis found:", kurtis.length, "| Loading:", loading);
-
-  // Define Featured Hero (first kurti) and regular lookbook kurtis
-  const featuredHero = kurtis[0] || null;
-  const secondaryKurtis = kurtis.slice(1);
 
   if (!loading && kurtis.length === 0) {
     return (
@@ -140,65 +144,13 @@ export default function KurtisPage() {
             <p className="font-inter text-xs sm:text-sm text-[#8B6B61] leading-relaxed max-w-lg font-light tracking-wide">
               An exquisite curation of heritage styles. Each piece features meticulously detailed embroidery, premium flowy fabrics, and a contemporary luxury drape.
             </p>
-            <div className="pt-4 animate-bounce">
-              <ArrowDown className="w-4 h-4 text-[#C98E87]" />
-            </div>
           </div>
 
-          {/* FEATURED CAMPAIGN HERO */}
-          {featuredHero && (
-            <section className="mb-16 sm:mb-24 md:mb-32">
-              <div className="editorial-card bg-white/70 backdrop-blur-md border border-[#E7C2B8]/40 rounded-3xl p-6 md:p-10 warm-shadow">
-                <div className="grid gap-10 lg:grid-cols-12 items-center">
-                  {/* Hero Product Photo Frame */}
-                  <div className="lg:col-span-7">
-                    <div className="aspect-[4/3] rounded-2xl overflow-hidden relative group cursor-pointer">
-                      <Link href={`/products/${featuredHero.slug}`}>
-                        <div className="absolute inset-0 bg-[#3B2B28]/5 mix-blend-overlay z-10" />
-                        <img 
-                          src={featuredHero.images[0]} 
-                          alt={featuredHero.title} 
-                          className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-102"
-                        />
-                      </Link>
-                    </div>
-                  </div>
-
-                  {/* Hero Product Info Details */}
-                  <div className="lg:col-span-5 flex flex-col justify-center space-y-5 text-left">
-                    <span className="font-inter text-[9px] tracking-[0.2em] text-[#C98E87] uppercase font-bold">
-                      Featured Piece
-                    </span>
-                    <h2 className="font-serif text-3xl sm:text-4xl text-[#3B2B28] leading-tight hover:text-[#8B6B61] transition-colors">
-                      <Link href={`/products/${featuredHero.slug}`}>
-                        {featuredHero.title}
-                      </Link>
-                    </h2>
-                    <p className="text-lg text-[#3B2B28] font-light">
-                      {formatINR(featuredHero.price)}
-                    </p>
-                    <p className="font-inter text-xs sm:text-sm text-[#8B6B61] leading-relaxed font-light">
-                      {featuredHero.description}
-                    </p>
-                    <div className="pt-2">
-                      <Link 
-                        href={`/products/${featuredHero.slug}`}
-                        className="inline-flex items-center justify-center px-8 py-3.5 bg-[#3B2B28] hover:bg-[#8B6B61] text-[#FAF7F2] font-cormorant text-xs uppercase tracking-widest font-semibold rounded-xl transition-all duration-300 shadow-md"
-                      >
-                        Explore Design
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </section>
-          )}
-
           {/* LOOKBOOK COLLECTIONS GRID */}
-          {secondaryKurtis.length > 0 && (
+          {kurtis.length > 0 && (
             <section ref={gridRef} className="pb-12">
               <div className="grid grid-cols-1 gap-12 sm:grid-cols-2 max-w-5xl mx-auto items-stretch">
-                {secondaryKurtis.map((kurti, index) => {
+                {kurtis.map((kurti, index) => {
                   // Alternating margins and offsets to create a true lookbook magazine feel
                   const isEven = index % 2 === 0;
                   const alignmentClass = isEven ? "md:translate-y-8" : "md:-translate-y-8";
