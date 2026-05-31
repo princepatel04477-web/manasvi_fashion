@@ -4,7 +4,7 @@ import { useParams } from "next/navigation";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { formatINR } from "@/lib/store";
 import { useShop } from "@/context/shop-context";
-import { Heart, ShoppingBag, Check, Sparkles, ShieldCheck, ChevronRight, ChevronLeft } from "lucide-react";
+import { Heart, ShoppingBag, Check, Sparkles, ChevronRight, ChevronLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { ProductDetailSkeleton, LuxuryTransition } from "@/components/ui/skeleton";
@@ -430,7 +430,7 @@ export default function PDP() {
                         className="w-4 h-4 rounded-full border border-black/10 flex-shrink-0" 
                         style={{ backgroundColor: variant.hex || '#000' }}
                       />
-                      <span className="font-inter text-xs font-semibold text-[#3B2B28] group-hover:text-white transition-colors duration-300">{variant.name}</span>
+                      <span className={`font-inter text-xs font-semibold transition-colors duration-300 ${selectedColor === idx ? "text-[#FAF7F2]" : "text-[#3B2B28]"}`}>{variant.name}</span>
                     </button>
                   ))}
                 </div>
@@ -538,14 +538,7 @@ export default function PDP() {
                 )}
               </div>
 
-              <div className="h-[1px] bg-[#E7C2B8]/30" />
 
-              <div className="flex gap-3 items-start leading-relaxed">
-                <ShieldCheck className="w-4 h-4 text-[#8B6B61] flex-shrink-0 mt-0.5" />
-                <p className="text-[10px]">
-                  Manasvi Studio Guarantee: Free alterations at our Surat showroom. Safe express delivery with elite custom packaging.
-                </p>
-              </div>
             </div>
           </div>
         </div>
