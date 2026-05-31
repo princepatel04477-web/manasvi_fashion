@@ -79,9 +79,27 @@ function SignInForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const rawCallbackUrl = searchParams.get("callbackUrl");
+  
+  // Auth Modes: "password" or "otp"
+  const [authMode, setAuthMode] = useState<"password" | "otp">("password");
+  
+  // Standard Form State
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  
+  // MFA 2FA State
+  const [mfaStep, setMfaStep] = useState(false);
+  const [mfaSentTo, setMfaSentTo] = useState("");
+  const [simulatedPasscode, setSimulatedPasscode] = useState("");
+
+  // OTP Form State
+  const [emailOrPhone, setEmailOrPhone] = useState("");
+  const [otp, setOtp] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpSending, setOtpSending] = useState(false);
+  const [otpSuccessMessage, setOtpSuccessMessage] = useState("");
+  
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(searchParams.get("error") || "");
   const isRegistered = searchParams.get("registered") === "true";
@@ -92,29 +110,157 @@ function SignInForm() {
     "aryan@example.com"
   ];
 
+  // Auto-login from query parameter (Magic Link click flow)
+  useEffect(() => {
+    const urlOtp = searchParams.get("otp");
+    const urlEmail = searchParams.get("email");
+    const urlPhone = searchParams.get("phone");
+    const urlAutoSubmit = searchParams.get("autoSubmit") === "true";
+
+    if (urlOtp && (urlEmail || urlPhone) && urlAutoSubmit) {
+      const input = urlEmail || urlPhone || "";
+      setEmailOrPhone(input);
+      setOtp(urlOtp);
+      setAuthMode("otp");
+      setOtpSent(true);
+
+      const triggerAutoLogin = async () => {
+        setLoading(true);
+        setError("");
+        setOtpSuccessMessage("Verifying secure direct link...");
+        
+        const targetCallbackUrl = rawCallbackUrl 
+          ? rawCallbackUrl 
+          : (ADMIN_EMAILS.includes(input.toLowerCase()) ? "/dashboard" : "/");
+
+        try {
+          const res = await signIn("credentials", {
+            redirect: false,
+            emailOrPhone: input,
+            otp: urlOtp,
+            authType: "otp",
+            callbackUrl: targetCallbackUrl,
+          });
+
+          if (res?.error) {
+            setError(res.error);
+          } else {
+            router.push(targetCallbackUrl);
+            router.refresh();
+          }
+        } catch (err) {
+          setError("Failed during automatic magic link verification.");
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      triggerAutoLogin();
+    }
+  }, [searchParams]);
+
+  const handleSendOtp = async () => {
+    if (!emailOrPhone.trim()) {
+      setError("Please enter your email or phone number.");
+      return;
+    }
+    
+    setOtpSending(true);
+    setError("");
+    setOtpSuccessMessage("");
+    setSimulatedPasscode("");
+
+    try {
+      const response = await fetch("/api/auth/send-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ emailOrPhone: emailOrPhone.trim() }),
+      });
+
+      const data = await response.json();
+      if (response.ok && data.success) {
+        setOtpSent(true);
+        setOtpSuccessMessage(data.message || "Verification code sent!");
+        if (data.passcode) {
+          setSimulatedPasscode(data.passcode);
+        }
+      } else {
+        setError(data.error || "Failed to send verification code. Please try again.");
+      }
+    } catch (err) {
+      setError("Network error. Failed to reach authentication server.");
+    } finally {
+      setOtpSending(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
 
-    // Resolve target callback url
+    const resolvedInput = authMode === "password" ? email : emailOrPhone;
     const targetCallbackUrl = rawCallbackUrl 
       ? rawCallbackUrl 
-      : (ADMIN_EMAILS.includes(email.toLowerCase()) ? "/dashboard" : "/");
+      : (ADMIN_EMAILS.includes(resolvedInput.toLowerCase()) ? "/dashboard" : "/");
 
     try {
-      const res = await signIn("credentials", {
-        redirect: false,
-        email,
-        password,
-        callbackUrl: targetCallbackUrl,
-      });
+      if (authMode === "password") {
+        if (!mfaStep) {
+          // Verify credentials first, send OTP, trigger MFA step
+          const verifyResponse = await fetch("/api/auth/verify-credentials", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: email.trim(), password }),
+          });
 
-      if (res?.error) {
-        setError(res.error);
+          const data = await verifyResponse.json();
+          if (verifyResponse.ok && data.success) {
+            setMfaStep(true);
+            setMfaSentTo(data.sentTo);
+            setOtpSuccessMessage(`Verification passcode sent to ${data.sentTo}`);
+            if (data.passcode) {
+              setSimulatedPasscode(data.passcode);
+            }
+          } else {
+            setError(data.error || "Invalid email or password.");
+          }
+          setLoading(false);
+          return;
+        } else {
+          // Perform full NextAuth sign-in with password + MFA OTP
+          const res = await signIn("credentials", {
+            redirect: false,
+            email,
+            password,
+            otp,
+            authType: "mfa",
+            callbackUrl: targetCallbackUrl,
+          });
+
+          if (res?.error) {
+            setError(res.error);
+          } else {
+            router.push(targetCallbackUrl);
+            router.refresh();
+          }
+        }
       } else {
-        router.push(targetCallbackUrl);
-        router.refresh();
+        // Passwordless OTP Login
+        const res = await signIn("credentials", {
+          redirect: false,
+          emailOrPhone,
+          otp,
+          authType: "otp",
+          callbackUrl: targetCallbackUrl,
+        });
+
+        if (res?.error) {
+          setError(res.error);
+        } else {
+          router.push(targetCallbackUrl);
+          router.refresh();
+        }
       }
     } catch (err) {
       setError("An unexpected error occurred. Please try again.");
@@ -139,11 +285,64 @@ function SignInForm() {
           </p>
         </div>
 
+        {/* Auth Mode Toggle */}
+        <div className="flex gap-2 p-1 bg-white border border-[#E7C2B8]/40 rounded-full max-w-[320px] shadow-sm">
+          <button
+            type="button"
+            onClick={() => {
+              setAuthMode("password");
+              setError("");
+              setOtpSuccessMessage("");
+              setSimulatedPasscode("");
+              setMfaStep(false);
+            }}
+            className={`flex-1 py-2 text-[10px] font-semibold tracking-wider uppercase rounded-full transition-all duration-300 ${
+              authMode === "password"
+                ? "bg-[#3B2B28] text-[#FAF7F2] shadow-sm"
+                : "text-[#8B6B61] hover:text-[#3B2B28]"
+            }`}
+          >
+            Password
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setAuthMode("otp");
+              setError("");
+              setOtpSuccessMessage("");
+              setSimulatedPasscode("");
+            }}
+            className={`flex-1 py-2 text-[10px] font-semibold tracking-wider uppercase rounded-full transition-all duration-300 ${
+              authMode === "otp"
+                ? "bg-[#3B2B28] text-[#FAF7F2] shadow-sm"
+                : "text-[#8B6B61] hover:text-[#3B2B28]"
+            }`}
+          >
+            Passcode / SMS / Link
+          </button>
+        </div>
+
         {/* Notifications */}
-        {isRegistered && !error && (
+        {isRegistered && !error && !otpSuccessMessage && (
           <div className="rounded-xl bg-[#FAF7F2] border border-[#8B6B61]/20 p-4 text-xs text-[#8B6B61] flex items-center gap-3">
             <span className="w-1.5 h-1.5 rounded-full bg-[#C98E87] animate-pulse"></span>
             <span>Account created successfully. Please authenticate below.</span>
+          </div>
+        )}
+
+        {otpSuccessMessage && !error && (
+          <div className="rounded-xl bg-[#FAF7F2] border border-emerald-500/20 p-4 text-xs text-[#8B6B61] flex flex-col gap-3">
+            <div className="flex items-center gap-3 text-emerald-800">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span>{otpSuccessMessage}</span>
+            </div>
+            {simulatedPasscode && (
+              <div className="bg-[#FAF7F2] border border-dashed border-[#E7C2B8] p-3 rounded-lg flex flex-col items-center justify-center gap-1.5 animate-fadeIn">
+                <span className="text-[9px] uppercase tracking-widest text-[#8B6B61] font-semibold">Simulated Verification Passcode (Demo Mode)</span>
+                <span className="font-mono text-xl font-bold tracking-[0.2em] text-[#3B2B28]">{simulatedPasscode}</span>
+                <span className="text-[9px] text-[#8B6B61]/80 text-center font-light mt-0.5">Please copy this code and input it below to sign in.</span>
+              </div>
+            )}
           </div>
         )}
 
@@ -152,7 +351,7 @@ function SignInForm() {
             <span className="w-1.5 h-1.5 rounded-full bg-[#C98E87]"></span>
             <span>
               {error === "CredentialsSignin"
-                ? "Invalid credentials. Please verify your email and password."
+                ? "Invalid credentials. Please verify your details."
                 : error}
             </span>
           </div>
@@ -160,48 +359,175 @@ function SignInForm() {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-1">
-            <label className="block text-[9px] font-semibold uppercase tracking-[0.2em] text-[#8B6B61]">
-              Email Address
-            </label>
-            <input
-              type="email"
-              inputMode="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              placeholder="e.g. princepatel01258@gmail.com"
-              className="w-full bg-transparent border-b border-[#E7C2B8]/40 py-3 text-base md:text-sm text-[#3B2B28] outline-none transition-all duration-300 focus:border-[#8B6B61] focus:shadow-[0_4px_12px_-4px_rgba(231,194,184,0.15)] placeholder-[#8B6B61]/35 font-light"
-            />
-          </div>
+          {authMode === "password" ? (
+            <>
+              {!mfaStep ? (
+                <>
+                  <div className="space-y-1">
+                    <label className="block text-[9px] font-semibold uppercase tracking-[0.2em] text-[#8B6B61]">
+                      Email Address
+                    </label>
+                    <input
+                      type="email"
+                      inputMode="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      placeholder="e.g. princepatel01258@gmail.com"
+                      className="w-full bg-transparent border-b border-[#E7C2B8]/40 py-3 text-base md:text-sm text-[#3B2B28] outline-none transition-all duration-300 focus:border-[#8B6B61] focus:shadow-[0_4px_12px_-4px_rgba(231,194,184,0.15)] placeholder-[#8B6B61]/35 font-light"
+                    />
+                  </div>
 
-          <div className="space-y-1">
-            <label className="block text-[9px] font-semibold uppercase tracking-[0.2em] text-[#8B6B61]">
-              Password
-            </label>
-            <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                placeholder="••••••••"
-                className="w-full bg-transparent border-b border-[#E7C2B8]/40 py-3 pr-10 text-base md:text-sm text-[#3B2B28] outline-none transition-all duration-300 focus:border-[#8B6B61] focus:shadow-[0_4px_12px_-4px_rgba(231,194,184,0.15)] placeholder-[#8B6B61]/35"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-0 bottom-3 text-[#8B6B61]/70 hover:text-[#3B2B28] transition-colors duration-300 focus:outline-none cursor-pointer"
-                aria-label={showPassword ? "Hide password" : "Show password"}
-              >
-                {showPassword ? (
-                  <EyeOff className="w-4 h-4" />
-                ) : (
-                  <Eye className="w-4 h-4" />
-                )}
-              </button>
-            </div>
-          </div>
+                  <div className="space-y-1">
+                    <label className="block text-[9px] font-semibold uppercase tracking-[0.2em] text-[#8B6B61]">
+                      Password
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                        placeholder="••••••••"
+                        className="w-full bg-transparent border-b border-[#E7C2B8]/40 py-3 pr-10 text-base md:text-sm text-[#3B2B28] outline-none transition-all duration-300 focus:border-[#8B6B61] focus:shadow-[0_4px_12px_-4px_rgba(231,194,184,0.15)] placeholder-[#8B6B61]/35"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-0 bottom-3 text-[#8B6B61]/70 hover:text-[#3B2B28] transition-colors duration-300 focus:outline-none cursor-pointer"
+                        aria-label={showPassword ? "Hide password" : "Show password"}
+                      >
+                        {showPassword ? (
+                          <EyeOff className="w-4 h-4" />
+                        ) : (
+                          <Eye className="w-4 h-4" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="space-y-2 p-4 bg-[#FAF7F2] border border-[#E7C2B8]/30 rounded-xl mb-4 text-xs text-[#8B6B61] leading-relaxed">
+                    <span className="font-semibold block text-[#3B2B28]">2-Factor Authentication Required</span>
+                    <p className="font-light">Credentials verified. Enter the 6-digit passcode sent to {mfaSentTo} to complete sign in.</p>
+                  </div>
+
+                  <div className="space-y-1 animate-fadeIn">
+                    <div className="flex justify-between items-center">
+                      <label className="block text-[9px] font-semibold uppercase tracking-[0.2em] text-[#8B6B61]">
+                        6-Digit MFA Passcode
+                      </label>
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          setError("");
+                          setOtpSuccessMessage("");
+                          try {
+                            const verifyResponse = await fetch("/api/auth/verify-credentials", {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ email: email.trim(), password }),
+                            });
+                            const data = await verifyResponse.json();
+                            if (verifyResponse.ok && data.success) {
+                              setOtpSuccessMessage(`New code sent to ${data.sentTo}`);
+                            } else {
+                              setError(data.error || "Failed to resend code.");
+                            }
+                          } catch (err) {
+                            setError("Network error. Failed to resend passcode.");
+                          }
+                        }}
+                        className="text-[9px] font-semibold uppercase tracking-wider text-[#C98E87] hover:text-[#8B6B61] transition-colors"
+                      >
+                        Resend Code
+                      </button>
+                    </div>
+                    <input
+                      type="text"
+                      maxLength={6}
+                      value={otp}
+                      onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, ""))}
+                      required
+                      placeholder="e.g. 123456"
+                      className="w-full bg-transparent border-b border-[#E7C2B8]/40 py-3 text-base md:text-sm text-[#3B2B28] outline-none tracking-[0.3em] font-mono transition-all duration-300 focus:border-[#8B6B61] focus:shadow-[0_4px_12px_-4px_rgba(231,194,184,0.15)] placeholder-[#8B6B61]/35"
+                    />
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMfaStep(false);
+                      setOtp("");
+                      setError("");
+                      setOtpSuccessMessage("");
+                      setSimulatedPasscode("");
+                    }}
+                    className="text-[10px] uppercase tracking-wider font-semibold text-[#8B6B61] hover:text-[#3B2B28] transition duration-300 block text-left"
+                  >
+                    ← Back to Credentials
+                  </button>
+                </>
+              )}
+            </>
+          ) : (
+            <>
+              <div className="space-y-1">
+                <label className="block text-[9px] font-semibold uppercase tracking-[0.2em] text-[#8B6B61]">
+                  Email Address or Phone Number
+                </label>
+                <div className="flex gap-3">
+                  <input
+                    type="text"
+                    value={emailOrPhone}
+                    onChange={(e) => setEmailOrPhone(e.target.value)}
+                    required
+                    disabled={otpSent}
+                    placeholder="e.g. customer@gmail.com or +919988776655"
+                    className="flex-1 bg-transparent border-b border-[#E7C2B8]/40 py-3 text-base md:text-sm text-[#3B2B28] outline-none transition-all duration-300 focus:border-[#8B6B61] focus:shadow-[0_4px_12px_-4px_rgba(231,194,184,0.15)] placeholder-[#8B6B61]/35 font-light disabled:opacity-50"
+                  />
+                  {!otpSent && (
+                    <button
+                      type="button"
+                      onClick={handleSendOtp}
+                      disabled={otpSending || !emailOrPhone}
+                      className="px-4 py-2 border border-[#3B2B28] text-[#3B2B28] text-[9px] uppercase tracking-wider font-semibold rounded-lg hover:bg-[#3B2B28] hover:text-[#FAF7F2] transition-colors disabled:opacity-50 self-end"
+                    >
+                      {otpSending ? "Sending..." : "Send Code"}
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {otpSent && (
+                <div className="space-y-1 animate-fadeIn">
+                  <div className="flex justify-between items-center">
+                    <label className="block text-[9px] font-semibold uppercase tracking-[0.2em] text-[#8B6B61]">
+                      6-Digit Passcode
+                    </label>
+                    <button
+                      type="button"
+                      onClick={handleSendOtp}
+                      disabled={otpSending}
+                      className="text-[9px] font-semibold uppercase tracking-wider text-[#C98E87] hover:text-[#8B6B61] transition-colors"
+                    >
+                      Resend Code
+                    </button>
+                  </div>
+                  <input
+                    type="text"
+                    maxLength={6}
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, ""))}
+                    required
+                    placeholder="e.g. 123456"
+                    className="w-full bg-transparent border-b border-[#E7C2B8]/40 py-3 text-base md:text-sm text-[#3B2B28] outline-none tracking-[0.3em] font-mono transition-all duration-300 focus:border-[#8B6B61] focus:shadow-[0_4px_12px_-4px_rgba(231,194,184,0.15)] placeholder-[#8B6B61]/35"
+                  />
+                </div>
+              )}
+            </>
+          )}
 
           {/* Form Actions */}
           <div className="flex items-center justify-between text-xs text-[#8B6B61]">
@@ -223,10 +549,10 @@ function SignInForm() {
           {/* Sign In CTA */}
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || (authMode === "otp" && !otpSent) || (authMode === "password" && mfaStep && !otp)}
             className="w-full bg-gradient-to-r from-[#C98E87] via-[#8B6B61] to-[#3B2B28] text-[#FAF7F2] py-4 rounded-full text-[10px] font-semibold tracking-[0.25em] uppercase transition-all duration-500 hover:shadow-[0_8px_24px_-8px_rgba(139,107,97,0.45)] hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
           >
-            {loading ? "Authenticating Session..." : "Sign In"}
+            {loading ? "Authenticating Session..." : (authMode === "password" && !mfaStep ? "Sign In" : "Verify & Sign In")}
           </button>
         </form>
 

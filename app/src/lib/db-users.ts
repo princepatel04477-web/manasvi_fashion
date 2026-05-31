@@ -142,6 +142,59 @@ export async function getUserByEmail(email: string): Promise<User | undefined> {
   return all.find((u) => u.email.toLowerCase() === normalizedEmail);
 }
 
+export async function getUserByPhone(phone: string): Promise<User | undefined> {
+  const cleanPhone = phone.trim();
+  
+  if (supabaseAdmin) {
+    try {
+      const { data, error } = await supabaseAdmin
+        .from("users")
+        .select("*")
+        .eq("phone", cleanPhone);
+
+      if (!error && data && data.length > 0) {
+        const item = data[0];
+        return {
+          id: String(item.id),
+          name: item.name,
+          email: item.email,
+          passwordHash: item.password_hash,
+          role: item.role,
+          phone: item.phone,
+          shippingAddress: item.shipping_address,
+          city: item.city,
+          postalCode: item.postal_code,
+          createdAt: item.created_at || item.createdAt
+        };
+      }
+    } catch (err) {
+      console.warn("[db-users] Supabase getUserByPhone error:", err);
+    }
+  }
+
+  const all = await getUsers();
+  return all.find((u) => u.phone && u.phone.trim() === cleanPhone);
+}
+
+export async function registerPasswordlessUser(
+  emailOrPhone: string,
+  isEmail: boolean,
+  name?: string
+): Promise<User> {
+  const nameToUse = name || (isEmail ? emailOrPhone.split("@")[0] : `Guest ${emailOrPhone}`);
+  const emailToUse = isEmail ? emailOrPhone : `${emailOrPhone.replace(/[^0-9]/g, "")}@phone.manasvifashion.local`;
+  const phoneToUse = isEmail ? undefined : emailOrPhone;
+  
+  // Register with a random secure password hash
+  const randomPassword = Math.random().toString(36).slice(-10);
+  return registerUser(
+    nameToUse,
+    emailToUse,
+    randomPassword,
+    phoneToUse
+  );
+}
+
 export async function registerUser(
   name: string,
   email: string,
