@@ -9,7 +9,7 @@ export const runtime = "nodejs";
 // Dynamically resolve deployment URL if running on Vercel and NEXTAUTH_URL is pointing to localhost or missing
 ensureNextAuthUrl();
 
-const handler = NextAuth({
+const authHandler = NextAuth({
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -171,5 +171,14 @@ const handler = NextAuth({
   },
   secret: nextAuthSecret
 });
+
+const handler = (req: any, ctx: any) => {
+  const host = req.headers.get("x-forwarded-host") || req.headers.get("host");
+  const protocol = req.headers.get("x-forwarded-proto") || "https";
+  if (host) {
+    process.env.NEXTAUTH_URL = `${protocol}://${host}`;
+  }
+  return authHandler(req, ctx);
+};
 
 export { handler as GET, handler as POST };

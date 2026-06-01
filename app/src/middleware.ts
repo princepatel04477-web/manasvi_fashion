@@ -2,7 +2,7 @@ import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
 import { nextAuthSecret } from "@/lib/auth-constants";
 
-export default withAuth(
+const authMiddleware = withAuth(
   function middleware(req) {
     const token = req.nextauth.token;
     const path = req.nextUrl.pathname;
@@ -41,6 +41,15 @@ export default withAuth(
     secret: nextAuthSecret
   }
 );
+
+export default async function middleware(req: any, event: any) {
+  const host = req.headers.get("x-forwarded-host") || req.headers.get("host");
+  const protocol = req.headers.get("x-forwarded-proto") || "https";
+  if (host) {
+    process.env.NEXTAUTH_URL = `${protocol}://${host}`;
+  }
+  return authMiddleware(req, event);
+}
 
 export const config = {
   matcher: ["/dashboard/:path*", "/api/admin/:path*"],

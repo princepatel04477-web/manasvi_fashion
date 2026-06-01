@@ -19,8 +19,7 @@ const USERS_FILE = "users-db.json";
 
 export const ADMIN_EMAILS = [
   "princepatel01258@gmail.com",
-  "prince@example.com",
-  "aryan@example.com"
+  "varunyatechnologies@gmail.com"
 ];
 
 // Helper to check if email is admin
@@ -33,15 +32,25 @@ export function getRoleByEmail(email: string): User["role"] {
 }
 
 async function getSeedUsers(): Promise<User[]> {
-  const salt = await bcrypt.genSalt(10);
-  const passwordHash = await bcrypt.hash("Prince_1258", salt);
-  
+  const [hash1, hash2] = await Promise.all([
+    bcrypt.hash("Prince_1258", 10),
+    bcrypt.hash("PAM_262127", 10),
+  ]);
+
   return [
     {
-      id: "usr-admin",
+      id: "usr-admin-1",
       name: "Prince Patel",
       email: "princepatel01258@gmail.com",
-      passwordHash: passwordHash,
+      passwordHash: hash1,
+      role: "admin",
+      createdAt: new Date().toISOString()
+    },
+    {
+      id: "usr-admin-2",
+      name: "Varunya Technologies",
+      email: "varunyatechnologies@gmail.com",
+      passwordHash: hash2,
       role: "admin",
       createdAt: new Date().toISOString()
     }

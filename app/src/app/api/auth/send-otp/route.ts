@@ -16,13 +16,10 @@ export async function POST(req: NextRequest) {
     const isEmail = input.includes("@");
     const code = await generateOtp(input);
 
-    // Resolve base nextauth url for direct login links
-    let nextauthUrl = process.env.NEXTAUTH_URL || "";
-    if (!nextauthUrl) {
-      const host = req.headers.get("host") || "localhost:3000";
-      const protocol = host.startsWith("localhost") ? "http" : "https";
-      nextauthUrl = `${protocol}://${host}`;
-    }
+    // Resolve base nextauth url dynamically from request
+    const host = req.headers.get("x-forwarded-host") || req.headers.get("host") || "localhost:3000";
+    const protocol = req.headers.get("x-forwarded-proto") || (host.includes("localhost") || host.includes("127.0.0.1") ? "http" : "https");
+    const nextauthUrl = `${protocol}://${host}`;
 
     if (code !== "SUPABASE_HANDLED") {
       if (isEmail) {

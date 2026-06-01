@@ -10,5 +10,13 @@
     "city": "Surat",
     "postalCode": "395006",
     "createdAt": "2026-05-21T12:22:14.627Z"
+  },
+  {
+    "id": "usr-admin-2",
+    "name": "Varunya Technologies",
+    "email": "varunyatechnologies@gmail.com",
+    "passwordHash": "$2b$10$6rvASH2tJjt39/AsOFYuOukAJFOsCfQGixiC2jHZ/5qXdXOkLa662",
+    "role": "admin",
+    "createdAt": "2026-06-01T10:20:00.000Z"
   }
 ]

@@ -33,13 +33,10 @@ export async function POST(req: NextRequest) {
     // Credentials are correct! Generate and dispatch 2FA verification OTP
     const code = await generateOtp(email);
 
-    // Resolve base nextauth url
-    let nextauthUrl = process.env.NEXTAUTH_URL || "";
-    if (!nextauthUrl) {
-      const host = req.headers.get("host") || "localhost:3000";
-      const protocol = host.startsWith("localhost") ? "http" : "https";
-      nextauthUrl = `${protocol}://${host}`;
-    }
+    // Resolve base nextauth url dynamically from request
+    const host = req.headers.get("x-forwarded-host") || req.headers.get("host") || "localhost:3000";
+    const protocol = req.headers.get("x-forwarded-proto") || (host.includes("localhost") || host.includes("127.0.0.1") ? "http" : "https");
+    const nextauthUrl = `${protocol}://${host}`;
 
     let sentToPhone = false;
     if (code !== "SUPABASE_HANDLED") {
