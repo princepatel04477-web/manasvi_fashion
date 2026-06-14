@@ -197,7 +197,7 @@ export default function Footer() {
                 },
                 {
                   name: "YouTube",
-                  href: "https://youtube.com/@manasvifashion",
+                  href: "https://www.youtube.com/@ManasviFashionsurat",
                   viewBox: "0 0 32 32",
                   svg: (
                     <path d="M29.58 9.48a3.64 3.64 0 00-2.56-2.58C24.76 6.3 16 6.3 16 6.3s-8.76 0-11.02.6a3.64 3.64 0 00-2.56 2.58C1.82 11.76 1.82 16 1.82 16s0 4.24.6 6.52a3.64 3.64 0 002.56 2.58c2.26.6 11.02.6 11.02.6s8.76 0 11.02-.6a3.64 3.64 0 002.56-2.58c.6-2.28.6-6.52.6-6.52s0-4.24-.6-6.52zM13.2 20.36V11.64L20.8 16l-7.6 4.36z" />
