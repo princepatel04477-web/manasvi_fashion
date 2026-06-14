@@ -209,6 +209,19 @@ export async function updateOrderStatus(
 
       if (!error && data && data.length > 0) {
         console.log("[db-orders] Order status updated in Supabase:", id);
+        const item = data[0];
+        return {
+          id: String(item.id),
+          customerName: item.customer_name,
+          customerEmail: item.customer_email,
+          customerPhone: item.customer_phone || undefined,
+          items: Array.isArray(item.items) ? item.items : JSON.parse((item.items as string) || "[]"),
+          totalAmount: Number(item.total_amount),
+          status: item.status,
+          paymentStatus: item.payment_status,
+          shippingAddress: item.shipping_address,
+          createdAt: item.created_at || item.createdAt
+        } as Order;
       } else {
         console.warn("[db-orders] Supabase status update failed:", error?.message);
       }

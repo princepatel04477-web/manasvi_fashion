@@ -9,7 +9,11 @@ export async function POST(req: NextRequest) {
     const rawBody = await req.text();
     const signature = req.headers.get("x-razorpay-signature");
 
+    console.log("[api-webhooks-razorpay] Received webhook event. Signature header:", signature);
+    console.log("[api-webhooks-razorpay] Raw body content:", rawBody);
+
     if (!signature) {
+      console.warn("[api-webhooks-razorpay] Signature validation aborted: Missing x-razorpay-signature header");
       return NextResponse.json({ error: "Missing webhook signature" }, { status: 400 });
     }
 
@@ -22,8 +26,14 @@ export async function POST(req: NextRequest) {
 
     const isSignatureValid = expectedSignature === signature;
 
+    console.log("[api-webhooks-razorpay] Signature check result:", {
+      isSignatureValid,
+      expectedSignature,
+      receivedSignature: signature
+    });
+
     if (!isSignatureValid) {
-      console.error("[api-webhooks-razorpay] Signature verification failed");
+      console.error("[api-webhooks-razorpay] Signature verification failed!");
       return NextResponse.json({ error: "Signature verification failed" }, { status: 400 });
     }
 

@@ -78,6 +78,13 @@ export async function POST(req: NextRequest) {
     // 3. Create the Razorpay Order
     const amountInPaise = Math.round(totalAmount * 100);
 
+    if (amountInPaise < 100) {
+      return NextResponse.json(
+        { error: "Minimum order amount is 100 paise (1 INR)" },
+        { status: 400 }
+      );
+    }
+
     const options = {
       amount: amountInPaise,
       currency: "INR",
@@ -90,12 +97,15 @@ export async function POST(req: NextRequest) {
       }
     };
 
+    console.log("[api-checkout-razorpay-order] Creating Razorpay order with options:", JSON.stringify(options, null, 2));
     const order = await razorpay.orders.create(options);
+    console.log("[api-checkout-razorpay-order] Complete Razorpay order response:", JSON.stringify(order, null, 2));
 
     // 4. Pre-create the pending unpaid order in our database
     const formattedAddress = `${shippingDetails.address}, ${shippingDetails.city} - ${shippingDetails.pin}\n[Razorpay Order ID: ${order.id}]`;
 
-    await createOrder({
+    console.log("[api-checkout-razorpay-order] Pre-creating pending unpaid order in database for customer:", shippingDetails.email);
+    const dbOrder = await createOrder({
       customerName: shippingDetails.name,
       customerEmail: shippingDetails.email,
       customerPhone: shippingDetails.phone || "",
@@ -105,6 +115,7 @@ export async function POST(req: NextRequest) {
       paymentStatus: "unpaid",
       shippingAddress: formattedAddress
     });
+    console.log("[api-checkout-razorpay-order] Pre-created database order successfully with Local ID:", dbOrder.id);
 
     return NextResponse.json({
       id: order.id,
@@ -114,6 +125,16 @@ export async function POST(req: NextRequest) {
     });
   } catch (error: any) {
     console.error("[api-checkout-razorpay-order] Error creating order:", error);
+    const isAuthFailure = error?.statusCode === 401 || 
+                          error?.error?.description?.toLowerCase().includes("auth") ||
+                          error?.error?.code === "BAD_REQUEST_ERROR" && error?.error?.description === "Authentication failed";
+    
+    if (isAuthFailure) {
+      return NextResponse.json(
+        { error: error?.error?.description || "Authentication failed" },
+        { status: 401 }
+      );
+    }
     return NextResponse.json(
       { error: error?.message || "Failed to create payment order" },
       { status: 500 }

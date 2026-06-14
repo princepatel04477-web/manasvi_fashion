@@ -11,3 +11,5 @@ app/testsprite_tests/
 /photo/
 /photo MODELS/
 /photo modeless/
+.env
+
