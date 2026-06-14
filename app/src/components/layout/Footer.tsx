@@ -143,13 +143,20 @@ export default function Footer() {
             <div className="relative flex flex-col items-start gap-1">
               {/* Organic ambient gold radial glow behind the logo */}
               <div className="absolute -inset-10 bg-[radial-gradient(circle,rgba(231,194,184,0.08)_0%,transparent_70%)] pointer-events-none -z-10 blur-xl animate-pulse" style={{ animationDuration: '8s' }} />
-              <Link href="/" className="group flex flex-col items-start gap-0.5">
-                <span className="font-[var(--font-grance)] text-3xl font-semibold tracking-[0.06em] text-white group-hover:text-[#E7C2B8] transition-colors duration-500">
-                  MANASVI
-                </span>
-                <span className="font-[var(--font-cormorant)] text-xs font-semibold uppercase tracking-[0.3em] text-[#E7C2B8] opacity-90 pl-0.5">
-                  Fashion
-                </span>
+              <Link href="/" className="group flex items-center gap-3">
+                <img
+                  src="/bg_less_man_logo.png"
+                  alt="Manasvi Logo"
+                  className="h-10 w-auto object-contain brightness-0 invert opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
+                />
+                <div className="flex flex-col items-start gap-0.5">
+                  <span className="font-[var(--font-grance)] text-2xl font-semibold tracking-[0.06em] text-white group-hover:text-[#E7C2B8] transition-colors duration-500">
+                    MANASVI
+                  </span>
+                  <span className="font-[var(--font-cormorant)] text-[10px] font-semibold uppercase tracking-[0.3em] text-[#E7C2B8] opacity-90 pl-0.5">
+                    Fashion
+                  </span>
+                </div>
               </Link>
             </div>
             
