@@ -224,17 +224,22 @@ export default function ContactPage() {
               <h3 className="font-cormorant text-xs uppercase tracking-[0.2em] font-bold text-[#C98E87] mb-2">
                 Our Atelier
               </h3>
-              <div className="flex gap-4 items-start group">
+              <a
+                href="https://www.google.com/maps/place/Dharma+Nandan+Scoiety-2,+Mota+Varachha,+Surat,+Gujarat+394101/data=!4m6!3m5!1s0x3be04f445e723b45:0xa659c7c4bb074276!7e2!8m2!3d21.2357798!4d72.88371889999999?entry=gps&coh=192189&g_ep=CAESBzI1LjI3LjQYACCenQoqhwEsOTQyNzUzMTQsOTQyMjMyOTksOTQyMTY0MTMsOTQyODA1NzYsOTQyMTI0OTYsOTQyMDczOTQsOTQyMDc1MDYsOTQyMDg1MDYsOTQyMTc1MjMsOTQyMTg2NTMsOTQyMjk4MzksOTQyNzUxNjgsNDcwODQzOTMsOTQyMTMyMDAsOTQyNTgzMjVCAklO&skid=7d802069-66b8-45a1-9c92-f1b561228263"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex gap-4 items-start group hover:opacity-80 transition-opacity duration-300 w-fit"
+              >
                 <MapPin className="w-5 h-5 text-[#8B6B61] mt-1 flex-shrink-0 transition-transform duration-300 group-hover:scale-110" />
                 <div>
-                  <p className="font-cormorant text-lg font-medium text-[#3B2B28]">Manasvi Fashion Surat</p>
+                  <p className="font-cormorant text-lg font-medium text-[#3B2B28] border-b border-transparent group-hover:border-[#3B2B28]/30 transition-all duration-300 w-fit">Manasvi Fashion Surat</p>
                   <p className="font-inter text-xs sm:text-sm text-[#8B6B61] leading-relaxed font-light mt-1">
                     A, 61, Dharmanandan Row House,<br />
                     Mahadev Chowk, Mota Varachha,<br />
                     Surat, Gujarat - 394101, India.
                   </p>
                 </div>
-              </div>
+              </a>
             </div>
 
             {/* Inquiries Block */}
@@ -287,6 +292,85 @@ export default function ContactPage() {
                   </svg>
                   <span className="font-inter text-xs sm:text-sm text-[#8B6B61] font-light hover:text-[#3B2B28] border-b border-transparent hover:border-[#3B2B28]/30 transition-all duration-300">
                     @manasvi_fashion_
+                  </span>
+                </a>
+
+                {/* WhatsApp */}
+                <a 
+                  href="https://wa.me/919099369035" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="flex gap-4 items-center group w-fit"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="w-5 h-5 text-[#8B6B61] flex-shrink-0 transition-transform duration-300 group-hover:scale-110"
+                  >
+                    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+                  </svg>
+                  <span className="font-inter text-xs sm:text-sm text-[#8B6B61] font-light hover:text-[#3B2B28] border-b border-transparent hover:border-[#3B2B28]/30 transition-all duration-300">
+                    +91 90993 69035 (WhatsApp)
+                  </span>
+                </a>
+
+                {/* Facebook */}
+                <a 
+                  href="https://www.facebook.com/176294456208042" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="flex gap-4 items-center group w-fit"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="w-5 h-5 text-[#8B6B61] flex-shrink-0 transition-transform duration-300 group-hover:scale-110"
+                  >
+                    <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
+                  </svg>
+                  <span className="font-inter text-xs sm:text-sm text-[#8B6B61] font-light hover:text-[#3B2B28] border-b border-transparent hover:border-[#3B2B28]/30 transition-all duration-300">
+                    Manasvi Fashion
+                  </span>
+                </a>
+
+                {/* YouTube */}
+                <a 
+                  href="https://www.youtube.com/@ManasviFashionsurat" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="flex gap-4 items-center group w-fit"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="w-5 h-5 text-[#8B6B61] flex-shrink-0 transition-transform duration-300 group-hover:scale-110"
+                  >
+                    <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z" />
+                    <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02" />
+                  </svg>
+                  <span className="font-inter text-xs sm:text-sm text-[#8B6B61] font-light hover:text-[#3B2B28] border-b border-transparent hover:border-[#3B2B28]/30 transition-all duration-300">
+                    @ManasviFashionsurat
                   </span>
                 </a>
               </div>
