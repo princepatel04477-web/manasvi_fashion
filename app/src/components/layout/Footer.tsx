@@ -202,6 +202,14 @@ export default function Footer() {
                   svg: (
                     <path d="M29.58 9.48a3.64 3.64 0 00-2.56-2.58C24.76 6.3 16 6.3 16 6.3s-8.76 0-11.02.6a3.64 3.64 0 00-2.56 2.58C1.82 11.76 1.82 16 1.82 16s0 4.24.6 6.52a3.64 3.64 0 002.56 2.58c2.26.6 11.02.6 11.02.6s8.76 0 11.02-.6a3.64 3.64 0 002.56-2.58c.6-2.28.6-6.52.6-6.52s0-4.24-.6-6.52zM13.2 20.36V11.64L20.8 16l-7.6 4.36z" />
                   )
+                },
+                {
+                  name: "Google Maps",
+                  href: "https://www.google.com/maps/place/Dharma+Nandan+Scoiety-2,+Mota+Varachha,+Surat,+Gujarat+394101/data=!4m6!3m5!1s0x3be04f445e723b45:0xa659c7c4bb074276!7e2!8m2!3d21.2357798!4d72.88371889999999?entry=gps&coh=192189&g_ep=CAESBzI1LjI3LjQYACCenQoqhwEsOTQyNzUzMTQsOTQyMjMyOTksOTQyMTY0MTMsOTQyODA1NzYsOTQyMTI0OTYsOTQyMDczOTQsOTQyMDc1MDYsOTQyMDg1MDYsOTQyMTc1MjMsOTQyMTg2NTMsOTQyMjk4MzksOTQyNzUxNjgsNDcwODQzOTMsOTQyMTMyMDAsOTQyNTgzMjVCAklO&skid=7d802069-66b8-45a1-9c92-f1b561228263",
+                  viewBox: "0 0 24 24",
+                  svg: (
+                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+                  )
                 }
               ].map((social) => (
                 <a
