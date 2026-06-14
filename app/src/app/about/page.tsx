@@ -96,27 +96,46 @@ export default function AboutPage() {
         translateY: `${textY}px`,
       });
     }
-
-    // 4. Details Section Cards staggered entry
-    if (detailsGridRef.current) {
-      const cards = detailsGridRef.current.children;
-      const triggerPoint = windowHeight * 0.9;
-      
-      for (let i = 0; i < cards.length; i++) {
-        const card = cards[i] as HTMLElement;
-        const rect = card.getBoundingClientRect();
-        if (rect.top < triggerPoint) {
-          animate(card, {
-            opacity: [0, 1],
-            translateY: [20, 0],
-            duration: 800,
-            delay: i * 150,
-            easing: "cubicBezier(0.16, 1, 0.3, 1)",
-          });
-        }
-      }
-    }
   }, [scrollY, windowHeight]);
+
+  // 4. Details Section Cards staggered entry via IntersectionObserver (runs once)
+  useEffect(() => {
+    const el = detailsGridRef.current;
+    if (!el) return;
+
+    const cards = Array.from(el.children) as HTMLElement[];
+    // Set initial styles for animation to avoid flash
+    cards.forEach((card) => {
+      card.style.opacity = "0";
+      card.style.transform = "translateY(20px)";
+    });
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          cards.forEach((card, i) => {
+            animate(card, {
+              opacity: [0, 1],
+              translateY: [20, 0],
+              duration: 800,
+              delay: i * 150,
+              easing: "cubicBezier(0.16, 1, 0.3, 1)",
+              complete: () => {
+                // Clear inline style so hover transition-all translateY works perfectly
+                card.style.transform = "";
+                card.style.opacity = "";
+              }
+            });
+          });
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   // Initial load animation for hero elements
   useEffect(() => {
