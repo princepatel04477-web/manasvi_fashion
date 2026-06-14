@@ -48,8 +48,6 @@ export default function HeroSection({
   const [activeSlide, setActiveSlide] = useState(0);
   const [timerKey, setTimerKey] = useState(0);
 
-  const ctaCard1Ref = useRef<HTMLAnchorElement>(null);
-  const ctaCard2Ref = useRef<HTMLAnchorElement>(null);
   const parallaxWrapperRef = useRef<HTMLDivElement>(null);
   const heroSectionRef = useRef<HTMLElement>(null);
   const stRef = useRef<ScrollTrigger | null>(null);
@@ -871,66 +869,6 @@ export default function HeroSection({
               </span>
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* ─── KURTI FULLSCREEN SECTION ───────────────────────────────────── */}
-      <section className="relative h-screen w-full overflow-hidden bg-[#b89e86] z-10">
-        {/* Background Image */}
-        <div className="absolute inset-0">
-          <img
-            src={cms.sectionKurtiImage}
-            alt={cms.sectionKurtiAlt}
-            className="h-full w-full object-cover object-center"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#1f140f]/75 via-[#1f140f]/20 to-transparent" />
-        </div>
-
-        {/* Content Overlay */}
-        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center text-center text-white px-6">
-          <p className="im-fell-great-primer-regular text-sm uppercase tracking-[0.3em] text-[#E7C2B8] mb-3">
-            Collection
-          </p>
-          <h2 className="cormorant-garamond-manasvi text-5xl sm:text-6xl md:text-7xl mb-8 tracking-wide font-normal [text-shadow:0_2px_12px_rgba(0,0,0,0.35)]">
-            Kurtis
-          </h2>
-          <Link
-            ref={ctaCard1Ref}
-            href={cms.sectionKurtiLink}
-            className="px-8 py-3.5 bg-[#FAF7F2] text-[#160E0C] text-xs font-semibold uppercase tracking-[0.2em] rounded-sm hover:bg-[#E7C2B8] hover:scale-105 active:scale-95 transition-all duration-300 shadow-lg cursor-pointer"
-          >
-            Explore Kurtis
-          </Link>
-        </div>
-      </section>
-
-      {/* ─── TUNIC FULLSCREEN SECTION ───────────────────────────────────── */}
-      <section className="relative h-screen w-full overflow-hidden bg-[#b89e86] z-10">
-        {/* Background Image */}
-        <div className="absolute inset-0">
-          <img
-            src={cms.sectionTunicImage}
-            alt={cms.sectionTunicAlt}
-            className="h-full w-full object-cover object-center"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#1f140f]/75 via-[#1f140f]/20 to-transparent" />
-        </div>
-
-        {/* Content Overlay */}
-        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center text-center text-white px-6">
-          <p className="im-fell-great-primer-regular text-sm uppercase tracking-[0.3em] text-[#E7C2B8] mb-3">
-            Collection
-          </p>
-          <h2 className="cormorant-garamond-manasvi text-5xl sm:text-6xl md:text-7xl mb-8 tracking-wide font-normal [text-shadow:0_2px_12px_rgba(0,0,0,0.35)]">
-            Tunic Tops
-          </h2>
-          <Link
-            ref={ctaCard2Ref}
-            href={cms.sectionTunicLink}
-            className="px-8 py-3.5 bg-[#FAF7F2] text-[#160E0C] text-xs font-semibold uppercase tracking-[0.2em] rounded-sm hover:bg-[#E7C2B8] hover:scale-105 active:scale-95 transition-all duration-300 shadow-lg cursor-pointer"
-          >
-            Explore Tunic Tops
-          </Link>
         </div>
       </section>
     </>

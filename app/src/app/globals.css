@@ -382,3 +382,170 @@ body {
   color: var(--admin-text-primary) !important;
 }
 
+/* ──────────────────────────────────────────────────────────────────────────
+   INFINITE MARQUEE & BOTTOM SHEET MOBILE STYLES
+   ────────────────────────────────────────────────────────────────────────── */
+.marquee-track-react {
+  display: flex;
+  overflow: hidden;
+  user-select: none;
+  width: 100%;
+}
+.marquee-content-react {
+  display: flex;
+  flex-shrink: 0;
+  will-change: transform;
+}
+.marquee-paused-react .animate-marquee-rtl-react,
+.marquee-paused-react .animate-marquee-ltr-react {
+  animation-play-state: paused !important;
+}
+
+@keyframes marquee-rtl-react {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-100%); }
+}
+@keyframes marquee-ltr-react {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(0); }
+}
+
+.animate-marquee-rtl-react {
+  animation: marquee-rtl-react var(--speed, 30s) linear infinite;
+}
+.animate-marquee-ltr-react {
+  animation: marquee-ltr-react var(--speed, 30s) linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee-rtl-react,
+  .animate-marquee-ltr-react {
+    animation: none !important;
+  }
+  .marquee-track-react {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+  .marquee-content-react {
+    justify-content: flex-start !important;
+  }
+}
+
+.product-card-react-active {
+  transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.3s ease;
+}
+.product-card-react-active img {
+  transition: transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+.product-card-react-active:active {
+  transform: scale(0.96) translateY(2px) !important;
+}
+.product-card-react-active:active img {
+  transform: scale(1.08) !important;
+}
+
+@keyframes jiggle-react {
+  0% { transform: scale(1); }
+  20% { transform: scale(1.15) rotate(-10deg); }
+  40% { transform: scale(1.15) rotate(10deg); }
+  60% { transform: scale(1.15) rotate(-6deg); }
+  80% { transform: scale(1.15) rotate(6deg); }
+  100% { transform: scale(1) rotate(0); }
+}
+.animate-jiggle-react {
+  animation: jiggle-react 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* ── Body Scroll Lock when Modal is open ─────────────────────────── */
+body.overflow-hidden-scroll {
+  overflow: hidden !important;
+  position: fixed;
+  width: 100%;
+  touch-action: none;
+  -webkit-overflow-scrolling: none;
+}
+
+/* ── Tablet Card Scaling (md breakpoint: 768px+) ─────────────────── */
+@media (min-width: 768px) {
+  .product-card-react-active {
+    width: 280px !important;
+    min-width: 280px !important;
+    height: 380px !important;
+  }
+  .product-card-react-active .relative.w-full {
+    height: 260px !important;
+  }
+}
+
+/* ── Section Entrance Animation ──────────────────────────────────── */
+@keyframes section-fade-up {
+  0% {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.section-fade-in {
+  animation: section-fade-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ── Image Lazy-Load Shimmer for Mobile Cards ────────────────────── */
+@keyframes card-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+.card-img-shimmer {
+  background: linear-gradient(
+    90deg,
+    #F7F3EE 0%,
+    #EAD6CF 25%,
+    #F7F3EE 50%,
+    #EAD6CF 75%,
+    #F7F3EE 100%
+  );
+  background-size: 400% 100%;
+  animation: card-shimmer 2.4s ease-in-out infinite;
+}
+
+/* ── Mobile Bottom Sheet Gallery Enhancement ─────────────────────── */
+@media (max-width: 767px) {
+  .modal-gallery-img {
+    height: 56vh !important;
+    min-height: 340px;
+    max-height: 520px;
+  }
+}
+@media (min-width: 768px) {
+  .modal-gallery-img {
+    height: 400px !important;
+  }
+}
+
+/* ── USP Strip Scroll Animation ──────────────────────────────────── */
+@keyframes usp-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.usp-scroll-strip {
+  animation: usp-scroll 20s linear infinite;
+}
+
+/* ── Soft glow pulse for CTA buttons ─────────────────────────────── */
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(18, 140, 126, 0.25); }
+  50% { box-shadow: 0 0 16px 4px rgba(18, 140, 126, 0.15); }
+}
+.whatsapp-glow {
+  animation: glow-pulse 3s ease-in-out infinite;
+}
+
+/* ── Touch-safe tap highlight override for mobile ────────────────── */
+@media (max-width: 1024px) {
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+

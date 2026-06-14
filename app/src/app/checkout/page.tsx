@@ -37,6 +37,9 @@ export default function CheckoutPage() {
   // Sandbox Simulator states
   const [showMockModal, setShowMockModal] = useState(false);
   const [mockPaymentStatus, setMockPaymentStatus] = useState<"idle" | "processing" | "success" | "failure">("idle");
+  const canUseMockCheckout =
+    typeof window !== "undefined" &&
+    ["localhost", "127.0.0.1"].includes(window.location.hostname);
 
   interface SessionUser {
     name?: string;
@@ -237,10 +240,15 @@ export default function CheckoutPage() {
           throw new Error(orderData.error || "Failed to generate payment transaction");
         }
       } catch (err) {
-        console.warn("Backend order creation failed, falling back to direct payment (sandbox) mode:", err);
+        console.warn("Backend order creation failed:", err);
+        if (!canUseMockCheckout) {
+          throw err;
+        }
+
+        console.warn("Switching to local sandbox checkout mode.");
         isSandbox = true;
         orderData = {
-          keyId: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_test_T1TQKbpiz4Aquk",
+          keyId: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
           amount: Math.round(grandTotal * 100),
           currency: "INR",
           id: null
@@ -252,6 +260,12 @@ export default function CheckoutPage() {
         setShowMockModal(true);
         return;
       }
+
+      if (!orderData.keyId) {
+        throw new Error("Razorpay public key is missing. Add NEXT_PUBLIC_RAZORPAY_KEY_ID.");
+      }
+
+      // Allow test keys on the live site for integration testing
 
       // 3. Configure standard Razorpay checkout options
       const options: any = {

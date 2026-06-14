@@ -4,13 +4,43 @@ import { getCoupons } from "@/lib/db-coupons";
 import { createOrder } from "@/lib/db-orders";
 import Razorpay from "razorpay";
 
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID || "rzp_test_mockkeyid12345",
-  key_secret: process.env.RAZORPAY_KEY_SECRET || "mocksecretkey54321"
-});
+type RazorpayRouteError = {
+  statusCode?: number;
+  message?: string;
+  error?: {
+    description?: string;
+    code?: string;
+  };
+};
+
+function getRazorpayClient() {
+  const keyId = process.env.RAZORPAY_KEY_ID;
+  const keySecret = process.env.RAZORPAY_KEY_SECRET;
+
+  if (!keyId || !keySecret) {
+    throw new Error("Razorpay is not configured. Add RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET.");
+  }
+
+  return new Razorpay({
+    key_id: keyId,
+    key_secret: keySecret
+  });
+}
+
+function isAuthenticationFailure(error: unknown) {
+  const razorpayError = error as RazorpayRouteError;
+  const description = razorpayError.error?.description;
+
+  return (
+    razorpayError.statusCode === 401 ||
+    description?.toLowerCase?.().includes("auth") === true ||
+    (razorpayError.error?.code === "BAD_REQUEST_ERROR" && description === "Authentication failed")
+  );
+}
 
 export async function POST(req: NextRequest) {
   try {
+    const razorpay = getRazorpayClient();
     const { items, couponCode, shippingDetails } = await req.json();
 
     if (!items || !Array.isArray(items) || items.length === 0) {
@@ -121,24 +151,22 @@ export async function POST(req: NextRequest) {
       id: order.id,
       amount: order.amount,
       currency: order.currency,
-      keyId: process.env.RAZORPAY_KEY_ID || "rzp_test_mockkeyid12345"
+      keyId: process.env.RAZORPAY_KEY_ID
     });
-  } catch (error: any) {
-    console.error("[api-checkout-razorpay-order] Error creating order:", error);
-    const isAuthFailure = error?.statusCode === 401 || 
-                          error?.error?.description?.toLowerCase().includes("auth") ||
-                          error?.error?.code === "BAD_REQUEST_ERROR" && error?.error?.description === "Authentication failed";
+  } catch (error: unknown) {
+    const razorpayError = error as RazorpayRouteError;
+    console.error("[api-checkout-razorpay-order] Error creating order:", razorpayError);
+    const isAuthFailure = isAuthenticationFailure(razorpayError);
     
     if (isAuthFailure) {
       return NextResponse.json(
-        { error: error?.error?.description || "Authentication failed" },
+        { error: razorpayError.error?.description || "Authentication failed" },
         { status: 401 }
       );
     }
     return NextResponse.json(
-      { error: error?.message || "Failed to create payment order" },
+      { error: razorpayError.message || "Failed to create payment order" },
       { status: 500 }
     );
   }
 }
-

@@ -10,6 +10,7 @@ import ProductCard from "@/components/product-card";
 import useScrollReveal from "@/hooks/useScrollReveal";
 import TrustBadges from "@/components/TrustBadges";
 import PageTransition from "@/components/PageTransition";
+import MobileEthnicCollection from "@/components/mobile-ethnic-collection";
 
 export default function Home() {
   const { products } = useShop();
@@ -168,35 +169,44 @@ export default function Home() {
           brandHeaderRef={brandHeaderRef}
           brandSubtitleRef={brandSubtitleRef}
         />
-        <TrustBadges />
 
-        {/* Featured Collection Section */}
-        {featuredProducts.length > 0 && (
-          <section
-            ref={featuredRef}
-            className="bg-[#FAF7F2] py-20 px-4 sm:px-6 lg:px-8 border-t border-[#E7C2B8]/40"
-          >
-            <div className="max-w-7xl mx-auto">
-              <div className="mb-12 text-center flex flex-col items-center">
-                <span className="font-inter text-[10px] tracking-[0.25em] text-[#C98E87] uppercase font-semibold">
-                  Curated Selection
-                </span>
-                <h2 className="section-heading font-serif text-3xl sm:text-4xl lg:text-5xl text-[#3B2B28] mt-2">
-                  Featured Collection
-                </h2>
-                <div className="w-16 h-[1px] bg-[#C98E87] my-3" />
-              </div>
+        {/* Desktop Viewport (lg and up) */}
+        <div className="hidden lg:block">
+          <TrustBadges />
 
-              <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto">
-                {featuredProducts.map((product) => (
-                  <div key={product.id} className="product-card">
-                    <ProductCard product={product} />
-                  </div>
-                ))}
+          {/* Featured Collection Section */}
+          {featuredProducts.length > 0 && (
+            <section
+              ref={featuredRef}
+              className="bg-[#FAF7F2] py-20 px-4 sm:px-6 lg:px-8 border-t border-[#E7C2B8]/40"
+            >
+              <div className="max-w-7xl mx-auto">
+                <div className="mb-12 text-center flex flex-col items-center">
+                  <span className="font-inter text-[10px] tracking-[0.25em] text-[#C98E87] uppercase font-semibold">
+                    Curated Selection
+                  </span>
+                  <h2 className="section-heading font-serif text-3xl sm:text-4xl lg:text-5xl text-[#3B2B28] mt-2">
+                    Featured Collection
+                  </h2>
+                  <div className="w-16 h-[1px] bg-[#C98E87] my-3" />
+                </div>
+
+                <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto">
+                  {featuredProducts.map((product) => (
+                    <div key={product.id} className="product-card">
+                      <ProductCard product={product} />
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          </section>
-        )}
+            </section>
+          )}
+        </div>
+
+        {/* Mobile & Tablet Viewports (below lg) */}
+        <div className="block lg:hidden bg-[#F7F3EE] text-[#0D0906] font-sans pb-16">
+          <MobileEthnicCollection />
+        </div>
       </main>
     </PageTransition>
   );
