@@ -66,7 +66,7 @@ function FailureContent() {
         <div className="space-y-1 text-left font-inter text-xs text-[#8B6B61] font-light leading-relaxed">
           <span className="font-medium text-[#3B2B28] block">Need Checkout Assistance?</span>
           <p>
-            If your funds were deducted but your status remains unpaid, please copy your payment identifier and reach out to our concierge team at <span className="font-medium text-[#3B2B28]">concierge@manasvifashion.com</span> for instant resolution.
+            If your funds were deducted but your status remains unpaid, please copy your payment identifier and reach out to our concierge team at <span className="font-medium text-[#3B2B28]">manasvifashion1515@gmail.com</span> for instant resolution.
           </p>
         </div>
       </div>

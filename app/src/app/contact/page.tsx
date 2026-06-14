@@ -249,12 +249,12 @@ export default function ContactPage() {
               </h3>
               <div className="flex flex-col gap-4">
                 <a 
-                  href="mailto:concierge@manasvifashion.com" 
+                  href="mailto:manasvifashion1515@gmail.com" 
                   className="flex gap-4 items-center group w-fit"
                 >
                   <Mail className="w-5 h-5 text-[#8B6B61] flex-shrink-0 transition-transform duration-300 group-hover:-translate-y-0.5" />
                   <span className="font-inter text-xs sm:text-sm text-[#8B6B61] font-light hover:text-[#3B2B28] border-b border-transparent hover:border-[#3B2B28]/30 transition-all duration-300">
-                    concierge@manasvifashion.com
+                    manasvifashion1515@gmail.com
                   </span>
                 </a>
                 

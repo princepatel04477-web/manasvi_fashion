@@ -382,10 +382,10 @@ export default function Footer() {
               </span>
               <span className="text-white/20">•</span>
               <a
-                href="mailto:info@varunyatechnologies.com"
+                href="mailto:varunyatechnologies@gmail.com"
                 className="font-[var(--font-inter)] text-[9px] tracking-wider text-white/30 hover:text-[#E7C2B8] transition-colors duration-300"
               >
-                info@varunyatechnologies.com
+                varunyatechnologies@gmail.com
               </a>
             </div>
           </div>
