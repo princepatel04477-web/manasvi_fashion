@@ -21,8 +21,8 @@ export const metadata: Metadata = { title: "Manasvi Fashion", description: "Luxu
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${playfair.variable} ${imFell.variable} ${cormorant.variable} ${dm.variable} ${inter.variable} ${bodoni.variable} ${grance.variable}`}>
-      <body className="font-[var(--font-inter)]">
+    <html lang="en" className={`${playfair.variable} ${imFell.variable} ${cormorant.variable} ${dm.variable} ${inter.variable} ${bodoni.variable} ${grance.variable}`} suppressHydrationWarning>
+      <body className="font-[var(--font-inter)]" suppressHydrationWarning>
         <Providers>
           <Header />
           <div className="relative min-h-screen">

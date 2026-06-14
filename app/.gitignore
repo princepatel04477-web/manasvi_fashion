@@ -42,3 +42,5 @@ next-env.d.ts
 
 /generated/prisma
 .env*.local
+
+testsprite_tests/tmp/config.json

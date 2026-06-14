@@ -18,11 +18,29 @@ export default function Header() {
   const [drawerTab, setDrawerTab] = useState<"menu" | "cart">("menu");
   const { cart, products: productsList, cartCount, cartTotal, updateQty, removeFromCart } = useShop();
   const [isScrolledPastSlides, setIsScrolledPastSlides] = useState(false);
+  const [showGlobalHeaderMobile, setShowGlobalHeaderMobile] = useState(false);
   const navRef1 = useRef<HTMLElement>(null);
   const navRef2 = useRef<HTMLElement>(null);
   const logoRef = useRef<HTMLDivElement>(null);
 
   const isHome = pathname === "/";
+
+  useEffect(() => {
+    const handleOpenMenu = () => {
+      setDrawerTab("menu");
+      setIsDrawerOpen(true);
+    };
+    const handleOpenCart = () => {
+      setDrawerTab("cart");
+      setIsDrawerOpen(true);
+    };
+    window.addEventListener("open-mobile-menu", handleOpenMenu);
+    window.addEventListener("open-mobile-cart", handleOpenCart);
+    return () => {
+      window.removeEventListener("open-mobile-menu", handleOpenMenu);
+      window.removeEventListener("open-mobile-cart", handleOpenCart);
+    };
+  }, []);
   const isAdmin = (session?.user as any)?.role === "admin" || (session?.user as any)?.role === "seller";
   const firstName = session?.user?.name ? session.user.name.split(" ")[0] : "";
 
@@ -52,6 +70,7 @@ export default function Header() {
       const sy = window.scrollY;
       const threshold = window.innerHeight * 3 - 80;
       setIsScrolledPastSlides(sy > threshold);
+      setShowGlobalHeaderMobile(sy > 50);
 
       if (!isHome) return;
 
@@ -87,7 +106,7 @@ export default function Header() {
       }
       if (logoRef.current) {
         set(logoRef.current, {
-          opacity: logoOpacity
+          opacity: 1
         });
       }
     };
@@ -211,7 +230,9 @@ export default function Header() {
 
   return (
     <>
-      <header className="fixed inset-x-0 top-0 z-50 bg-transparent py-5">
+      <header className={`fixed inset-x-0 top-0 z-50 bg-transparent py-5 transition-all duration-300 md:opacity-100 md:pointer-events-auto ${
+        isHome && !showGlobalHeaderMobile ? "opacity-0 pointer-events-none" : "opacity-100 pointer-events-auto"
+      }`}>
         <div
           className={`mx-auto grid max-w-7xl grid-cols-3 items-center px-6 transition-colors duration-500 ${
             isScrolledPastSlides

@@ -1,2 +1,13 @@
 .vercel
 .env*.local
+.env.vercel*
+app/err.txt
+app/out.txt
+app/testsprite_tests/
+*.db
+*.html
+*.jpg
+.vercel_backup/
+/photo/
+/photo MODELS/
+/photo modeless/
