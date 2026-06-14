@@ -189,7 +189,7 @@ export default function Footer() {
                 },
                 {
                   name: "Facebook",
-                  href: "https://facebook.com/manasvifashion",
+                  href: "https://www.facebook.com/176294456208042",
                   viewBox: "0 0 32 32",
                   svg: (
                     <path d="M29 16c0-7.18-5.82-13-13-13S3 8.82 3 16c0 6.49 4.75 11.87 11 12.87v-9.1h-3.3v-3.77H14v-2.87c0-3.27 1.94-5.07 4.9-5.07 1.42 0 2.9.25 2.9.25v3.2h-1.64c-1.62 0-2.12 1.01-2.12 2.04v2.45h3.6l-.57 3.77h-3.03v9.1c6.25-1 11-6.38 11-12.87z" />
