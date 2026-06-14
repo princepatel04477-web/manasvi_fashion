@@ -68,7 +68,7 @@ export default function HeroSection({
     {
       image: "/photos/a2160073ca5a0516fa6601f8080a04d1aabe78848f023fa689ec1a79a265d7c3.png",
       eyebrow: "Summer Spotlight",
-      row1: "Summer 2025",
+      row1: "Summer 2026",
       row2: "New Kurtis",
       row3: "Effortless & Light",
       sub: "Lightweight, breathable styles made for your everyday comfort.",
