@@ -365,9 +365,29 @@ export default function Footer() {
             <span className="font-[var(--font-inter)] text-[11px] tracking-widest text-white/35 uppercase">
               © {new Date().getFullYear()} Manasvi Fashion. All Rights Reserved.
             </span>
-            <span className="font-[var(--font-cormorant)] italic text-xs text-[#E7C2B8]/60 tracking-wider">
-              Designed with elegance
-            </span>
+            <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-2 gap-y-1 font-[var(--font-cormorant)] text-xs text-white/50 tracking-wider">
+              <span className="italic text-[#E7C2B8]/60">Designed with elegance</span>
+              <span className="text-white/20">•</span>
+              <span className="font-[var(--font-inter)] text-[10px] tracking-wider uppercase text-white/40">
+                Made by{" "}
+                <a
+                  href="https://varunyatechnologies.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="relative text-[#E7C2B8] hover:text-white transition-colors duration-300 group/link"
+                >
+                  Varunya Technologies
+                  <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[#E7C2B8] origin-right scale-x-0 transition-transform duration-300 group-hover/link:scale-x-100 group-hover/link:origin-left" />
+                </a>
+              </span>
+              <span className="text-white/20">•</span>
+              <a
+                href="mailto:info@varunyatechnologies.com"
+                className="font-[var(--font-inter)] text-[9px] tracking-wider text-white/30 hover:text-[#E7C2B8] transition-colors duration-300"
+              >
+                info@varunyatechnologies.com
+              </a>
+            </div>
           </div>
 
           {/* Payment Methods */}
