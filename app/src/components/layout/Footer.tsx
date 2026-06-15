@@ -117,7 +117,8 @@ export default function Footer() {
         { label: "Login", href: "/auth/signin" },
         { label: "Register", href: "/auth/signup" },
         { label: "Wishlist", href: "/wishlist" },
-        { label: "Orders", href: "/order-tracking" }
+        { label: "Orders", href: "/order-tracking" },
+        { label: "Seller Portal", href: "/seller/dashboard" }
       ]
     }
   };
@@ -387,6 +388,13 @@ export default function Footer() {
               >
                 varunyatechnologies@gmail.com
               </a>
+              <span className="text-white/20">•</span>
+              <Link
+                href="/seller/dashboard"
+                className="font-[var(--font-inter)] text-[9px] tracking-widest text-[#E7C2B8] hover:text-white uppercase transition-colors duration-300 font-semibold"
+              >
+                Seller Portal
+              </Link>
             </div>
           </div>
 
