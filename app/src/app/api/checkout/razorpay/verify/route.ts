@@ -174,7 +174,7 @@ export async function POST(req: NextRequest) {
       items: orderItems,
       totalAmount: totalAmount,
       status: "processing",
-      paymentStatus: "paid",
+      paymentStatus: razorpay_payment_id.startsWith("pay_cod_") ? "unpaid" : "paid",
       shippingAddress: formattedAddress
     });
     console.log("[api-checkout-razorpay-verify] Fallback paid order created successfully in DB with ID:", order.id);
