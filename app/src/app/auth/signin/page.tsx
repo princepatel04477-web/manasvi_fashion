@@ -264,35 +264,6 @@ function SignInForm() {
           <span>Google Account</span>
         </button>
 
-        {/* Seeded Sandbox Accordion */}
-        <div className="pt-4 border-t border-[#E7C2B8]/20">
-          <details className="group cursor-pointer">
-            <summary className="list-none flex items-center justify-between text-[10px] font-semibold uppercase tracking-[0.15em] text-[#8B6B61]/80 hover:text-[#8B6B61] transition duration-300">
-              <span>Admin Access</span>
-              <svg
-                className="w-3.5 h-3.5 transform group-open:rotate-180 transition-transform duration-300 text-[#8B6B61]"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" />
-              </svg>
-            </summary>
-            <div className="mt-4 bg-white/40 border border-[#E7C2B8]/30 rounded-xl p-4 text-xs text-[#8B6B61] space-y-3 leading-relaxed">
-              <p className="font-light">Sign in with your authorised admin credentials to access the boutique operations dashboard.</p>
-              <div className="space-y-2 text-[11px]">
-                <div className="flex items-center gap-2 bg-white/70 p-2 rounded-lg border border-[#E7C2B8]/20">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#C98E87] flex-shrink-0" />
-                  <span className="font-mono text-[#3B2B28] select-all">princepatel01258@gmail.com</span>
-                </div>
-                <div className="flex items-center gap-2 bg-white/70 p-2 rounded-lg border border-[#E7C2B8]/20">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#C98E87] flex-shrink-0" />
-                  <span className="font-mono text-[#3B2B28] select-all">varunyatechnologies@gmail.com</span>
-                </div>
-              </div>
-            </div>
-          </details>
-        </div>
 
         {/* Link to Sign Up */}
         <div className="text-center text-xs text-[#8B6B61]/85 pt-2">
