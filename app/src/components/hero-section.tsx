@@ -76,9 +76,9 @@ export default function HeroSection({
     {
       image: "/photos/30d97ad77e93ea942815e38bb52e9a50afb83be88dcfd62ece7199044bdc6c91.png",
       eyebrow: "Exclusive Offer",
-      row1: "Above ₹999",
-      row2: "Free Delivery",
-      row3: "Surat Collection",
+      row1: "New Season",
+      row2: "Surat Collection",
+      row3: "Artisan Silhouettes",
       sub: "Discover radiant designs crafted from the finest cotton fabrics.",
       ctaText: "Shop Sale",
       ctaLink: "/collections",

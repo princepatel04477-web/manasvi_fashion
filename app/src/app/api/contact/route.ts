@@ -9,7 +9,7 @@ const contactSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
   email: z.string().email("Please provide a valid email address."),
   phone: z.string().optional(),
-  inquiryType: z.enum(["styling", "order", "collaboration", "general"]),
+  inquiryType: z.enum(["styling", "order", "collaboration", "general", "wholesale"]),
   message: z.string().min(10, "Message must be at least 10 characters."),
 });
 
@@ -98,6 +98,7 @@ export async function POST(req: NextRequest) {
       order: "Order & Boutique Support",
       collaboration: "Creative Collaboration",
       general: "General Inquiry",
+      wholesale: "Wholesale Inquiry / Partnership",
     };
 
     const typeLabel = inquiryTypeLabels[validatedData.inquiryType];

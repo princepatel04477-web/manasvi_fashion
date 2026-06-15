@@ -522,7 +522,7 @@ export default function MobileEthnicCollection() {
           {[...Array(2)].map((_, dupIdx) => (
             <div key={dupIdx} className="flex items-center gap-8 px-4 shrink-0">
               <span className="flex items-center gap-2 text-[10px] font-semibold tracking-widest uppercase text-[#B8924A]">
-                <span className="text-sm">✦</span> Free Shipping All India
+                <span className="text-sm">✦</span> Standard Delivery All India
               </span>
               <span className="flex items-center gap-2 text-[10px] font-semibold tracking-widest uppercase text-[#0D0906]/50">
                 <span className="text-sm">◇</span> Premium Fabrics

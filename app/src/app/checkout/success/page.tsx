@@ -132,7 +132,10 @@ function SuccessContent() {
   const total = order.totalAmount;
   // Fallback calculations for subtotal and discount display
   const itemsSubtotal = order.items.reduce((sum, item) => sum + item.price * item.qty, 0);
-  const discount = Math.max(0, itemsSubtotal - total);
+  const orderDate = order.createdAt ? new Date(order.createdAt).getTime() : Date.now();
+  const isNewOrder = orderDate > new Date("2026-06-15T16:00:00.000Z").getTime();
+  const shippingCost = isNewOrder ? 150 : 0;
+  const discount = Math.max(0, itemsSubtotal + shippingCost - total);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -179,7 +182,7 @@ function SuccessContent() {
                 <strong className="text-sm font-semibold text-[#3B2B28] font-cormorant italic block">
                   {getDeliveryWindow(order.createdAt)}
                 </strong>
-                <span className="text-[10px] text-[#8B6B61] font-light block leading-normal">Includes handcrafted preparation (2-4 days) & complimentary delivery.</span>
+                <span className="text-[10px] text-[#8B6B61] font-light block leading-normal">Includes handcrafted preparation (2-4 days) & standard delivery.</span>
               </div>
             </div>
 
@@ -296,7 +299,11 @@ function SuccessContent() {
             )}
             <div className="flex justify-between">
               <span className="font-light">Premium Delivery</span>
-              <span className="text-emerald-600 font-light italic">Complimentary</span>
+              {shippingCost === 0 ? (
+                <span className="text-emerald-600 font-light italic">Complimentary</span>
+              ) : (
+                <span className="text-[#3B2B28]">{formatINR(shippingCost)}</span>
+              )}
             </div>
             
             <div className="pt-4 border-t border-[#E7C2B8]/30 flex justify-between items-baseline">

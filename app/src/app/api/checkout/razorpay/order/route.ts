@@ -103,7 +103,8 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const totalAmount = Math.max(0, subtotal - discount);
+    const shippingCharge = subtotal > 0 ? 150 : 0;
+    const totalAmount = Math.max(0, subtotal - discount + shippingCharge);
 
     // 3. Create the Razorpay Order
     const amountInPaise = Math.round(totalAmount * 100);
@@ -122,6 +123,7 @@ export async function POST(req: NextRequest) {
       notes: {
         couponCode: couponCode || "",
         discount: discount.toString(),
+        shippingCharge: shippingCharge.toString(),
         subtotal: subtotal.toString(),
         customerEmail: shippingDetails.email
       }

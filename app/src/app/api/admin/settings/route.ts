@@ -19,7 +19,7 @@ const defaultSettings: AppSettings = {
   gstRate: 5,
   contactEmail: "care@manasvifashion.com",
   supportPhone: "+91 99887 76655",
-  announcementText: "Festive Collection Live — Free Shipping Above ₹2,999!"
+  announcementText: "Festive Collection Live — Explore Our Premium Kurtis & Tunics!"
 };
 
 const settingsSchema = z.object({

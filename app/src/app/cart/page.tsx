@@ -152,7 +152,7 @@ export default function CartPage() {
       : appliedCoupon.discountValue
     : 0;
 
-  const shippingCost = cartTotal === 0 ? 0 : cartTotal >= 1999 ? 0 : 150;
+  const shippingCost = cartTotal === 0 ? 0 : 150;
   const finalTotal = Math.max(0, cartTotal - discountAmount + shippingCost);
 
   // Save for Later (wishlist sync)
@@ -523,11 +523,7 @@ export default function CartPage() {
                     <div className="flex gap-3 items-start">
                       <Truck className="w-4 h-4 text-[#8B6B61] mt-0.5 flex-shrink-0" />
                       <p className="font-inter text-[11px] text-[#8B6B61] leading-relaxed">
-                        {cartTotal >= 1999 ? (
-                          <>Complimentary boutique delivery active for this wardrobe selection.</>
-                        ) : (
-                          <>Spend {formatINR(1999 - cartTotal)} more to qualify for <strong>free shipping</strong>.</>
-                        )}
+                        Standard delivery charge of <strong>{formatINR(150)}</strong> applies to all orders across India.
                       </p>
                     </div>
 

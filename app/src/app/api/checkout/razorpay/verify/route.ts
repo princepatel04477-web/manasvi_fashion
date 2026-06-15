@@ -3,6 +3,7 @@ import { getOrders, createOrder, updateOrderStatus } from "@/lib/db-orders";
 import { getProductById, updateProduct } from "@/lib/db-products";
 import { getCoupons } from "@/lib/db-coupons";
 import { sendOrderConfirmationEmail } from "@/lib/email-service";
+import { sendOrderWhatsappNotification } from "@/lib/whatsapp-service";
 import crypto from "crypto";
 
 export async function POST(req: NextRequest) {
@@ -100,6 +101,10 @@ export async function POST(req: NextRequest) {
         console.log("[api-checkout-razorpay-verify] Triggering order confirmation email to:", updatedOrder.customerEmail);
         await sendOrderConfirmationEmail(updatedOrder);
 
+        // WhatsApp owner notification (non-blocking on failure)
+        const waResult = await sendOrderWhatsappNotification(updatedOrder);
+        console.log("[api-checkout-razorpay-verify] WhatsApp notification result:", waResult);
+
         return NextResponse.json({
           ok: true,
           orderId: updatedOrder.id
@@ -157,7 +162,8 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const totalAmount = Math.max(0, subtotal - discount);
+    const shippingCharge = subtotal > 0 ? 150 : 0;
+    const totalAmount = Math.max(0, subtotal - discount + shippingCharge);
     const formattedAddress = `${shippingDetails.address}, ${shippingDetails.city} - ${shippingDetails.pin}\n[Razorpay Order ID: ${razorpay_order_id} | Payment ID: ${razorpay_payment_id}]`;
 
     console.log("[api-checkout-razorpay-verify] Creating fallback paid order in DB for:", shippingDetails.email);
@@ -185,6 +191,10 @@ export async function POST(req: NextRequest) {
 
     console.log("[api-checkout-razorpay-verify] Triggering order confirmation email for fallback order to:", order.customerEmail);
     await sendOrderConfirmationEmail(order);
+
+    // WhatsApp owner notification (non-blocking on failure)
+    const waResultFallback = await sendOrderWhatsappNotification(order);
+    console.log("[api-checkout-razorpay-verify] WhatsApp notification result (fallback):", waResultFallback);
 
     return NextResponse.json({
       ok: true,

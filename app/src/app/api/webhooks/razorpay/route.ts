@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getOrders, updateOrderStatus } from "@/lib/db-orders";
 import { getProductById, updateProduct } from "@/lib/db-products";
 import { sendOrderConfirmationEmail } from "@/lib/email-service";
+import { sendOrderWhatsappNotification } from "@/lib/whatsapp-service";
 import crypto from "crypto";
 
 export async function POST(req: NextRequest) {
@@ -78,6 +79,8 @@ export async function POST(req: NextRequest) {
 
           // Trigger invoice email notification
           await sendOrderConfirmationEmail(updatedOrder);
+          // Trigger WhatsApp owner notification (non-blocking)
+          await sendOrderWhatsappNotification(updatedOrder);
           console.log(`[api-webhooks-razorpay] Webhook successfully processed payment for Order: ${order.id}`);
         }
       } else {

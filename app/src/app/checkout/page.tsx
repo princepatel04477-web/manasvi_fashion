@@ -85,7 +85,7 @@ export default function CheckoutPage() {
   });
 
   const subtotal = cartTotal;
-  const shippingCharge = 0; // Complimentary free delivery for luxury purchases
+  const shippingCharge = subtotal > 0 ? 150 : 0; // Standard boutique delivery charge
   const grandTotal = Math.max(0, subtotal - discountAmount + shippingCharge);
 
   // Validate coupon codes on client side
@@ -654,8 +654,8 @@ export default function CheckoutPage() {
                       </div>
                     )}
                     <div className="flex justify-between">
-                      <span className="font-light">Complementary Shipping</span>
-                      <span className="text-emerald-600 font-light italic">Free</span>
+                      <span className="font-light">Shipping & Handling</span>
+                      <span className="text-[#3B2B28]">{formatINR(shippingCharge)}</span>
                     </div>
                     
                     <div className="pt-4 border-t border-[#E7C2B8]/30 flex justify-between items-baseline">

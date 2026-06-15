@@ -34,8 +34,8 @@ export default function TrustBadges() {
   const badges = [
     {
       icon: Truck,
-      title: "Free Delivery",
-      subtitle: "Above ₹999 across India",
+      title: "Standard Delivery",
+      subtitle: "₹150 standard charge across India",
     },
     {
       icon: RotateCcw,

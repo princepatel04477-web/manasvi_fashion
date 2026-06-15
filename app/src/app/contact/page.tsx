@@ -5,7 +5,7 @@ import { animate } from "animejs";
 import { Mail, Phone, Clock, MapPin, Check, AlertCircle, ChevronDown, ArrowRight } from "lucide-react";
 import PageTransition from "@/components/PageTransition";
 
-type InquiryType = "styling" | "order" | "collaboration" | "general";
+type InquiryType = "styling" | "order" | "collaboration" | "general" | "wholesale";
 
 interface FormState {
   name: string;
@@ -184,6 +184,7 @@ export default function ContactPage() {
     order: "Order & Boutique Support",
     collaboration: "Creative Collaboration",
     general: "General Inquiry",
+    wholesale: "Wholesale Inquiry / Partnership",
   };
 
   return (
@@ -508,7 +509,7 @@ export default function ContactPage() {
                     {/* Custom Dropdown list */}
                     {dropdownOpen && (
                       <div className="absolute left-0 right-0 top-full mt-2 bg-white border border-[#E7C2B8]/40 rounded-2xl shadow-xl z-30 overflow-hidden py-1 transition-all duration-300">
-                        {(["styling", "order", "collaboration", "general"] as InquiryType[]).map((type) => (
+                        {(["styling", "order", "collaboration", "general", "wholesale"] as InquiryType[]).map((type) => (
                           <button
                             key={type}
                             type="button"

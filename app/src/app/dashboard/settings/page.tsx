@@ -145,18 +145,16 @@ export default function SettingsPage() {
           <div className="grid gap-5 sm:grid-cols-2">
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-[#8b6b61] mb-1.5">
-                Free Shipping Threshold (₹)
+                Standard Shipping Fee (₹)
               </label>
               <input
                 type="number"
-                min="0"
-                value={settings.freeShippingThreshold}
-                onChange={(e) => handleFieldChange("freeShippingThreshold", Math.max(0, parseFloat(e.target.value) || 0))}
-                className="w-full rounded-xl border border-[#d9a58f44] px-4 py-2.5 text-sm text-[#2a1d19] focus:outline-none focus:border-[#6e2b38]"
-                required
+                value={150}
+                disabled
+                className="w-full rounded-xl border border-[#d9a58f44] bg-stone-100 px-4 py-2.5 text-sm text-[#8b6b61] cursor-not-allowed focus:outline-none"
               />
               <p className="mt-1 text-[10px] text-[#8b6b61] italic">
-                Orders totaling above this amount qualify for complimentary delivery.
+                Standard flat delivery charge applied to all boutique acquisitions.
               </p>
             </div>
             <div>
