@@ -528,6 +528,15 @@ export default function MobileFirstExperience() {
               </div>
             ))}
           </div>
+
+          <div className="mt-5 flex justify-center">
+            <Link 
+              href="/kurtis"
+              className="w-full text-center py-3 bg-white text-[#0D0906] border border-[#0D0906]/15 hover:border-[#0D0906] font-inter font-normal text-[10px] tracking-[0.2em] uppercase rounded-xl transition-all duration-300 shadow-xs active:scale-95"
+            >
+              View All
+            </Link>
+          </div>
         </section>
 
         {/* Tunic Collection Section (2x2 Grid) */}
@@ -575,6 +584,15 @@ export default function MobileFirstExperience() {
                 </div>
               </div>
             ))}
+          </div>
+
+          <div className="mt-5 flex justify-center">
+            <Link 
+              href="/tunic-tops"
+              className="w-full text-center py-3 bg-white text-[#0D0906] border border-[#0D0906]/15 hover:border-[#0D0906] font-inter font-normal text-[10px] tracking-[0.2em] uppercase rounded-xl transition-all duration-300 shadow-xs active:scale-95"
+            >
+              View All
+            </Link>
           </div>
         </section>
 
