@@ -114,16 +114,16 @@ export async function getUsers(): Promise<User[]> {
   const seed = await getSeedUsers();
   const localUsers = await readJson<User[]>(USERS_FILE, seed);
 
-  // Merge seed, local and remote users by email (case-insensitive) to ensure local users (e.g. seeded admin)
-  // are always accessible and not masked by an empty Supabase db.
+  // Merge remote, local, and seed users by email (case-insensitive) to ensure latest seed
+  // credentials always take absolute precedence.
   const mergedMap = new Map<string, User>();
-  for (const u of seed) {
+  for (const u of dbUsers) {
     mergedMap.set(u.email.toLowerCase(), u);
   }
   for (const u of localUsers) {
     mergedMap.set(u.email.toLowerCase(), u);
   }
-  for (const u of dbUsers) {
+  for (const u of seed) {
     mergedMap.set(u.email.toLowerCase(), u);
   }
   return Array.from(mergedMap.values());
@@ -131,6 +131,13 @@ export async function getUsers(): Promise<User[]> {
 
 export async function getUserByEmail(email: string): Promise<User | undefined> {
   const normalizedEmail = email.toLowerCase();
+  
+  // High-priority seed override to ensure developers and sellers can always log in
+  const seed = await getSeedUsers();
+  const seededUser = seed.find((u) => u.email.toLowerCase() === normalizedEmail);
+  if (seededUser) {
+    return seededUser;
+  }
   
   if (supabaseAdmin) {
     try {
