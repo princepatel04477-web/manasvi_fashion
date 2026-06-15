@@ -449,7 +449,6 @@ export default function CheckoutPage() {
                         <input 
                           required 
                           type="tel"
-                          pattern="[0-9]*"
                           placeholder="e.g. 9988776655" 
                           value={phone} 
                           onChange={(e) => setPhone(e.target.value)} 
