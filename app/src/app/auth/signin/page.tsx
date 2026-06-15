@@ -1,79 +1,26 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, Suspense } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Menu, ShoppingBag, Sparkles, Apple, Loader2 } from "lucide-react";
 import PageTransition from "@/components/PageTransition";
+import { Libre_Caslon_Text, Hanken_Grotesk } from "next/font/google";
 
-const CAMPAIGN_IMAGES = [
-  "/manasvi-hero.png",
-  "/photos/Gemini_Generated_Image_7p370v7p370v7p37.png",
-  "/photos/Gemini_Generated_Image_h8k8lch8k8lch8k8.png",
-  "/photos/Gemini_Generated_Image_o7map6o7map6o7ma.png",
-];
+const libreCaslon = Libre_Caslon_Text({
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  variable: "--font-libre-caslon",
+  display: "swap",
+});
 
-function CinematicSlideshow() {
-  const [currentIdx, setCurrentIdx] = useState(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentIdx((prev) => (prev + 1) % CAMPAIGN_IMAGES.length);
-    }, 8000); // Cross-fade every 8 seconds
-    return () => clearInterval(interval);
-  }, []);
-
-  return (
-    <div className="relative w-full h-full overflow-hidden bg-[#3B2B28] soft-grain">
-      {CAMPAIGN_IMAGES.map((img, idx) => (
-        <div
-          key={img}
-          className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-            idx === currentIdx ? "opacity-90" : "opacity-0 pointer-events-none"
-          }`}
-        >
-          {/* We only render the images when active or adjacent to avoid resource overhead, 
-              but since they are background campaign pieces, simple fade is perfect */}
-          <div
-            className="w-full h-full bg-cover bg-center ken-burns-slow scale-105"
-            style={{ backgroundImage: `url('${img}')` }}
-          />
-        </div>
-      ))}
-
-      {/* Warm Cinematic sunset light leak layer */}
-      <div className="absolute inset-0 pointer-events-none mix-blend-screen bg-gradient-to-tr from-[#FAF7F2]/10 via-[#F4D7CF]/20 to-[#DFAE9F]/15 cinematic-leak" />
-
-      {/* Dark luxury vignetting and editorial styling gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-[#3B2B28]/85 via-[#3B2B28]/20 to-[#3B2B28]/45" />
-
-      {/* Editorial Content Overlay */}
-      <div className="absolute inset-0 flex flex-col justify-between p-8 md:p-16 text-[#FAF7F2] z-10">
-        <div>
-          <span className="font-serif text-xs uppercase tracking-[0.35em] text-[#E7C2B8]/90">Surat Edition</span>
-          <h2 className="mt-3 font-serif text-3xl md:text-4xl tracking-[0.1em] font-light text-shadow-elegant">
-            MANASVI FASHION
-          </h2>
-        </div>
-
-        <div className="max-w-md space-y-6">
-          <p className="font-serif text-lg md:text-xl italic font-light leading-relaxed text-[#FAF7F2]/90">
-            &ldquo;Welcoming you into an intimate boutique environment, curated for timeless feminine grace.&rdquo;
-          </p>
-          <div className="h-px w-24 bg-gradient-to-r from-[#E7C2B8] to-transparent opacity-60" />
-          <div className="flex items-center gap-4 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#E7C2B8]">
-            <span>Kurtis</span>
-            <span className="w-1 h-1 rounded-full bg-[#E7C2B8]/40"></span>
-            <span>Dresses</span>
-            <span className="w-1 h-1 rounded-full bg-[#E7C2B8]/40"></span>
-            <span>Tunic Tops</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
+const hankenGrotesk = Hanken_Grotesk({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600"],
+  variable: "--font-hanken-grotesk",
+  display: "swap",
+});
 
 function SignInForm() {
   const router = useRouter();
@@ -123,155 +70,147 @@ function SignInForm() {
   };
 
   return (
-    <div className="w-full max-w-md px-4 sm:px-8 py-12 md:py-0 flex flex-col justify-center md:min-h-screen">
-      <div className="space-y-8">
-        {/* Title Block */}
-        <div className="space-y-3">
-          <span className="font-serif text-[10px] uppercase tracking-[0.3em] text-[#8B6B61] block">
-            Boutique Invitation
+    <div className="w-full flex flex-col items-center animate-fade-in">
+      {/* Brand Logo Container */}
+      <div className="w-full flex justify-center mb-10 mt-4">
+        <Link href="/">
+          <img
+            alt="Manasvi Fashion Brand Identity"
+            className="w-48 h-auto object-contain cursor-pointer"
+            src="https://lh3.googleusercontent.com/aida/AP1WRLvT4HkmwmY75T06vlWf1hS8zoA8Ili5wJ0YCXU-cNiQRWGSywDSL3TbhaIKBDSQJNkotE7WjbHhRRZmk7hNMbhT4heGLcRytt0oIuDDHguYEHfdHsCohVKW1nutjTPT2cI3WK6QfeMh6e1dpsNgoyJFd6-laAgWxrfMTw8f3Gm7khfwYqGqaJXdwily7KsO7UTakjP0p6T7SEJLcRHgcDCVTV1CWFYD4TtxyUulCWfO2DxhWijCNvMEtiM"
+          />
+        </Link>
+      </div>
+
+      {/* Greeting */}
+      <div className="text-center mb-10 w-full">
+        <h1 className="font-[family:var(--font-libre-caslon)] text-[28px] leading-[36px] text-[#251714] mb-2">Welcome Back</h1>
+        <p className="font-[family:var(--font-hanken-grotesk)] text-[16px] leading-[24px] text-[#4f4443] italic">Enter your details to explore our curated collections.</p>
+      </div>
+
+      {/* Notifications */}
+      {isRegistered && !error && (
+        <div className="w-full mb-6 rounded-xl bg-[#fcf9f4] border border-[#8B6B61]/20 p-4 text-xs text-[#8B6B61] flex items-center gap-3">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#C98E87] animate-pulse"></span>
+          <span>Account created successfully. Please authenticate below.</span>
+        </div>
+      )}
+
+      {error && (
+        <div className="w-full mb-6 rounded-xl bg-[#C98E87]/10 border border-[#C98E87]/30 p-4 text-xs text-[#8B6B61] flex items-center gap-3">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#C98E87]"></span>
+          <span>
+            {error === "CredentialsSignin"
+              ? "Invalid credentials. Please verify your email and password."
+              : error}
           </span>
-          <h1 className="font-serif text-3xl sm:text-4xl text-[#3B2B28] font-light tracking-wide">
-            Welcome Back
-          </h1>
-          <p className="text-xs text-[#8B6B61]/80 leading-relaxed font-light">
-            Sign in to continue your curated Manasvi Fashion boutique experience.
-          </p>
+        </div>
+      )}
+
+      {/* Login Form */}
+      <form onSubmit={handleSubmit} className="w-full space-y-8">
+        {/* Email/Phone Field */}
+        <div className="relative group">
+          <label className="font-[family:var(--font-hanken-grotesk)] text-[12px] leading-[16px] tracking-[0.1em] font-medium uppercase text-[#4f4443] block mb-1" htmlFor="identity">Email Address</label>
+          <input
+            className="w-full bg-transparent border-t-0 border-l-0 border-r-0 border-b border-[#3B2B28]/20 py-3 text-[18px] leading-[28px] font-normal placeholder-[#C98E87]/50 transition-all duration-300 focus:outline-none focus:border-b-[#B8924A] text-[#1c1c19]"
+            id="identity"
+            name="identity"
+            type="email"
+            inputMode="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="yourname@email.com"
+            required
+          />
         </div>
 
-        {/* Notifications */}
-        {isRegistered && !error && (
-          <div className="rounded-xl bg-[#FAF7F2] border border-[#8B6B61]/20 p-4 text-xs text-[#8B6B61] flex items-center gap-3">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#C98E87] animate-pulse"></span>
-            <span>Account created successfully. Please authenticate below.</span>
-          </div>
-        )}
-
-        {error && (
-          <div className="rounded-xl bg-[#C98E87]/10 border border-[#C98E87]/30 p-4 text-xs text-[#8B6B61] flex items-center gap-3">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#C98E87]"></span>
-            <span>
-              {error === "CredentialsSignin"
-                ? "Invalid credentials. Please verify your email and password."
-                : error}
-            </span>
-          </div>
-        )}
-
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-1">
-            <label className="block text-[9px] font-semibold uppercase tracking-[0.2em] text-[#8B6B61]">
-              Email Address
-            </label>
-            <input
-              type="email"
-              inputMode="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              placeholder="e.g. princepatel01258@gmail.com"
-              className="w-full bg-transparent border-b border-[#E7C2B8]/40 py-3 text-base md:text-sm text-[#3B2B28] outline-none transition-all duration-300 focus:border-[#8B6B61] focus:shadow-[0_4px_12px_-4px_rgba(231,194,184,0.15)] placeholder-[#8B6B61]/35 font-light"
-            />
-          </div>
-
-          <div className="space-y-1">
-            <label className="block text-[9px] font-semibold uppercase tracking-[0.2em] text-[#8B6B61]">
-              Password
-            </label>
-            <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                placeholder="••••••••"
-                className="w-full bg-transparent border-b border-[#E7C2B8]/40 py-3 pr-10 text-base md:text-sm text-[#3B2B28] outline-none transition-all duration-300 focus:border-[#8B6B61] focus:shadow-[0_4px_12px_-4px_rgba(231,194,184,0.15)] placeholder-[#8B6B61]/35"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-0 bottom-3 text-[#8B6B61]/70 hover:text-[#3B2B28] transition-colors duration-300 focus:outline-none cursor-pointer"
-                aria-label={showPassword ? "Hide password" : "Show password"}
-              >
-                {showPassword ? (
-                  <EyeOff className="w-4 h-4" />
-                ) : (
-                  <Eye className="w-4 h-4" />
-                )}
-              </button>
-            </div>
-          </div>
-
-          {/* Form Actions */}
-          <div className="flex items-center justify-between text-xs text-[#8B6B61]">
-            <label className="flex items-center gap-2 cursor-pointer select-none">
-              <input
-                type="checkbox"
-                className="w-3.5 h-3.5 rounded border-[#E7C2B8]/60 bg-transparent text-[#8B6B61] focus:ring-0 focus:ring-offset-0 cursor-pointer"
-              />
-              <span className="font-light">Remember me</span>
-            </label>
+        {/* Password Field */}
+        <div className="relative group">
+          <div className="flex justify-between items-end mb-1">
+            <label className="font-[family:var(--font-hanken-grotesk)] text-[12px] leading-[16px] tracking-[0.1em] font-medium uppercase text-[#4f4443]" htmlFor="password">Password</label>
             <button
               type="button"
-              className="hover:text-[#3B2B28] font-light tracking-wide transition duration-300"
+              onClick={() => alert("Password recovery is coming soon. Please contact administrator.")}
+              className="font-[family:var(--font-hanken-grotesk)] text-[12px] leading-[16px] tracking-[0.1em] font-medium uppercase text-[#B8924A] hover:text-[#3B2B28] transition-colors duration-300"
             >
-              Forgot Password?
+              Forgot?
             </button>
           </div>
-
-          {/* Sign In CTA */}
+          <input
+            className="w-full bg-transparent border-t-0 border-l-0 border-r-0 border-b border-[#3B2B28]/20 py-3 text-[18px] leading-[28px] font-normal placeholder-[#C98E87]/50 transition-all duration-300 focus:outline-none focus:border-b-[#B8924A] text-[#1c1c19] pr-10"
+            id="password"
+            name="password"
+            type={showPassword ? "text" : "password"}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="••••••••"
+            required
+          />
           <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-gradient-to-r from-[#C98E87] via-[#8B6B61] to-[#3B2B28] text-[#FAF7F2] py-4 rounded-full text-[10px] font-semibold tracking-[0.25em] uppercase transition-all duration-500 hover:shadow-[0_8px_24px_-8px_rgba(139,107,97,0.45)] hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-0 bottom-3 text-[#4f4443] hover:text-[#1c1c19] transition-colors"
           >
-            {loading ? "Authenticating Session..." : "Sign In"}
+            {showPassword ? (
+              <EyeOff className="w-5 h-5 stroke-[1.5]" />
+            ) : (
+              <Eye className="w-5 h-5 stroke-[1.5]" />
+            )}
           </button>
-        </form>
-
-        {/* Divider */}
-        <div className="relative flex items-center justify-center py-2">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-[#E7C2B8]/20" />
-          </div>
-          <span className="relative px-4 bg-[#FAF7F2] text-[9px] font-medium uppercase tracking-[0.2em] text-[#8B6B61]/70">
-            or connect with
-          </span>
         </div>
+
+        {/* Primary Action */}
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full bg-[#3B2B28] text-[#FAF7F2] py-4 px-8 uppercase font-[family:var(--font-hanken-grotesk)] text-[12px] leading-[16px] tracking-[0.1em] font-medium transition-all duration-300 hover:bg-[#B8924A] active:scale-95 shadow-sm mt-4 cursor-pointer disabled:opacity-50"
+        >
+          {loading ? "Signing In..." : "Sign In"}
+        </button>
+      </form>
+
+      {/* Divider with Sparkle Refinement */}
+      <div className="w-full flex items-center justify-center my-12">
+        <div className="flex-grow h-[0.5px] bg-[#3B2B28]/10"></div>
+        <div className="px-4 text-[#4f4443]">
+          <Sparkles className="w-4 h-4 text-[#C98E87]" />
+        </div>
+        <div className="flex-grow h-[0.5px] bg-[#3B2B28]/10"></div>
+      </div>
+
+      {/* Social Logins */}
+      <div className="w-full grid grid-cols-2 gap-4 font-[family:var(--font-hanken-grotesk)] text-[12px] leading-[16px] tracking-[0.1em] font-medium">
         <button
           type="button"
           onClick={() => signIn("google", { callbackUrl: rawCallbackUrl || "/" })}
-          className="w-full border border-[#E7C2B8]/60 bg-transparent text-[#3B2B28] py-3.5 rounded-full text-[10px] font-medium tracking-[0.2em] uppercase hover:bg-white hover:border-[#8B6B61] transition-all duration-300 flex items-center justify-center gap-3 cursor-pointer"
+          className="flex items-center justify-center py-3 border border-[#3B2B28]/10 hover:bg-white transition-all duration-300 group cursor-pointer"
         >
-          <svg className="w-4 h-4 text-[#8B6B61]" viewBox="0 0 24 24">
-            <path
-              fill="currentColor"
-              d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-            />
-            <path
-              fill="currentColor"
-              d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-            />
-            <path
-              fill="currentColor"
-              d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
-            />
-            <path
-              fill="currentColor"
-              d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
-            />
-          </svg>
-          <span>Google Account</span>
+          <img
+            alt="Google"
+            className="w-5 h-5 mr-3 opacity-80 group-hover:opacity-100"
+            src="https://lh3.googleusercontent.com/aida-public/AB6AXuBLgxgYMhhMKCFPZBpLJdMp8xw31k34xp6canTtVMpbCWMYiNgggJc7aGJwvT2TxdZeo2vAJ36azthtCzx4zVMtcIkpNfJ5GTGzB4B-14BC79JDmmoAFXytjCc9Z-l1DsazO87uPwrnYzBKKdYaQ-1icy70jim2H9pxeCwf-mXpMH0HVxjqP6lewGNgLZlW8jiZgCbs7_99wvpQRrvkjxw0jLCz9G3kHvc3I8Aql6oqqMDK9vG29uEEM1BbwAfOkg00LD-Y3Cwz47g"
+          />
+          <span className="uppercase">Google</span>
         </button>
+        <button
+          type="button"
+          onClick={() => alert("Apple Sign In is coming soon.")}
+          className="flex items-center justify-center py-3 border border-[#3B2B28]/10 hover:bg-white transition-all duration-300 group cursor-pointer"
+        >
+          <Apple className="w-5 h-5 mr-3 text-[#0D0906]/80 group-hover:text-[#0D0906]" />
+          <span className="uppercase">Apple</span>
+        </button>
+      </div>
 
-
-        {/* Link to Sign Up */}
-        <div className="text-center text-xs text-[#8B6B61]/85 pt-2">
-          New to the boutique?{" "}
-          <Link href="/auth/signup" className="font-semibold text-[#8B6B61] hover:text-[#3B2B28] underline underline-offset-4 transition">
-            Create an Account
+      {/* Footnote / Sign Up */}
+      <div className="mt-auto pt-16 text-center">
+        <p className="font-[family:var(--font-hanken-grotesk)] text-[16px] leading-[24px] text-[#4f4443]">
+          Don&apos;t have an account? 
+          <Link href="/auth/signup" className="text-[#B8924A] font-bold ml-1 hover:underline underline-offset-4 decoration-[#C98E87] transition-all">
+            Sign Up
           </Link>
-        </div>
+        </p>
       </div>
     </div>
   );
@@ -280,28 +219,51 @@ function SignInForm() {
 export default function SignInPage() {
   return (
     <PageTransition>
-      <main className="min-h-screen flex flex-col md:flex-row bg-[#FAF7F2] relative">
-        {/* Left side: Cinematic lookbook film loop viewport */}
-        <div className="w-full md:w-1/2 h-[45vh] md:h-screen sticky top-0 z-0">
-          <CinematicSlideshow />
-        </div>
+      <div className={`${libreCaslon.variable} ${hankenGrotesk.variable} min-h-screen bg-[#FAF7F2] font-[family:var(--font-hanken-grotesk)] text-[#1c1c19] selection:bg-[#C98E87]/30 relative`}>
+        {/* Localized style block for custom animations and elements */}
+        <style dangerouslySetInnerHTML={{ __html: `
+          .animate-fade-in {
+            animation: fadeIn 0.8s ease-out forwards;
+          }
+          @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+        `}} />
 
-        {/* Right side: Editorial form viewport */}
-        <div className="w-full md:w-1/2 min-h-[55vh] md:min-h-screen flex items-center justify-center bg-[#FAF7F2] z-10 shadow-[-20px_0_40px_rgba(59,43,40,0.03)] border-t md:border-t-0 md:border-l border-[#E7C2B8]/20 relative">
+        {/* TopAppBar Shell */}
+        <header className="flex justify-between items-center px-[20px] md:px-[80px] h-16 w-full fixed top-0 z-50 bg-[#FAF7F2] border-b border-[#3B2B28]/10">
+          <Link href="/" className="cursor-pointer active:opacity-70 transition-opacity flex items-center">
+            <Menu className="w-5 h-5 text-[#251714]" />
+          </Link>
+          <Link href="/" className="font-[family:var(--font-libre-caslon)] text-[20px] tracking-widest uppercase text-[#251714]">
+            Manasvi
+          </Link>
+          <Link href="/cart" className="cursor-pointer active:opacity-70 transition-opacity flex items-center">
+            <ShoppingBag className="w-5 h-5 text-[#251714]" />
+          </Link>
+        </header>
+
+        {/* Content viewport */}
+        <main className="min-h-screen pt-24 pb-12 flex flex-col items-center px-[20px] md:px-[80px] max-w-[500px] mx-auto">
           <Suspense
             fallback={
-              <div className="flex flex-col items-center justify-center p-12 text-[#2a1d19]">
-                <span className="font-serif text-xs uppercase tracking-[0.25em] text-[#8B6B61] animate-pulse">
-                  Manasvi Fashion
-                </span>
-                <p className="mt-4 font-serif text-sm text-[#8B6B61] font-light">Loading portal...</p>
+              <div className="flex flex-col items-center justify-center p-12 text-[#251714] min-h-[50vh]">
+                <Loader2 className="w-6 h-6 animate-spin text-[#B8924A]" />
+                <p className="mt-4 font-[family:var(--font-libre-caslon)] text-sm font-light">Loading portal...</p>
               </div>
             }
           >
             <SignInForm />
           </Suspense>
-        </div>
-      </main>
+        </main>
+
+        {/* Bottom Ornamentation (Artisanal Detail) */}
+        <footer className="w-full py-8 flex flex-col items-center opacity-40 select-none">
+          <div className="h-[0.5px] w-12 bg-[#3B2B28] mb-4"></div>
+          <p className="font-[family:var(--font-hanken-grotesk)] text-[10px] uppercase tracking-[0.3em] text-[#1c1c19]">Boutique Elegance • Artisanal Heritage</p>
+        </footer>
+      </div>
     </PageTransition>
   );
 }
