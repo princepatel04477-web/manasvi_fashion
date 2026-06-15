@@ -1,0 +1,15 @@
+{
+  "id": "session-1781530552033",
+  "startedAt": "2026-06-15T13:35:52.033Z",
+  "cwd": "/home/princepatel_1258/Documents/CODES/manasvi_fashion_FF",
+  "context": {},
+  "metrics": {
+    "edits": 0,
+    "commands": 0,
+    "tasks": 0,
+    "errors": 0
+  },
+  "restoredAt": "2026-06-15T13:35:52.722Z",
+  "endedAt": "2026-06-15T13:36:27.239Z",
+  "duration": 35207
+}

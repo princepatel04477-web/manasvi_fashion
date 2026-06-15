@@ -62,7 +62,7 @@ export default function Header() {
   }, [pathname]);
 
   useEffect(() => {
-    if (pathname.startsWith("/dashboard") || pathname.startsWith("/auth")) {
+    if (pathname.startsWith("/dashboard") || pathname.startsWith("/auth") || pathname.startsWith("/mobile")) {
       return;
     }
 
@@ -117,7 +117,7 @@ export default function Header() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [isHome, pathname]);
 
-  if (pathname.startsWith("/dashboard") || pathname.startsWith("/auth")) {
+  if (pathname.startsWith("/dashboard") || pathname.startsWith("/auth") || pathname.startsWith("/mobile")) {
     return null;
   }
 

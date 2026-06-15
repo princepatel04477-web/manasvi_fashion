@@ -8,6 +8,7 @@ import { CheckoutSkeleton, LuxuryTransition } from "@/components/ui/skeleton";
 import { ArrowLeft, ShoppingBag, Truck, Smartphone, CreditCard, Banknote, ShieldCheck, ChevronDown, Ticket, Trash2, Loader2, Sparkles, CheckCircle } from "lucide-react";
 import Link from "next/link";
 import PageTransition from "@/components/PageTransition";
+import Script from "next/script";
 import { Libre_Caslon_Text, Hanken_Grotesk } from "next/font/google";
 
 const libreCaslon = Libre_Caslon_Text({
@@ -60,7 +61,11 @@ function CheckoutFormContent() {
   const [mockPaymentStatus, setMockPaymentStatus] = useState<"idle" | "processing" | "success" | "failure">("idle");
   const canUseMockCheckout =
     typeof window !== "undefined" &&
-    ["localhost", "127.0.0.1"].includes(window.location.hostname);
+    (["localhost", "127.0.0.1"].includes(window.location.hostname) ||
+     window.location.hostname.startsWith("192.168.") ||
+     window.location.hostname.startsWith("10.") ||
+     window.location.hostname.startsWith("172.") ||
+     process.env.NODE_ENV === "development");
 
   interface SessionUser {
     name?: string;
@@ -155,6 +160,27 @@ function CheckoutFormContent() {
   // Helper to load Razorpay modal checkout script dynamically
   const loadRazorpayScript = () => {
     return new Promise((resolve) => {
+      if (typeof window !== "undefined" && (window as any).Razorpay) {
+        resolve(true);
+        return;
+      }
+      
+      const existingScript = document.querySelector('script[src="https://checkout.razorpay.com/v1/checkout.js"]');
+      if (existingScript) {
+        const checkInterval = setInterval(() => {
+          if ((window as any).Razorpay) {
+            clearInterval(checkInterval);
+            resolve(true);
+          }
+        }, 100);
+        
+        setTimeout(() => {
+          clearInterval(checkInterval);
+          resolve(false);
+        }, 10000);
+        return;
+      }
+
       const script = document.createElement("script");
       script.src = "https://checkout.razorpay.com/v1/checkout.js";
       script.async = true;
@@ -904,6 +930,7 @@ export default function CheckoutPage() {
   
   return (
     <PageTransition>
+      <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="afterInteractive" />
       <div className={`${libreCaslon.variable} ${hankenGrotesk.variable} min-h-screen bg-surface font-body-md text-body-md overflow-x-hidden pb-32`}>
         {/* TopAppBar */}
         <nav className="flex justify-between items-center px-margin-mobile h-16 w-full fixed top-0 z-50 bg-surface border-b border-deep-maroon/10">

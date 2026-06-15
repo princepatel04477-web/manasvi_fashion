@@ -10,7 +10,7 @@ import ProductCard from "@/components/product-card";
 import useScrollReveal from "@/hooks/useScrollReveal";
 import TrustBadges from "@/components/TrustBadges";
 import PageTransition from "@/components/PageTransition";
-import MobileEthnicCollection from "@/components/mobile-ethnic-collection";
+import MobileFirstExperience from "@/components/mobile-first-experience";
 
 export default function Home() {
   const { products } = useShop();
@@ -160,15 +160,17 @@ export default function Home() {
   return (
     <PageTransition>
       <main className="min-h-screen bg-[#f6eee8]">
-        <HeroSection
-          cms={cms}
-          heroImageRef={heroImageRef}
-          vignetteRef={vignetteRef}
-          grainRef={grainRef}
-          brandWrapperRef={brandWrapperRef}
-          brandHeaderRef={brandHeaderRef}
-          brandSubtitleRef={brandSubtitleRef}
-        />
+        <div className="hidden lg:block">
+          <HeroSection
+            cms={cms}
+            heroImageRef={heroImageRef}
+            vignetteRef={vignetteRef}
+            grainRef={grainRef}
+            brandWrapperRef={brandWrapperRef}
+            brandHeaderRef={brandHeaderRef}
+            brandSubtitleRef={brandSubtitleRef}
+          />
+        </div>
 
         {/* Desktop Viewport (lg and up) */}
         <div className="hidden lg:block">
@@ -205,7 +207,7 @@ export default function Home() {
 
         {/* Mobile & Tablet Viewports (below lg) */}
         <div className="block lg:hidden bg-[#F7F3EE] text-[#0D0906] font-sans pb-16">
-          <MobileEthnicCollection />
+          <MobileFirstExperience />
         </div>
       </main>
     </PageTransition>
