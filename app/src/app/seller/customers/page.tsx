@@ -49,7 +49,8 @@ export default function SellerCustomers() {
       try {
         const res = await fetch("/api/admin/orders");
         if (res.ok) {
-          const orders: Order[] = await res.json();
+          const data = await res.json();
+          const orders: Order[] = data.orders || [];
           
           // Aggregate customers by email
           const map = new Map<string, CustomerProfile>();

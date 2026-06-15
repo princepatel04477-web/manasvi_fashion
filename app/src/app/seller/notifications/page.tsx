@@ -34,7 +34,8 @@ export default function SellerNotifications() {
 
       if (prodRes.ok && orderRes.ok) {
         const products = await prodRes.json();
-        const orders = await orderRes.json();
+        const ordersData = await orderRes.json();
+        const orders = ordersData.orders || [];
 
         const list: NotificationItem[] = [];
         

@@ -44,7 +44,7 @@ export default function SellerDashboard() {
         if (ordersRes.ok && productsRes.ok) {
           const ordersData = await ordersRes.json();
           const productsData = await productsRes.json();
-          setOrders(ordersData);
+          setOrders(ordersData.orders || []);
           setProducts(productsData);
         }
       } catch (err) {

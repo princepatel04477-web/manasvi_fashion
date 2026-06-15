@@ -49,7 +49,7 @@ export default function SellerOrders() {
       const res = await fetch("/api/admin/orders");
       if (res.ok) {
         const data = await res.json();
-        setOrders(data);
+        setOrders(data.orders || []);
       }
     } catch (err) {
       console.error("Failed to fetch orders:", err);
