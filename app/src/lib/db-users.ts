@@ -22,9 +22,12 @@ export const ADMIN_EMAILS = [
   "varunyatechnologies@gmail.com"
 ];
 
-// Helper to check if email is admin
+// Helper to check if email is admin or seller
 export function getRoleByEmail(email: string): User["role"] {
   const normalized = email.toLowerCase();
+  if (normalized === "manasvifashion1515@gmail.com") {
+    return "seller";
+  }
   if (ADMIN_EMAILS.includes(normalized)) {
     return "admin"; // Admin role
   }
@@ -32,9 +35,10 @@ export function getRoleByEmail(email: string): User["role"] {
 }
 
 async function getSeedUsers(): Promise<User[]> {
-  const [hash1, hash2] = await Promise.all([
+  const [hash1, hash2, hash3] = await Promise.all([
     bcrypt.hash("Prince_1258", 10),
     bcrypt.hash("PAM_262127", 10),
+    bcrypt.hash("manu@1515", 10),
   ]);
 
   return [
@@ -52,6 +56,14 @@ async function getSeedUsers(): Promise<User[]> {
       email: "varunyatechnologies@gmail.com",
       passwordHash: hash2,
       role: "admin",
+      createdAt: new Date().toISOString()
+    },
+    {
+      id: "usr-seller-1",
+      name: "Manasvi Fashion",
+      email: "manasvifashion1515@gmail.com",
+      passwordHash: hash3,
+      role: "seller",
       createdAt: new Date().toISOString()
     }
   ];
