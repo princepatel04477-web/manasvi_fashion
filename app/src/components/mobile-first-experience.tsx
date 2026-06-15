@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, ShoppingBag, Search, MessageCircle, Heart, Plus, Minus, ArrowRight } from "lucide-react";
 import { useShop } from "@/context/shop-context";
-import { Product } from "@/types";
+import { Product, ColorVariant } from "@/types";
 import { formatINR } from "@/lib/store";
 import Link from "next/link";
 
@@ -113,6 +113,39 @@ function getModelessImages(product: Product): string[] {
     : [`${T}/80a8ba805434a5c22ef64bc2313ae280404e5e50c301a4cdf674d4b15ad4b233.png`];
 }
 
+// Helper to get mobile product images prioritizing actual database images & variant images
+function getProductMobileImages(product: Product, activeVariant?: ColorVariant | null): string[] {
+  if (activeVariant) {
+    const list: string[] = [];
+    if (activeVariant.frontImage) list.push(activeVariant.frontImage);
+    if (activeVariant.backImage) list.push(activeVariant.backImage);
+    
+    // Legacy compatibility fallbacks
+    if (list.length === 0 && activeVariant.image) {
+      list.push(activeVariant.image);
+    }
+    if (activeVariant.modelImage) {
+      list.push(activeVariant.modelImage);
+    }
+    
+    if (list.length > 0) {
+      return list;
+    }
+  }
+
+  // Fallback to product images (filtering AI images)
+  const realImages = (product.images || []).filter(
+    (img) => !img.includes("Gemini_Generated_") && !img.includes("ai-generated")
+  );
+
+  if (realImages.length > 0) {
+    return realImages;
+  }
+
+  // Finally fallback to modeless helper
+  return getModelessImages(product);
+}
+
 // Helper to format/retrieve design numbers uniquely based on product id
 function getDesignNumber(product: Product): string {
   if (product.id.startsWith("p-17")) {
@@ -140,8 +173,45 @@ export default function MobileFirstExperience() {
   const [selectedSize, setSelectedSize] = useState("M");
   const [quantity, setQuantity] = useState(1);
   const [activeImageIdx, setActiveImageIdx] = useState(0);
+  const [selectedColorIdx, setSelectedColorIdx] = useState(0);
+  const drawerGalleryRef = useRef<HTMLDivElement>(null);
   const [toastMessage, setToastMessage] = useState("");
   const [showToast, setShowToast] = useState(false);
+  const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
+
+  const activeVariant = useMemo(() => {
+    if (!selectedProduct || !selectedProduct.colorVariants) return null;
+    return selectedProduct.colorVariants[selectedColorIdx] || null;
+  }, [selectedProduct, selectedColorIdx]);
+
+  const currentImagesList = useMemo(() => {
+    if (!selectedProduct) return [];
+    return getProductMobileImages(selectedProduct, activeVariant);
+  }, [selectedProduct, activeVariant]);
+
+  const currentPrice = useMemo(() => {
+    if (!selectedProduct) return 0;
+    return selectedProduct.price + (activeVariant?.priceAdjustment || 0);
+  }, [selectedProduct, activeVariant]);
+
+  const currentCompareAtPrice = useMemo(() => {
+    if (!selectedProduct) return undefined;
+    if (!selectedProduct.compareAtPrice) return undefined;
+    return selectedProduct.compareAtPrice + (activeVariant?.priceAdjustment || 0);
+  }, [selectedProduct, activeVariant]);
+
+  const handleDrawerGalleryScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    if (!selectedProduct) return;
+    const container = e.currentTarget;
+    const scrollPosition = container.scrollLeft;
+    const width = container.clientWidth;
+    if (width > 0) {
+      const index = Math.round(scrollPosition / width);
+      if (index !== activeImageIdx && index >= 0 && index < currentImagesList.length) {
+        setActiveImageIdx(index);
+      }
+    }
+  };
 
   // Carousel highlight state
   const [carouselIdx, setCarouselIdx] = useState(0);
@@ -178,6 +248,30 @@ export default function MobileFirstExperience() {
     return () => clearInterval(timer);
   }, []);
 
+  // Reset selected color & image index when selected product changes
+  useEffect(() => {
+    setSelectedColorIdx(0);
+    setActiveImageIdx(0);
+    const container = drawerGalleryRef.current;
+    if (container) {
+      container.scrollTo({
+        left: 0,
+      });
+    }
+  }, [selectedProduct]);
+
+  // Reset active image index and scroll gallery to beginning when selected color variant changes
+  useEffect(() => {
+    setActiveImageIdx(0);
+    const container = drawerGalleryRef.current;
+    if (container) {
+      container.scrollTo({
+        left: 0,
+        behavior: "smooth"
+      });
+    }
+  }, [selectedColorIdx]);
+
   // Filter products by type
   const kurtiListings = products.filter(p => p.productType === "kurti");
   const tunicListings = products.filter(p => p.productType === "tunic_top");
@@ -197,15 +291,18 @@ export default function MobileFirstExperience() {
 
   const handleAddToCart = (e: React.MouseEvent) => {
     if (!selectedProduct) return;
+    const colorName = activeVariant?.name || selectedProduct.color;
+    const activeImage = currentImagesList[activeImageIdx] || currentImagesList[0] || "";
+    
     addCustomToCart({
       productId: selectedProduct.id,
-      title: selectedProduct.title,
-      image: getModelessImages(selectedProduct)[0],
-      price: selectedProduct.price,
+      title: `${selectedProduct.title} - ${colorName}`,
+      image: activeImage,
+      price: currentPrice,
       size: selectedSize,
       slug: selectedProduct.slug
     });
-    triggerToast(`Added ${selectedProduct.title} to bag!`);
+    triggerToast(`Added ${selectedProduct.title} - ${colorName} to bag!`);
   };
 
   const handleDrawerClose = () => {
@@ -409,7 +506,7 @@ export default function MobileFirstExperience() {
                   >
                     <div className="aspect-[3/4] w-full bg-[#F7F3EE] rounded-lg overflow-hidden relative mb-2">
                       <img 
-                        src={getModelessImages(item)[0]} 
+                        src={getProductMobileImages(item)[0]} 
                         alt={item.title}
                         className="w-full h-full object-cover"
                         loading="lazy"
@@ -453,7 +550,7 @@ export default function MobileFirstExperience() {
                   >
                     <div className="aspect-[3/4] w-full bg-[#F7F3EE] rounded-lg overflow-hidden relative mb-2">
                       <img 
-                        src={getModelessImages(item)[0]} 
+                        src={getProductMobileImages(item)[0]} 
                         alt={item.title}
                         className="w-full h-full object-cover"
                         loading="lazy"
@@ -503,7 +600,7 @@ export default function MobileFirstExperience() {
               >
                 <div className="aspect-[3/4] w-full bg-[#F7F3EE] rounded-xl overflow-hidden relative mb-2.5">
                   <img 
-                    src={getModelessImages(product)[0]} 
+                    src={getProductMobileImages(product)[0]} 
                     alt={product.title}
                     className="w-full h-full object-cover"
                     loading="lazy"
@@ -560,7 +657,7 @@ export default function MobileFirstExperience() {
               >
                 <div className="aspect-[3/4] w-full bg-[#F7F3EE] rounded-xl overflow-hidden relative mb-2.5">
                   <img 
-                    src={getModelessImages(product)[0]} 
+                    src={getProductMobileImages(product)[0]} 
                     alt={product.title}
                     className="w-full h-full object-cover"
                     loading="lazy"
@@ -723,7 +820,7 @@ export default function MobileFirstExperience() {
                     className="flex gap-3 bg-white p-2.5 rounded-xl border border-gray-100 items-center cursor-pointer active:scale-98 transition-transform"
                   >
                     <div className="w-12 h-16 rounded-lg overflow-hidden bg-gray-50 flex-shrink-0">
-                      <img src={getModelessImages(p)[0]} alt={p.title} className="w-full h-full object-cover" />
+                      <img src={getProductMobileImages(p)[0]} alt={p.title} className="w-full h-full object-cover" />
                     </div>
                     <div className="flex flex-col flex-1">
                       <span className="font-jost font-normal text-xs text-[#0D0906] line-clamp-1">{p.title}</span>
@@ -776,20 +873,29 @@ export default function MobileFirstExperience() {
               <div className="flex-1 overflow-y-auto px-5 pb-10 space-y-5 scrollbar-none">
                 {/* Horizontal image gallery */}
                 <div className="relative -mx-5 -mt-3">
-                  <div className="flex overflow-x-auto snap-x snap-mandatory scrollbar-none w-full h-[280px]">
-                    {getModelessImages(selectedProduct).map((imgSrc, idx) => (
+                  <div 
+                    ref={drawerGalleryRef}
+                    onScroll={handleDrawerGalleryScroll}
+                    className="flex overflow-x-auto snap-x snap-mandatory scrollbar-none w-full h-[280px]"
+                  >
+                    {currentImagesList.map((imgSrc, idx) => (
                       <img
                         key={idx}
                         src={imgSrc}
                         alt={selectedProduct.title}
-                        className="w-full h-full object-cover shrink-0 snap-start"
+                        onClick={() => setFullscreenImage(imgSrc)}
+                        className="w-full h-full object-cover shrink-0 snap-start cursor-zoom-in active:opacity-90 transition-opacity"
                       />
                     ))}
                   </div>
+                  {/* Subtle Zoom Indicator */}
+                  <div className="absolute top-3 right-3 bg-black/45 backdrop-blur-xs text-[#FAF7F2] p-1.5 rounded-full pointer-events-none shadow-xs">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" x2="16.65" y1="21" y2="16.65"/><line x1="11" x2="11" y1="8" y2="14"/><line x1="8" x2="14" y1="11" y2="11"/></svg>
+                  </div>
                   {/* Gallery Dots */}
-                  {getModelessImages(selectedProduct).length > 1 && (
+                  {currentImagesList.length > 1 && (
                     <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5">
-                      {getModelessImages(selectedProduct).map((_, idx) => (
+                      {currentImagesList.map((_, idx) => (
                         <div
                           key={idx}
                           className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
@@ -815,9 +921,9 @@ export default function MobileFirstExperience() {
                     {selectedProduct.title}
                   </h3>
                   <div className="flex items-center gap-3">
-                    <span className="font-inter font-bold text-lg text-[#991B1B]">₹{selectedProduct.price}</span>
-                    {selectedProduct.compareAtPrice && (
-                      <span className="font-inter font-normal text-xs text-gray-400 line-through">₹{selectedProduct.compareAtPrice}</span>
+                    <span className="font-inter font-bold text-lg text-[#991B1B]">₹{currentPrice}</span>
+                    {currentCompareAtPrice && (
+                      <span className="font-inter font-normal text-xs text-gray-400 line-through">₹{currentCompareAtPrice}</span>
                     )}
                   </div>
                 </div>
@@ -843,6 +949,32 @@ export default function MobileFirstExperience() {
                     {selectedProduct.description}
                   </p>
                 </div>
+
+                {/* Color select */}
+                {selectedProduct.colorVariants && selectedProduct.colorVariants.length > 0 && (
+                  <div className="flex flex-col gap-2.5">
+                    <span className="font-inter font-normal text-[8px] uppercase tracking-wider text-gray-400 font-bold">Select Colorway</span>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedProduct.colorVariants.map((variant, idx) => (
+                        <button
+                          key={variant.name + '-' + idx}
+                          onClick={() => setSelectedColorIdx(idx)}
+                          className={`h-9 px-3 rounded-xl border flex items-center gap-2 transition-all duration-300 cursor-pointer ${
+                            selectedColorIdx === idx 
+                              ? "bg-[#0D0906] border-[#0D0906] text-white shadow-sm scale-102" 
+                              : "bg-white border-gray-200 text-gray-600 hover:border-gray-400"
+                          }`}
+                        >
+                          <span 
+                            className="w-4 h-4 rounded-full border border-black/10 flex-shrink-0" 
+                            style={{ backgroundColor: variant.hex || '#000' }}
+                          />
+                          <span className="font-inter text-xs font-semibold">{variant.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* Size select */}
                 <div className="flex flex-col gap-2.5">
@@ -870,7 +1002,7 @@ export default function MobileFirstExperience() {
                 <div className="flex flex-col gap-3 pt-1">
                   {/* WhatsApp Direct Inquiry */}
                   <a
-                    href={`https://wa.me/919099369035?text=${encodeURIComponent(`Hi, I would like to inquire about "${selectedProduct.title}" (${getDesignNumber(selectedProduct)}) in size "${selectedSize}" (Price: ₹${selectedProduct.price}).`)}`}
+                    href={`https://wa.me/919099369035?text=${encodeURIComponent(`Hi, I would like to inquire about "${selectedProduct.title}" (${getDesignNumber(selectedProduct)}) in color "${activeVariant?.name || selectedProduct.color}" and size "${selectedSize}" (Price: ₹${currentPrice}).`)}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-full py-3 bg-[#128C7E] hover:bg-[#075E54] text-white rounded-xl font-inter font-normal text-[10px] tracking-widest uppercase flex items-center justify-center gap-2 shadow-xs active:scale-97 transition-all duration-300"
@@ -897,6 +1029,39 @@ export default function MobileFirstExperience() {
                 </div>
 
               </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ─── FULLSCREEN IMAGE VIEWER ────────────────── */}
+      <AnimatePresence>
+        {fullscreenImage && (
+          <div className="fixed inset-0 z-55 flex items-center justify-center bg-black/95">
+            {/* Close trigger backdrop */}
+            <div className="absolute inset-0" onClick={() => setFullscreenImage(null)} />
+            
+            {/* Close Button */}
+            <button
+              onClick={() => setFullscreenImage(null)}
+              className="absolute top-4 right-4 z-55 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-all shadow-md active:scale-95"
+            >
+              <X size={20} />
+            </button>
+
+            {/* Fullscreen Image */}
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+              className="relative max-w-full max-h-full p-2 flex items-center justify-center pointer-events-none"
+            >
+              <img
+                src={fullscreenImage}
+                alt="Product Full View"
+                className="max-w-[95vw] max-h-[85vh] object-contain rounded-lg shadow-2xl pointer-events-auto"
+              />
             </motion.div>
           </div>
         )}
