@@ -254,9 +254,17 @@ export default function MobileFirstExperience() {
     setActiveImageIdx(0);
     const container = drawerGalleryRef.current;
     if (container) {
-      container.scrollTo({
-        left: 0,
-      });
+      try {
+        if (typeof container.scrollTo === "function") {
+          container.scrollTo({
+            left: 0,
+          });
+        } else {
+          container.scrollLeft = 0;
+        }
+      } catch (e) {
+        container.scrollLeft = 0;
+      }
     }
   }, [selectedProduct]);
 
@@ -265,10 +273,18 @@ export default function MobileFirstExperience() {
     setActiveImageIdx(0);
     const container = drawerGalleryRef.current;
     if (container) {
-      container.scrollTo({
-        left: 0,
-        behavior: "smooth"
-      });
+      try {
+        if (typeof container.scrollTo === "function") {
+          container.scrollTo({
+            left: 0,
+            behavior: "smooth"
+          });
+        } else {
+          container.scrollLeft = 0;
+        }
+      } catch (e) {
+        container.scrollLeft = 0;
+      }
     }
   }, [selectedColorIdx]);
 
