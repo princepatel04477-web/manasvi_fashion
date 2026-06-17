@@ -18,8 +18,8 @@ const productUpdateSchema = z.object({
   title: z.string().min(2).optional(),
   slug: z.string().min(2).regex(/^[a-z0-9-]+$/).optional(),
   description: z.string().min(10).optional(),
-  category: z.enum(["kurtis", "dresses", "tunic-tops"]).optional(),
-  productType: z.enum(["kurti", "tunic_top", "dress"]).optional(),
+  category: z.enum(["kurtis", "dresses", "tunic-tops", "one-piece"]).optional(),
+  productType: z.enum(["kurti", "tunic_top", "dress", "one_piece"]).optional(),
   subcategory: z.string().min(2).optional(),
   fabric: z.string().min(2).optional(),
   sleeveType: z.string().min(2).optional(),
@@ -30,7 +30,11 @@ const productUpdateSchema = z.object({
   images: z.array(z.string()).min(1).optional(),
   stock: z.number().int().nonnegative().optional(),
   isNew: z.boolean().optional(),
-  colorVariants: z.array(colorVariantSchema).optional()
+  colorVariants: z.array(colorVariantSchema).optional(),
+  length: z.enum(["Mini", "Above Knee", "Knee Length", "Midi", "Maxi", "Floor Length"]).optional(),
+  fitType: z.enum(["Regular", "A-Line", "Fit & Flare", "Bodycon", "Straight Fit", "Oversized"]).optional(),
+  neckType: z.enum(["Round Neck", "V Neck", "Square Neck", "Boat Neck", "Collar Neck", "Sweetheart Neck"]).optional(),
+  occasion: z.enum(["Casual Wear", "Office Wear", "Party Wear", "Festive Wear", "Vacation Wear", "Evening Wear"]).optional(),
 });
 
 interface RouteParams {

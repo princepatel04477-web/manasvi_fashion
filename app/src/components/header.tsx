@@ -141,13 +141,13 @@ export default function Header() {
             <div className="flex items-center gap-8">
               {/* Desktop Nav Links */}
               <nav className="hidden gap-7 md:flex [text-rendering:optimizeLegibility] items-center">
-                {["/kurtis", "/tunic-tops", "/dresses"].map((path, i) => (
+                {["/kurtis", "/tunic-tops", "/dresses", "/one-piece"].map((path, i) => (
                   <Link
                     key={path}
                     href={path}
                     className="font-[var(--font-cormorant)] text-[0.8rem] font-medium italic tracking-[0.18em] text-[#3B2B28]/75 uppercase hover:text-[#8B6B61] transition-colors duration-300"
                   >
-                    {["Kurtis", "Tunics", "Dresses"][i]}
+                    {["Kurtis", "Tunics", "Dresses", "One Piece"][i]}
                   </Link>
                 ))}
                 {isAdmin && (
@@ -249,6 +249,8 @@ export default function Header() {
             {[
               ["/kurtis", "Kurtis"],
               ["/tunic-tops", "Tunics"],
+              ["/dresses", "Dresses"],
+              ["/one-piece", "One Piece"],
               ["/collections", "Collections"],
             ].map(([path, label]) => (
               <Link
@@ -478,12 +480,13 @@ export default function Header() {
                   <nav className="flex flex-col gap-6 py-8 overflow-y-auto scrollbar-none flex-grow">
                     {[
                       ["/", "Home"],
-                      ["/kurtis", "Kurtis Collection"],
-                      ["/tunic-tops", "Tunic Tops"],
-                      ["/dresses", "Dresses"],
-                      ["/collections", "Lookbook & Collections"],
-                      ["/about", "Our Story"],
-                      ["/cart", "Shopping Bag"],
+                       ["/kurtis", "Kurtis Collection"],
+                       ["/tunic-tops", "Tunic Tops"],
+                       ["/dresses", "Dresses"],
+                       ["/one-piece", "One Piece"],
+                       ["/collections", "Lookbook & Collections"],
+                       ["/about", "Our Story"],
+                       ["/cart", "Shopping Bag"],
                     ].map(([href, label]) => (
                       <motion.div
                         key={href}

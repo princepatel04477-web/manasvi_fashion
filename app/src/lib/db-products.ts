@@ -44,6 +44,10 @@ export async function getProducts(): Promise<Product[]> {
           reviews?: number;
           is_new?: boolean;
           color_variants?: string | { color: string; hex: string; slug: string }[];
+          length?: string;
+          fit_type?: string;
+          neck_type?: string;
+          occasion?: string;
         }
         return (data as unknown as DbProductRow[]).map((item) => ({
           id: String(item.id),
@@ -66,7 +70,11 @@ export async function getProducts(): Promise<Product[]> {
           isNew: !!item.is_new,
           colorVariants: Array.isArray(item.color_variants) 
             ? item.color_variants 
-            : JSON.parse((item.color_variants as string) || "[]")
+            : JSON.parse((item.color_variants as string) || "[]"),
+          length: item.length,
+          fitType: item.fit_type,
+          neckType: item.neck_type,
+          occasion: item.occasion,
         })) as Product[];
       }
       if (!error && Array.isArray(data) && data.length === 0) {
@@ -124,7 +132,12 @@ export async function createProduct(input: Omit<Product, "id" | "rating" | "revi
             rating: newProduct.rating,
             reviews: newProduct.reviews,
             is_new: !!newProduct.isNew,
-            color_variants: JSON.stringify(newProduct.colorVariants || [])
+            color_variants: JSON.stringify(newProduct.colorVariants || []),
+            // One Piece specific attributes
+            length: newProduct.length || null,
+            fit_type: newProduct.fitType || null,
+            neck_type: newProduct.neckType || null,
+            occasion: newProduct.occasion || null,
           }
         ])
         .select();
@@ -166,6 +179,11 @@ export async function updateProduct(id: string, updates: Partial<Product>): Prom
       if (updates.stock !== undefined) dbUpdates.stock = updates.stock;
       if (updates.isNew !== undefined) dbUpdates.is_new = updates.isNew;
       if (updates.colorVariants !== undefined) dbUpdates.color_variants = JSON.stringify(updates.colorVariants);
+      // One Piece specific attributes
+      if (updates.length !== undefined) dbUpdates.length = updates.length;
+      if (updates.fitType !== undefined) dbUpdates.fit_type = updates.fitType;
+      if (updates.neckType !== undefined) dbUpdates.neck_type = updates.neckType;
+      if (updates.occasion !== undefined) dbUpdates.occasion = updates.occasion;
 
       const { data, error } = await supabaseAdmin
         .from("products")

@@ -130,7 +130,7 @@ export default function ProductsManagerPage() {
         <div>
           <h1 className="font-[var(--font-bodoni)] text-3xl md:text-4xl text-[#2a1d19]">Boutique Products</h1>
           <p className="font-[var(--font-cormorant)] text-sm italic text-[#8b6b61] tracking-wider mt-1">
-            Manage your elegant Kurtis, Designer Dresses, and luxury Tunic Tops.
+            Manage your elegant Kurtis, Designer Dresses, Tunic Tops, and One Piece collections.
           </p>
         </div>
         <Link
@@ -171,7 +171,9 @@ export default function ProductsManagerPage() {
             {[
               { id: "all", label: "All Items" },
               { id: "kurtis", label: "Kurtis" },
-              { id: "dresses", label: "Dresses" }
+              { id: "dresses", label: "Dresses" },
+              { id: "tunic-tops", label: "Tunics" },
+              { id: "one-piece", label: "One Piece" }
             ].map(cat => (
               <button
                 key={cat.id}

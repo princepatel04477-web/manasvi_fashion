@@ -110,6 +110,12 @@ export default function ProductForm({ initialData, isEdit = false }: ProductForm
   const [stock, setStock] = useState<number | "">(initialData?.stock !== undefined ? initialData.stock : 10);
   const [isNew, setIsNew] = useState(initialData?.isNew !== undefined ? initialData.isNew : true);
 
+  // One Piece specific attributes
+  const [length, setLength] = useState(initialData?.length || "");
+  const [fitType, setFitType] = useState(initialData?.fitType || "");
+  const [neckType, setNeckType] = useState(initialData?.neckType || "");
+  const [occasion, setOccasion] = useState(initialData?.occasion || "");
+
   // Sizes Matrix List State (Default sizes selected)
   const availableSizes = ["XS", "S", "M", "L", "XL", "XXL", "3XL"];
   const [sizes, setSizes] = useState<string[]>(initialData?.sizes || ["S", "M", "L", "XL"]);
@@ -160,6 +166,10 @@ export default function ProductForm({ initialData, isEdit = false }: ProductForm
           setStock(draft.stock || "");
           setSizes(draft.sizes || ["S", "M", "L", "XL"]);
           setColorVariants(draft.colorVariants || []);
+          setLength(draft.length || "");
+          setFitType(draft.fitType || "");
+          setNeckType(draft.neckType || "");
+          setOccasion(draft.occasion || "");
         } catch (e) {
           console.error("Failed to parse draft:", e);
         }
@@ -183,11 +193,15 @@ export default function ProductForm({ initialData, isEdit = false }: ProductForm
         compareAtPrice,
         stock,
         sizes,
-        colorVariants
+        colorVariants,
+        length,
+        fitType,
+        neckType,
+        occasion
       };
       localStorage.setItem("mf-product-form-draft", JSON.stringify(draft));
     }
-  }, [title, slug, description, category, productType, subcategory, fabric, sleeveType, color, price, compareAtPrice, stock, sizes, colorVariants, isEdit]);
+  }, [title, slug, description, category, productType, subcategory, fabric, sleeveType, color, price, compareAtPrice, stock, sizes, colorVariants, length, fitType, neckType, occasion, isEdit]);
 
   // Size toggler
   function handleVariantHexChange(rawHex: string) {
@@ -358,7 +372,12 @@ export default function ProductForm({ initialData, isEdit = false }: ProductForm
       images: allVariantImages,
       stock: Number(stock) || colorVariants.reduce((sum, v) => sum + (v.stock || 0), 0),
       isNew: !!isNew,
-      colorVariants
+      colorVariants,
+      // One Piece specific attributes
+      length: category === "one-piece" ? length : undefined,
+      fitType: category === "one-piece" ? fitType : undefined,
+      neckType: category === "one-piece" ? neckType : undefined,
+      occasion: category === "one-piece" ? occasion : undefined,
     };
 
     const endpoint = isEdit ? `/api/admin/products/${initialData?.id}` : "/api/admin/products";
@@ -758,6 +777,8 @@ export default function ProductForm({ initialData, isEdit = false }: ProductForm
                         setProductType("kurti");
                       } else if (val === "dresses") {
                         setProductType("dress");
+                      } else if (val === "one-piece") {
+                        setProductType("one_piece");
                       }
                     }}
                     className="w-full rounded-xl border border-[#d9a58f33] bg-[#141316]/80 px-4 py-2.5 text-sm text-[#e3dcd5] focus:outline-none focus:border-[#c98e87]"
@@ -765,6 +786,7 @@ export default function ProductForm({ initialData, isEdit = false }: ProductForm
                     <option value="kurtis">Kurtis</option>
                     <option value="dresses">Dresses</option>
                     <option value="tunic-tops">Tunic Tops</option>
+                    <option value="one-piece">One Piece</option>
                   </select>
                 </div>
 
@@ -780,6 +802,7 @@ export default function ProductForm({ initialData, isEdit = false }: ProductForm
                     <option value="kurti">Kurti</option>
                     <option value="tunic_top">Tunic Top</option>
                     <option value="dress">Dress</option>
+                    <option value="one_piece">One Piece</option>
                   </select>
                 </div>
 
@@ -800,6 +823,96 @@ export default function ProductForm({ initialData, isEdit = false }: ProductForm
                   </div>
                 </div>
               </div>
+
+              {/* One Piece Specific Attributes (Conditional) */}
+              {category === "one-piece" && (
+                <div className="grid gap-4 sm:grid-cols-4 p-4 rounded-xl border border-[#d9a58f22] bg-[#141316]/20">
+                  <div className="sm:col-span-4">
+                    <h4 className="text-xs font-bold uppercase tracking-widest text-[#c98e87]">
+                      One Piece Styling Attributes
+                    </h4>
+                    <p className="text-[10px] text-[#8b6b61] mt-0.5">
+                      Configure custom categorization tags for the luxury One Piece catalog.
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-[#8b6b61] mb-1.5">
+                      Length
+                    </label>
+                    <select
+                      value={length}
+                      onChange={(e) => setLength(e.target.value)}
+                      className="w-full rounded-xl border border-[#d9a58f33] bg-[#141316]/80 px-4 py-2.5 text-sm text-[#e3dcd5] focus:outline-none focus:border-[#c98e87]"
+                    >
+                      <option value="">Select Length</option>
+                      <option value="Mini">Mini</option>
+                      <option value="Above Knee">Above Knee</option>
+                      <option value="Knee Length">Knee Length</option>
+                      <option value="Midi">Midi</option>
+                      <option value="Maxi">Maxi</option>
+                      <option value="Floor Length">Floor Length</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-[#8b6b61] mb-1.5">
+                      Fit Type
+                    </label>
+                    <select
+                      value={fitType}
+                      onChange={(e) => setFitType(e.target.value)}
+                      className="w-full rounded-xl border border-[#d9a58f33] bg-[#141316]/80 px-4 py-2.5 text-sm text-[#e3dcd5] focus:outline-none focus:border-[#c98e87]"
+                    >
+                      <option value="">Select Fit Type</option>
+                      <option value="Regular">Regular</option>
+                      <option value="A-Line">A-Line</option>
+                      <option value="Fit & Flare">Fit & Flare</option>
+                      <option value="Bodycon">Bodycon</option>
+                      <option value="Straight Fit">Straight Fit</option>
+                      <option value="Oversized">Oversized</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-[#8b6b61] mb-1.5">
+                      Neck Type
+                    </label>
+                    <select
+                      value={neckType}
+                      onChange={(e) => setNeckType(e.target.value)}
+                      className="w-full rounded-xl border border-[#d9a58f33] bg-[#141316]/80 px-4 py-2.5 text-sm text-[#e3dcd5] focus:outline-none focus:border-[#c98e87]"
+                    >
+                      <option value="">Select Neck Type</option>
+                      <option value="Round Neck">Round Neck</option>
+                      <option value="V Neck">V Neck</option>
+                      <option value="Square Neck">Square Neck</option>
+                      <option value="Boat Neck">Boat Neck</option>
+                      <option value="Collar Neck">Collar Neck</option>
+                      <option value="Sweetheart Neck">Sweetheart Neck</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-[#8b6b61] mb-1.5">
+                      Occasion
+                    </label>
+                    <select
+                      value={occasion}
+                      onChange={(e) => setOccasion(e.target.value)}
+                      className="w-full rounded-xl border border-[#d9a58f33] bg-[#141316]/80 px-4 py-2.5 text-sm text-[#e3dcd5] focus:outline-none focus:border-[#c98e87]"
+                    >
+                      <option value="">Select Occasion</option>
+                      <option value="Casual Wear">Casual Wear</option>
+                      <option value="Office Wear">Office Wear</option>
+                      <option value="Party Wear">Party Wear</option>
+                      <option value="Festive Wear">Festive Wear</option>
+                      <option value="Vacation Wear">Vacation Wear</option>
+                      <option value="Evening Wear">Evening Wear</option>
+                    </select>
+                  </div>
+                </div>
+              )}
 
               {/* Sizes Selection */}
               <div>

@@ -1,5 +1,5 @@
-export type Category = "kurtis" | "dresses" | "tunic-tops";
-export type ProductType = "kurti" | "tunic_top" | "dress";
+export type Category = "kurtis" | "dresses" | "tunic-tops" | "one-piece";
+export type ProductType = "kurti" | "tunic_top" | "dress" | "one_piece";
 
 export interface ColorVariant {
   name: string;
@@ -33,6 +33,11 @@ export interface Product {
   reviews: number;
   isNew?: boolean;
   colorVariants?: ColorVariant[];
+  // One Piece specific attributes (optional; only meaningful for one-piece category)
+  length?: "Mini" | "Above Knee" | "Knee Length" | "Midi" | "Maxi" | "Floor Length";
+  fitType?: "Regular" | "A-Line" | "Fit & Flare" | "Bodycon" | "Straight Fit" | "Oversized";
+  neckType?: "Round Neck" | "V Neck" | "Square Neck" | "Boat Neck" | "Collar Neck" | "Sweetheart Neck";
+  occasion?: "Casual Wear" | "Office Wear" | "Party Wear" | "Festive Wear" | "Vacation Wear" | "Evening Wear";
 }
 
 export interface CartItem {

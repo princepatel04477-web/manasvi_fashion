@@ -103,6 +103,16 @@ export default function HeroSection({
       ctaText: "New Arrivals",
       ctaLink: "/new-arrivals",
     },
+    {
+      image: "/photos/Gemini_Generated_Image_o7map6o7map6o7ma.png",
+      eyebrow: "Exclusive New Category",
+      row1: "Elegant",
+      row2: "One Piece",
+      row3: "New Collection",
+      sub: "Discover our new One Piece collection — crafted for every occasion from casual to festive.",
+      ctaText: "Shop One Piece",
+      ctaLink: "/one-piece",
+    },
   ];
 
   useEffect(() => {
@@ -858,14 +868,14 @@ export default function HeroSection({
           <div className="mh-marquee-wrap">
             <div className="mh-marquee-inner">
               <span>
-                Luxury Kurtis<i></i>Premium Sarees<i></i>
+                Luxury Kurtis<i></i>Bespoke Dresses<i></i>
                 Artisan Crafted<i></i>Surat Collection<i></i>
                 Silk Tunics<i></i>Hand Embroidered<i></i>
-                Contemporary Indian<i></i>
-                Luxury Kurtis<i></i>Premium Sarees<i></i>
+                One Piece Dresses<i></i>Contemporary Indian<i></i>
+                Luxury Kurtis<i></i>Bespoke Dresses<i></i>
                 Artisan Crafted<i></i>Surat Collection<i></i>
                 Silk Tunics<i></i>Hand Embroidered<i></i>
-                Contemporary Indian<i></i>
+                One Piece Dresses<i></i>Contemporary Indian<i></i>
               </span>
             </div>
           </div>

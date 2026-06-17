@@ -17,19 +17,67 @@ import {
 import Link from "next/link";
 
 interface LookbookCatalogProps {
-  initialTab?: "Summer Collection" | "Festive Collection" | "Cotton Roots" | "Tunics" | "Kurtis" | "New Arrivals";
+  initialTab?: "Summer Collection" | "Festive Collection" | "Cotton Roots" | "Tunics" | "Kurtis" | "Dresses" | "One Piece" | "New Arrivals";
 }
 
 export default function LookbookCatalog({ initialTab = "Summer Collection" }: LookbookCatalogProps) {
-  const { products, wishlist, toggleWishlist, addToCart } = useShop();
+  const { products, wishlist, toggleWishlist, addToCart, addCustomToCart } = useShop();
 
   const [activeTab, setActiveTab] = useState(initialTab);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [activeImgIndex, setActiveImgIndex] = useState(0);
   const [selectedSize, setSelectedSize] = useState<string>("");
+  const [selectedColorIdx, setSelectedColorIdx] = useState(0);
   const [isAdding, setIsAdding] = useState(false);
   const [addSuccess, setAddSuccess] = useState(false);
+
+  const activeVariant = useMemo(() => {
+    if (!selectedProduct || !selectedProduct.colorVariants) return null;
+    return selectedProduct.colorVariants[selectedColorIdx] || null;
+  }, [selectedProduct, selectedColorIdx]);
+
+  const currentImagesList = useMemo(() => {
+    if (!selectedProduct) return [];
+    if (activeVariant) {
+      const list: string[] = [];
+      if (activeVariant.frontImage) list.push(activeVariant.frontImage);
+      if (activeVariant.backImage) list.push(activeVariant.backImage);
+      
+      // Legacy compatibility fallbacks
+      if (list.length === 0 && activeVariant.image) {
+        list.push(activeVariant.image);
+      }
+      if (activeVariant.modelImage) {
+        list.push(activeVariant.modelImage);
+      }
+      if (list.length > 0) return list;
+    }
+    
+    // Fallback to product images (filtering AI images)
+    const realImages = (selectedProduct.images || []).filter(
+      (img) => !img.includes("Gemini_Generated_") && !img.includes("ai-generated")
+    );
+    if (realImages.length > 0) return realImages;
+    
+    return selectedProduct.images || [];
+  }, [selectedProduct, activeVariant]);
+
+  const currentPrice = useMemo(() => {
+    if (!selectedProduct) return 0;
+    return selectedProduct.price + (activeVariant?.priceAdjustment || 0);
+  }, [selectedProduct, activeVariant]);
+
+  const currentCompareAtPrice = useMemo(() => {
+    if (!selectedProduct) return undefined;
+    if (!selectedProduct.compareAtPrice) return undefined;
+    return selectedProduct.compareAtPrice + (activeVariant?.priceAdjustment || 0);
+  }, [selectedProduct, activeVariant]);
+
+  // Reset activeImgIndex when selectedColorIdx changes
+  useEffect(() => {
+    setActiveImgIndex(0);
+  }, [selectedColorIdx]);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const itemsPerPage = 8; // 2 rows of 4 on desktop, 4 rows of 2 on mobile
@@ -41,6 +89,8 @@ export default function LookbookCatalog({ initialTab = "Summer Collection" }: Lo
     "Cotton Roots",
     "Tunics",
     "Kurtis",
+    "Dresses",
+    "One Piece",
     "New Arrivals"
   ] as const, []);
 
@@ -84,9 +134,13 @@ export default function LookbookCatalog({ initialTab = "Summer Collection" }: Lo
             desc.includes("cotton")
           );
         case "Tunics":
-          return p.productType === "tunic_top" || cat === "tunic-tops" || subcat.includes("tunic");
+          return (p.productType === "tunic_top" || cat === "tunic-tops") && p.productType !== "kurti" && cat !== "kurtis";
         case "Kurtis":
-          return p.productType === "kurti" || cat === "kurtis" || subcat.includes("kurti");
+          return (p.productType === "kurti" || cat === "kurtis") && p.productType !== "tunic_top" && cat !== "tunic-tops";
+        case "Dresses":
+          return (p.productType === "dress" || cat === "dresses") && p.productType !== "kurti" && cat !== "kurtis" && p.productType !== "one_piece" && cat !== "one-piece";
+        case "One Piece":
+          return p.productType === "one_piece" || cat === "one-piece";
         case "New Arrivals":
           return !!p.isNew;
         default:
@@ -144,6 +198,7 @@ export default function LookbookCatalog({ initialTab = "Summer Collection" }: Lo
   const openDrawer = (product: Product) => {
     setSelectedProduct(product);
     setActiveImgIndex(0);
+    setSelectedColorIdx(0);
     setSelectedSize(product.sizes[0] || "");
     setAddSuccess(false);
   };
@@ -157,7 +212,18 @@ export default function LookbookCatalog({ initialTab = "Summer Collection" }: Lo
   const handleAddToCart = async () => {
     if (!selectedProduct || !selectedSize) return;
     setIsAdding(true);
-    addToCart(selectedProduct.id, selectedSize);
+    const colorName = activeVariant?.name || selectedProduct.color;
+    const activeImage = currentImagesList[activeImgIndex] || currentImagesList[0] || "";
+    
+    addCustomToCart({
+      productId: selectedProduct.id,
+      title: `${selectedProduct.title} - ${colorName}`,
+      image: activeImage,
+      price: currentPrice,
+      size: selectedSize,
+      slug: selectedProduct.slug
+    });
+    
     await new Promise((resolve) => setTimeout(resolve, 850));
     setIsAdding(false);
     setAddSuccess(true);
@@ -166,7 +232,9 @@ export default function LookbookCatalog({ initialTab = "Summer Collection" }: Lo
 
   // WhatsApp Inquiry prefills
   const getWhatsAppLink = (product: Product) => {
-    const message = `Hi! I am browsing the ${activeTab} lookbook on Manasvi Fashion and absolutely love the "${product.title}" (${formatINR(product.price)}).\n\nCould you please let me know about its availability and sizing options?\n\nImage link: ${product.images[0] || ""}`;
+    const colorName = activeVariant?.name || product.color;
+    const activeImage = currentImagesList[0] || product.images[0] || "";
+    const message = `Hi! I am browsing the ${activeTab} lookbook on Manasvi Fashion and absolutely love the "${product.title}" in ${colorName} (${formatINR(currentPrice)}).\n\nCould you please let me know about its availability and sizing options?\n\nImage link: ${activeImage}`;
     return `https://wa.me/919099369035?text=${encodeURIComponent(message)}`;
   };
 
@@ -372,7 +440,7 @@ export default function LookbookCatalog({ initialTab = "Summer Collection" }: Lo
                 <AnimatePresence mode="wait">
                   <motion.img
                     key={activeImgIndex}
-                    src={selectedProduct.images[activeImgIndex] || selectedProduct.images[0]}
+                    src={currentImagesList[activeImgIndex] || currentImagesList[0]}
                     alt={`${selectedProduct.title} look`}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -383,9 +451,9 @@ export default function LookbookCatalog({ initialTab = "Summer Collection" }: Lo
                 </AnimatePresence>
 
                 {/* Sub-gallery image select indicators */}
-                {selectedProduct.images.length > 1 && (
+                {currentImagesList.length > 1 && (
                   <div className="absolute bottom-4 left-0 right-0 z-10 flex justify-center gap-2 px-4">
-                    {selectedProduct.images.map((_, i) => (
+                    {currentImagesList.map((_, i) => (
                       <button
                         key={i}
                         onClick={() => setActiveImgIndex(i)}
@@ -401,17 +469,17 @@ export default function LookbookCatalog({ initialTab = "Summer Collection" }: Lo
                 )}
 
                 {/* Image Navigation Controls */}
-                {selectedProduct.images.length > 1 && (
+                {currentImagesList.length > 1 && (
                   <>
                     <button
-                      onClick={() => setActiveImgIndex((prev) => (prev > 0 ? prev - 1 : selectedProduct.images.length - 1))}
+                      onClick={() => setActiveImgIndex((prev) => (prev > 0 ? prev - 1 : currentImagesList.length - 1))}
                       className="absolute left-3 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full bg-white/70 backdrop-blur-sm text-[#8B6B61] hover:text-[#3B2B28] cursor-pointer hover:scale-105 border border-[#E7C2B8]/20 transition-all"
                       aria-label="Previous Look Image"
                     >
                       <ChevronLeft className="w-4 h-4" />
                     </button>
                     <button
-                      onClick={() => setActiveImgIndex((prev) => (prev < selectedProduct.images.length - 1 ? prev + 1 : 0))}
+                      onClick={() => setActiveImgIndex((prev) => (prev < currentImagesList.length - 1 ? prev + 1 : 0))}
                       className="absolute right-3 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full bg-white/70 backdrop-blur-sm text-[#8B6B61] hover:text-[#3B2B28] cursor-pointer hover:scale-105 border border-[#E7C2B8]/20 transition-all"
                       aria-label="Next Look Image"
                     >
@@ -433,8 +501,13 @@ export default function LookbookCatalog({ initialTab = "Summer Collection" }: Lo
                     <h3 className="font-serif text-2xl sm:text-3xl text-[#3B2B28] font-light italic leading-tight">
                       {selectedProduct.title}
                     </h3>
-                    <div className="font-serif text-lg font-light text-[#3B2B28] pt-1">
-                      {formatINR(selectedProduct.price)}
+                    <div className="font-serif text-lg font-light text-[#3B2B28] pt-1 flex items-baseline gap-2">
+                      <span>{formatINR(currentPrice)}</span>
+                      {currentCompareAtPrice && currentCompareAtPrice > currentPrice && (
+                        <span className="text-xs line-through text-[#8B6B61]/60 font-sans font-light">
+                          {formatINR(currentCompareAtPrice)}
+                        </span>
+                      )}
                     </div>
                   </div>
 
@@ -461,16 +534,45 @@ export default function LookbookCatalog({ initialTab = "Summer Collection" }: Lo
                       <div className="flex items-center gap-1.5 mt-0.5">
                         <span 
                           className="w-3.5 h-3.5 rounded-full border border-black/10 inline-block shadow-sm"
-                          style={{ backgroundColor: selectedProduct.colorVariants?.[0]?.hex || "#d9a58f" }}
+                          style={{ backgroundColor: activeVariant?.hex || selectedProduct.colorVariants?.[0]?.hex || "#d9a58f" }}
                         />
-                        <strong className="font-medium text-[#3B2B28]">{selectedProduct.color}</strong>
+                        <strong className="font-medium text-[#3B2B28]">{activeVariant?.name || selectedProduct.color}</strong>
                       </div>
                     </div>
                     <div>
                       <span className="block text-[8px] uppercase tracking-widest text-[#8B6B61]/70 font-semibold mb-1">Style Silhouette</span>
-                      <strong className="font-medium text-[#3B2B28]">{selectedProduct.productType === "kurti" ? "Standard Kurti" : selectedProduct.productType === "tunic_top" ? "Comfort Tunic" : "Boutique Dress"}</strong>
+                      <strong className="font-medium text-[#3B2B28]">{selectedProduct.productType === "kurti" ? "Standard Kurti" : selectedProduct.productType === "tunic_top" ? "Comfort Tunic" : selectedProduct.productType === "one_piece" ? "One Piece" : "Boutique Dress"}</strong>
                     </div>
                   </div>
+
+                  {/* Color selectors */}
+                  {selectedProduct.colorVariants && selectedProduct.colorVariants.length > 0 && (
+                    <div className="space-y-3">
+                      <span className="block text-[9px] uppercase tracking-widest text-[#8B6B61] font-semibold">Select Colorway</span>
+                      <div className="flex gap-2.5 flex-wrap">
+                        {selectedProduct.colorVariants.map((variant, idx) => (
+                          <button
+                            key={variant.name + '-' + idx}
+                            onClick={() => {
+                              setSelectedColorIdx(idx);
+                              setAddSuccess(false);
+                            }}
+                            className={`px-3 py-1.5 sm:py-2 rounded-xl border flex items-center gap-2 transition-all duration-300 cursor-pointer ${
+                              selectedColorIdx === idx 
+                                ? "bg-[#3B2B28] border-[#3B2B28] text-[#FAF7F2] shadow-sm scale-102" 
+                                : "bg-white border-[#E7C2B8]/40 text-[#3B2B28] hover:border-[#3B2B28]"
+                            }`}
+                          >
+                            <span 
+                              className="w-3.5 h-3.5 rounded-full border border-black/10 flex-shrink-0" 
+                              style={{ backgroundColor: variant.hex || '#000' }}
+                            />
+                            <span className="font-inter text-xs font-semibold">{variant.name}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   {/* Size selectors */}
                   <div className="space-y-3">

@@ -25,6 +25,11 @@ CREATE TABLE IF NOT EXISTS public.products (
     reviews INTEGER DEFAULT 0,
     is_new BOOLEAN DEFAULT false,
     color_variants JSONB DEFAULT '[]',                -- [{name, hex, image}]
+    -- One Piece specific attributes (NULL for other categories)
+    length TEXT,                                      -- 'Mini' | 'Above Knee' | 'Knee Length' | 'Midi' | 'Maxi' | 'Floor Length'
+    fit_type TEXT,                                    -- 'Regular' | 'A-Line' | 'Fit & Flare' | 'Bodycon' | 'Straight Fit' | 'Oversized'
+    neck_type TEXT,                                   -- 'Round Neck' | 'V Neck' | 'Square Neck' | 'Boat Neck' | 'Collar Neck' | 'Sweetheart Neck'
+    occasion TEXT,                                    -- 'Casual Wear' | 'Office Wear' | 'Party Wear' | 'Festive Wear' | 'Vacation Wear' | 'Evening Wear'
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()) NOT NULL
 );
 

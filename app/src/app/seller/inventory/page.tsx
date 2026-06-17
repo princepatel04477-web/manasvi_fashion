@@ -135,6 +135,7 @@ export default function SellerInventory() {
             <option value="kurtis">Kurtis</option>
             <option value="dresses">Dresses</option>
             <option value="tunic-tops">Tunic Tops</option>
+            <option value="one-piece">One Piece</option>
           </select>
         </div>
       </div>

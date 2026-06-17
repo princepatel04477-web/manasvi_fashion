@@ -291,6 +291,7 @@ export default function MobileFirstExperience() {
   // Filter products by type
   const kurtiListings = products.filter(p => p.productType === "kurti");
   const tunicListings = products.filter(p => p.productType === "tunic_top");
+  const onePieceListings = products.filter(p => p.productType === "one_piece" || p.category === "one-piece");
 
   // Search filtered products
   const searchedProducts = products.filter(p => 
@@ -709,6 +710,65 @@ export default function MobileFirstExperience() {
           </div>
         </section>
 
+        {/* One Piece Collection Section (2x2 Grid) */}
+        {onePieceListings.length > 0 && (
+          <section className="flex flex-col">
+            <div className="mb-5 flex flex-col">
+              <span className="font-jost font-normal text-[9px] uppercase tracking-[0.2em] text-[#B8924A] font-bold mb-1 block">
+                EXCLUSIVE STYLES
+              </span>
+              <h2 className="font-cormorant font-light text-2xl tracking-wide text-[#0D0906] flex items-center gap-2">
+                One Piece Collection
+              </h2>
+              <div className="w-10 h-[1.5px] bg-[#B8924A] mt-1.5" />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3.5">
+              {onePieceListings.slice(0, 4).map((product) => (
+                <div 
+                  key={product.id}
+                  onClick={() => setSelectedProduct(product)}
+                  className="bg-white rounded-2xl overflow-hidden border border-[#B8924A]/5 p-2.5 shadow-xs cursor-pointer active:scale-97 transition-all flex flex-col justify-between"
+                >
+                  <div className="aspect-[3/4] w-full bg-[#F7F3EE] rounded-xl overflow-hidden relative mb-2.5">
+                    <img 
+                      src={getProductMobileImages(product)[0]} 
+                      alt={product.title}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                    {product.isNew && (
+                      <span className="font-inter font-bold absolute top-2 left-2 bg-[#B8924A] text-white text-[7px] uppercase tracking-wider px-1.5 py-0.5 rounded-full">
+                        New
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex flex-col gap-0.5 px-0.5">
+                    <h3 className="font-jost font-normal text-xs text-[#0D0906] leading-snug truncate">
+                      {product.title}
+                    </h3>
+                    <div className="flex justify-between items-baseline gap-1 mt-1">
+                      <span className="font-inter font-normal text-[#B8924A] text-[8px] uppercase tracking-widest font-bold">
+                        {getDesignNumber(product)}
+                      </span>
+                      <span className="font-inter font-bold text-xs text-[#991B1B]">₹{product.price}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-5 flex justify-center">
+              <Link 
+                href="/one-piece"
+                className="w-full text-center py-3 bg-white text-[#0D0906] border border-[#0D0906]/15 hover:border-[#0D0906] font-inter font-normal text-[10px] tracking-[0.2em] uppercase rounded-xl transition-all duration-300 shadow-xs active:scale-95"
+              >
+                View All
+              </Link>
+            </div>
+          </section>
+        )}
+
       </div>
 
       {/* ─── SIDEBAR / MENU DRAWER ──────────────────── */}
@@ -748,6 +808,7 @@ export default function MobileFirstExperience() {
                     { label: "Home", href: "/" },
                     { label: "Kurtis Collection", href: "/kurtis" },
                     { label: "Tunic Collection", href: "/tunic-tops" },
+                    { label: "One Piece", href: "/one-piece" },
                     { label: "Boutique Lookbook", href: "/collections" },
                     { label: "About Us", href: "/about" },
                     { label: "Contact Atelier", href: "/contact" }

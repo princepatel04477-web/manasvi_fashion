@@ -55,6 +55,8 @@ export default function ProductsPage() {
             <option value="all">All Apparel</option>
             <option value="kurtis">Kurtis</option>
             <option value="dresses">Dresses</option>
+            <option value="tunic-tops">Tunic Tops</option>
+            <option value="one-piece">One Piece</option>
           </select>
           <select 
             value={sort} 

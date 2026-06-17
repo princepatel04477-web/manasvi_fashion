@@ -5,7 +5,7 @@ import { useShop } from "@/context/shop-context";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CheckoutSkeleton, LuxuryTransition } from "@/components/ui/skeleton";
-import { ArrowLeft, ShoppingBag, Truck, Smartphone, CreditCard, Banknote, ShieldCheck, ChevronDown, Ticket, Trash2, Loader2, Sparkles, CheckCircle } from "lucide-react";
+import { ArrowLeft, ShoppingBag, Truck, ShieldCheck, ChevronDown, Ticket, Trash2, Loader2, Sparkles } from "lucide-react";
 import Link from "next/link";
 import PageTransition from "@/components/PageTransition";
 import Script from "next/script";
@@ -46,7 +46,6 @@ function CheckoutFormContent() {
 
   // UI state variables
   const [isEditingAddress, setIsEditingAddress] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<"upi" | "card" | "cod">("upi");
   const [isSummaryOpen, setIsSummaryOpen] = useState(false);
 
   // Coupon Engine states
@@ -268,50 +267,7 @@ function CheckoutFormContent() {
       return;
     }
 
-    // A. Cash on Delivery Flow
-    if (paymentMethod === "cod") {
-      try {
-        console.log("[Checkout Page] Placing Cash on Delivery Order...");
-        const verifyRes = await fetch("/api/checkout/razorpay/verify", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            razorpay_order_id: `cod_${Date.now()}`,
-            razorpay_payment_id: `pay_cod_${Math.random().toString(36).substring(2, 12)}`,
-            razorpay_signature: "mock_sig",
-            shippingDetails: {
-              name,
-              email,
-              phone,
-              address: `${address} \n[Payment Method: Cash on Delivery]`,
-              city,
-              pin
-            },
-            cartItems: resolvedItems,
-            couponCode: appliedCoupon,
-            isMock: true // Bypass Razorpay verification for standard COD
-          })
-        });
-
-        const verifyData = await verifyRes.json();
-        console.log("[Checkout Page] COD verify API response:", verifyData);
-
-        if (verifyRes.ok && verifyData.ok) {
-          clearCart();
-          router.push(`/checkout/success?orderId=${verifyData.orderId}`);
-        } else {
-          router.push(`/checkout/failure?error=${encodeURIComponent(verifyData.error || "Failed to place Cash on Delivery order")}`);
-        }
-      } catch (err) {
-        console.error("[Checkout Page] COD placement error:", err);
-        router.push(`/checkout/failure?error=${encodeURIComponent("Connection error. Please try again.")}`);
-      } finally {
-        setIsProcessing(false);
-      }
-      return;
-    }
-
-    // B. Razorpay checkout flow (UPI / Card)
+    // Razorpay checkout flow (handles UPI, Cards, Wallets, Netbanking)
     try {
       // 1. Dynamic injection of Razorpay SDK Script
       const scriptLoaded = await loadRazorpayScript();
@@ -618,7 +574,7 @@ function CheckoutFormContent() {
             <h2 className="font-headline-md text-headline-md text-primary mb-4">Delivery Method</h2>
             <div className="p-4 border border-deep-maroon/10 bg-ivory-cream flex justify-between items-center">
               <div className="flex items-center gap-3">
-                <span className="material-symbols-outlined text-primary">local_shipping</span>
+                <Truck className="w-5 h-5 text-primary" />
                 <div>
                   <p className="font-title-lg text-body-lg text-primary font-bold">Standard Delivery</p>
                   <p className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">3-5 Business Days</p>
@@ -631,65 +587,26 @@ function CheckoutFormContent() {
           {/* 3. Payment Method Section */}
           <section className="pt-4">
             <h2 className="font-headline-md text-headline-md text-primary mb-4">Payment Method</h2>
-            <div className="space-y-3">
-              {/* UPI Option */}
-              <div className="relative">
-                <input 
-                  checked={paymentMethod === "upi"} 
-                  onChange={() => setPaymentMethod("upi")}
-                  className="hidden payment-radio" 
-                  id="pay_upi" 
-                  name="payment" 
-                  type="radio" 
-                />
-                <label className="flex items-center justify-between p-4 border border-deep-maroon/10 bg-ivory-cream cursor-pointer transition-all" htmlFor="pay_upi">
-                  <div className="flex items-center gap-3">
-                    <span className="material-symbols-outlined text-primary">contactless</span>
-                    <span className="font-title-lg text-body-lg text-primary font-medium">UPI (GPay / PhonePe)</span>
-                  </div>
-                  <span className="check-icon opacity-0 transition-opacity material-symbols-outlined text-heritage-gold">check_circle</span>
-                </label>
+            <div className="p-4 border border-heritage-gold/30 bg-ivory-cream flex items-center gap-4">
+              {/* Razorpay Logo as SVG */}
+              <div className="flex-shrink-0">
+                <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect width="32" height="32" rx="6" fill="#072654"/>
+                  <path d="M8 22L12.5 10H16.5L14.5 16H18.5L10.5 26L12 20H8V22Z" fill="#3395FF"/>
+                  <path d="M14 10H24L21 16H17L19 10H14Z" fill="#FFFFFF"/>
+                </svg>
               </div>
-              {/* Cards Option */}
-              <div className="relative">
-                <input 
-                  checked={paymentMethod === "card"} 
-                  onChange={() => setPaymentMethod("card")}
-                  className="hidden payment-radio" 
-                  id="pay_card" 
-                  name="payment" 
-                  type="radio" 
-                />
-                <label className="flex items-center justify-between p-4 border border-deep-maroon/10 bg-ivory-cream cursor-pointer transition-all" htmlFor="pay_card">
-                  <div className="flex items-center gap-3">
-                    <span className="material-symbols-outlined text-primary">credit_card</span>
-                    <span className="font-title-lg text-body-lg text-primary font-medium">Credit / Debit Card</span>
-                  </div>
-                  <span className="check-icon opacity-0 transition-opacity material-symbols-outlined text-heritage-gold">check_circle</span>
-                </label>
+              <div className="flex-1">
+                <p className="font-title-lg text-body-lg text-primary font-semibold">Razorpay</p>
+                <p className="font-label-sm text-[10px] text-on-surface-variant uppercase tracking-widest mt-0.5">UPI · Cards · Wallets · Netbanking</p>
               </div>
-              {/* COD Option */}
-              <div className="relative">
-                <input 
-                  checked={paymentMethod === "cod"} 
-                  onChange={() => setPaymentMethod("cod")}
-                  className="hidden payment-radio" 
-                  id="pay_cod" 
-                  name="payment" 
-                  type="radio" 
-                />
-                <label className="flex items-center justify-between p-4 border border-deep-maroon/10 bg-ivory-cream cursor-pointer transition-all" htmlFor="pay_cod">
-                  <div className="flex items-center gap-3">
-                    <span className="material-symbols-outlined text-primary">payments</span>
-                    <span className="font-title-lg text-body-lg text-primary font-medium">Cash on Delivery</span>
-                  </div>
-                  <span className="check-icon opacity-0 transition-opacity material-symbols-outlined text-heritage-gold">check_circle</span>
-                </label>
+              <div className="w-4 h-4 rounded-full border-2 border-heritage-gold bg-heritage-gold flex items-center justify-center flex-shrink-0">
+                <div className="w-1.5 h-1.5 rounded-full bg-ivory-cream" />
               </div>
             </div>
-            <div className="mt-4 flex items-center gap-2 px-2">
-              <span className="material-symbols-outlined text-muted-teal text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>verified_user</span>
-              <p className="font-label-sm text-[10px] text-muted-teal uppercase tracking-widest font-semibold">Payments secured by Razorpay</p>
+            <div className="mt-3 flex items-center gap-2 px-1">
+              <ShieldCheck className="w-4 h-4 text-muted-teal" />
+              <p className="font-label-sm text-[10px] text-muted-teal uppercase tracking-widest font-semibold">100% Secured · PCI-DSS Compliant · 256-bit Encryption</p>
             </div>
           </section>
 
@@ -698,7 +615,7 @@ function CheckoutFormContent() {
             <div className="cursor-pointer border-t border-deep-maroon/10 pt-6" id="summary-toggle" onClick={() => setIsSummaryOpen(!isSummaryOpen)}>
               <div className="flex justify-between items-center">
                 <h2 className="font-headline-md text-title-lg text-primary uppercase tracking-widest">Order Summary</h2>
-                <span className={`material-symbols-outlined transition-transform duration-300 ${isSummaryOpen ? "rotate-180" : ""}`} id="summary-icon">expand_more</span>
+                <ChevronDown className={`w-5 h-5 text-primary transition-transform duration-300 ${isSummaryOpen ? "rotate-180" : ""}`} id="summary-icon" />
               </div>
               <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isSummaryOpen ? "max-h-[1000px] opacity-100 animate-fade-in" : "max-h-0 opacity-0"}`} id="summary-content">
                 <div className="py-6 space-y-4">
@@ -744,7 +661,7 @@ function CheckoutFormContent() {
                     ) : (
                       <div className="flex justify-between items-center bg-ivory-cream border border-deep-maroon/10 px-4 py-2">
                         <div className="flex items-center gap-2">
-                          <span className="material-symbols-outlined text-soft-rose text-sm">confirmation_number</span>
+                          <Ticket className="w-4 h-4 text-soft-rose" />
                           <span className="font-body-md text-xs font-semibold text-primary tracking-wider uppercase">
                             {appliedCoupon}
                           </span>
@@ -752,10 +669,10 @@ function CheckoutFormContent() {
                         <button
                           type="button"
                           onClick={handleRemoveCoupon}
-                          className="text-primary/60 hover:text-red-700 transition-colors p-1 cursor-pointer"
+                          className="text-primary/60 hover:text-red-700 transition-colors p-1 cursor-pointer flex items-center justify-center"
                           aria-label="Remove coupon"
                         >
-                          <span className="material-symbols-outlined text-sm">delete</span>
+                          <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
                     )}
@@ -935,13 +852,13 @@ export default function CheckoutPage() {
         {/* TopAppBar */}
         <nav className="flex justify-between items-center px-margin-mobile h-16 w-full fixed top-0 z-50 bg-surface border-b border-deep-maroon/10">
           <button onClick={() => router.back()} className="cursor-pointer active:opacity-70 transition-opacity flex items-center">
-            <span className="material-symbols-outlined text-primary">arrow_back</span>
+            <ArrowLeft className="w-5 h-5 text-primary" />
           </button>
           <div className="font-headline-lg-mobile text-headline-lg-mobile tracking-widest uppercase text-primary text-center font-headline-lg">
             Manasvi
           </div>
           <Link href="/cart" className="cursor-pointer active:opacity-70 transition-opacity flex items-center">
-            <span className="material-symbols-outlined text-primary">shopping_bag</span>
+            <ShoppingBag className="w-5 h-5 text-primary" />
           </Link>
         </nav>
 

@@ -18,8 +18,8 @@ const productInputSchema = z.object({
   title: z.string().min(2, "Title must be at least 2 characters."),
   slug: z.string().min(2, "Slug must be at least 2 characters.").regex(/^[a-z0-9-]+$/, "Slug must only contain lowercase alphanumeric characters and hyphens."),
   description: z.string().min(10, "Description must be at least 10 characters."),
-  category: z.enum(["kurtis", "dresses", "tunic-tops"]),
-  productType: z.enum(["kurti", "tunic_top", "dress"]),
+  category: z.enum(["kurtis", "dresses", "tunic-tops", "one-piece"]),
+  productType: z.enum(["kurti", "tunic_top", "dress", "one_piece"]),
   subcategory: z.string().min(2, "Subcategory is required."),
   fabric: z.string().min(2, "Fabric details are required."),
   sleeveType: z.string().min(2, "Sleeve type is required."),
@@ -30,7 +30,12 @@ const productInputSchema = z.object({
   images: z.array(z.string()).min(1, "At least one product image is required."),
   stock: z.number().int().nonnegative("Stock cannot be negative."),
   isNew: z.boolean().optional(),
-  colorVariants: z.array(colorVariantSchema).optional()
+  colorVariants: z.array(colorVariantSchema).optional(),
+  // One Piece specific optional fields
+  length: z.enum(["Mini", "Above Knee", "Knee Length", "Midi", "Maxi", "Floor Length"]).optional(),
+  fitType: z.enum(["Regular", "A-Line", "Fit & Flare", "Bodycon", "Straight Fit", "Oversized"]).optional(),
+  neckType: z.enum(["Round Neck", "V Neck", "Square Neck", "Boat Neck", "Collar Neck", "Sweetheart Neck"]).optional(),
+  occasion: z.enum(["Casual Wear", "Office Wear", "Party Wear", "Festive Wear", "Vacation Wear", "Evening Wear"]).optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -54,7 +59,12 @@ export async function POST(req: NextRequest) {
       images: validatedData.images,
       stock: validatedData.stock,
       isNew: !!validatedData.isNew,
-      colorVariants: validatedData.colorVariants || []
+      colorVariants: validatedData.colorVariants || [],
+      // One Piece specific attributes
+      length: validatedData.length,
+      fitType: validatedData.fitType,
+      neckType: validatedData.neckType,
+      occasion: validatedData.occasion,
     });
 
     return NextResponse.json({

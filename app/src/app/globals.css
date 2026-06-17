@@ -231,6 +231,13 @@ body {
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
 }
 
+/* Disable SVG noise filter on mobile to prevent GPU rendering glitches (blue stripes/pixels/crashes) */
+@media (max-width: 768px) {
+  .soft-grain::before {
+    display: none !important;
+  }
+}
+
 .warm-shadow {
   box-shadow: 0 30px 60px -15px rgba(59, 43, 40, 0.12), 0 12px 30px -10px rgba(59, 43, 40, 0.08);
 }
