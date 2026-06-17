@@ -9,8 +9,8 @@ CREATE TABLE IF NOT EXISTS public.products (
     id TEXT PRIMARY KEY DEFAULT 'p-' || extract(epoch from now())::text,
     slug TEXT UNIQUE NOT NULL,
     title TEXT NOT NULL,
-    category TEXT NOT NULL,                           -- 'kurtis' | 'dresses'
-    product_type TEXT NOT NULL,                       -- 'kurti' | 'tunic_top' | 'dress'
+    category TEXT NOT NULL,                           -- 'kurtis' | 'dresses' | 'tunic-tops' | 'one-piece'
+    product_type TEXT NOT NULL,                       -- 'kurti' | 'tunic_top' | 'dress' | 'one_piece'
     subcategory TEXT,
     description TEXT NOT NULL DEFAULT '',
     fabric TEXT,
@@ -317,4 +317,30 @@ CREATE POLICY "Allow public updates on Products Bucket" ON storage.objects
 DROP POLICY IF EXISTS "Allow public deletes on Products Bucket" ON storage.objects;
 CREATE POLICY "Allow public deletes on Products Bucket" ON storage.objects
     FOR DELETE USING (bucket_id = 'products');
+
+-- ============================================================
+-- Migration: Add "One Piece" category + attribute columns
+-- ============================================================
+
+-- Add new columns if they don't exist
+ALTER TABLE public.products
+    ADD COLUMN IF NOT EXISTS length TEXT,
+    ADD COLUMN IF NOT EXISTS fit_type TEXT,
+    ADD COLUMN IF NOT EXISTS neck_type TEXT,
+    ADD COLUMN IF NOT EXISTS occasion TEXT;
+
+-- Add CHECK constraint for category
+ALTER TABLE public.products DROP CONSTRAINT IF EXISTS products_category_check;
+ALTER TABLE public.products
+    ADD CONSTRAINT products_category_check
+    CHECK (category IN ('kurtis', 'dresses', 'tunic-tops', 'one-piece'));
+
+-- Add CHECK constraint for product_type
+ALTER TABLE public.products DROP CONSTRAINT IF EXISTS products_product_type_check;
+ALTER TABLE public.products
+    ADD CONSTRAINT products_product_type_check
+    CHECK (product_type IN ('kurti', 'tunic_top', 'dress', 'one_piece'));
+
+-- Index for fast filtering
+CREATE INDEX IF NOT EXISTS idx_products_category ON public.products (category);
 
