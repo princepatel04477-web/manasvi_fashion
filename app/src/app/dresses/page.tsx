@@ -140,6 +140,32 @@ export default function DressesPage() {
             </div>
           </section>
 
+          {/* High-Fashion Category SEO Description */}
+          <div className="mt-16 border-t border-[#E7C2B8]/40 pt-16 max-w-4xl mx-auto pb-8">
+            <span className="font-inter text-[9px] tracking-[0.25em] text-[#C98E87] uppercase font-bold block mb-3 text-center">
+              Campaign Journal
+            </span>
+            <h2 className="font-serif text-2xl text-[#3B2B28] text-center mb-8">
+              Designer Dresses in Surat – Contemporary Drapes
+            </h2>
+            <div className="w-12 h-[1px] bg-[#C98E87] mx-auto mb-8" />
+            
+            <div className="font-inter text-sm text-[#8B6B61] leading-relaxed font-light space-y-6 text-justify">
+              <p>
+                Step into a world of contemporary grace and tailored luxury with the <strong>latest dress collection surat</strong> from Manasvi Fashion. Designed to flatter the modern feminine silhouette, our selection of <strong>women dresses surat</strong> offers a diverse range of styles suitable for all aspects of your lifestyle. From casual midday gatherings to glamorous evening events, our dresses represent a thoughtful marriage of high-fashion western aesthetics and delicate Indian craftsmanship. We utilize only the finest quality fabrics, such as smooth viscose crepes, airy georgettes, and breathable cotton blends, ensuring that every design feels as sublime as it looks.
+              </p>
+              <p>
+                If you are looking for a stunning <strong>one piece dress surat</strong> or a <strong>designer dress surat</strong>, our boutique provides a curated range that focuses on minimalist elegance and perfect cuts. Our <strong>casual dress surat</strong> and <strong>western dress surat</strong> feature relaxed drapes, structured sleeves, and subtle details, making them ideal for everyday wear, brunch dates, or stylish travels. For those special occasions that demand extra glamour, our <strong>party wear dress surat</strong> and <strong>elegant dresses surat</strong> offer flowy contours, dramatic flares, and delicate hand-embroidery. These <strong>fashion dresses surat</strong> are designed to draw the eye and ensure you feel comfortable yet exceptionally stylish.
+              </p>
+              <p>
+                As a premium fashion destination, Manasvi Fashion is dedicated to keeping your wardrobe refreshed with <strong>trendy dresses surat</strong> and <strong>stylish dresses surat</strong> that reflect the global shifts in fashion. Our <strong>luxury dresses surat</strong> and <strong>premium dresses surat</strong> are created with high attention to seam finish, contouring, and visual balance. We ensure that our design process focuses on slow fashion principles, avoiding fleeting trends to bring you long-lasting wardrobe classics. Explore our dresses category today and experience the ease of online shopping with customer-friendly support.
+              </p>
+              <p>
+                Our dedicated <strong>dress boutique surat</strong> invites you to discover our premium range of drapes and designs. We believe that every <strong>designer western wear surat</strong> should be a reflection of unique style, which is why we offer custom sizing fits across our entire line. Whether you are searching for a lightweight, breathable linen dress for warm afternoons or a structured satin dress for formal events, Manasvi Fashion Surat is your ultimate destination. Visit our boutique or browse our collection online to find statement dresses crafted with care, and let our customer service guide you toward a style that feels personal, calm, and gracefully premium.
+              </p>
+            </div>
+          </div>
+
         </div>
       </main>
     </PageTransition>

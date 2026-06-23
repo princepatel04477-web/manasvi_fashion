@@ -137,11 +137,14 @@ export default function OnePiecePage() {
       const subcategory = (p.subcategory || "").toLowerCase();
       return (
         productType === "one_piece" ||
+        productType === "onepiece" ||
         category === "one-piece" ||
+        category === "onepiece" ||
         category === "one_piece" ||
         category === "one_pieces" ||
         subcategory === "one piece" ||
-        subcategory === "one-piece"
+        subcategory === "one-piece" ||
+        subcategory === "onepiece"
       );
     });
 

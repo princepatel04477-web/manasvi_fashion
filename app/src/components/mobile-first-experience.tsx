@@ -2,11 +2,12 @@
 
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, ShoppingBag, Search, MessageCircle, Heart, Plus, Minus, ArrowRight } from "lucide-react";
+import { Menu, X, ShoppingBag, Search, MessageCircle, Heart, Plus, Minus, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { useShop } from "@/context/shop-context";
 import { Product, ColorVariant } from "@/types";
 import { formatINR } from "@/lib/store";
 import Link from "next/link";
+import { useSession, signOut } from "next-auth/react";
 
 // Modeless image directory mapping
 const K = "/photo modeless/kurti";
@@ -160,8 +161,234 @@ function getDesignNumber(product: Product): string {
   return `DS-${product.slug.substring(0, 3).toUpperCase()}`;
 }
 
+interface InteractiveMarqueeProps {
+  title: string;
+  products: Product[];
+  speed?: number;
+  onProductClick: (product: Product) => void;
+}
+
+function InteractiveMarquee({
+  title,
+  products,
+  speed = 1.0,
+  onProductClick,
+}: InteractiveMarqueeProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const isInteractingRef = useRef(false);
+  const startXRef = useRef(0);
+  const scrollLeftStartRef = useRef(0);
+  const draggedRef = useRef(false);
+  const lastInteractionTimeRef = useRef(0);
+  const animationFrameIdRef = useRef<number | null>(null);
+
+  // Triplicate product list for continuous wrap-around in both directions
+  const triplicatedProducts = useMemo(() => {
+    return [...products, ...products, ...products];
+  }, [products]);
+
+  // Center the scroll container initially so there is content on both sides
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const initScroll = () => {
+      const thirdWidth = container.scrollWidth / 3;
+      if (thirdWidth > 0) {
+        container.scrollLeft = thirdWidth;
+      }
+    };
+
+    initScroll();
+    
+    // Fallback timer if layout/images are still rendering
+    const t = setTimeout(initScroll, 150);
+
+    window.addEventListener("resize", initScroll);
+    return () => {
+      clearTimeout(t);
+      window.removeEventListener("resize", initScroll);
+    };
+  }, [products]);
+
+  // requestAnimationFrame scroll loop
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    let lastTime = performance.now();
+
+    const loop = (now: number) => {
+      const deltaTime = now - lastTime;
+      lastTime = now;
+
+      const speedPxPerMs = speed / 16.67;
+      const step = speedPxPerMs * deltaTime;
+
+      const isInteracting = isInteractingRef.current;
+      const timeSinceInteraction = now - lastInteractionTimeRef.current;
+      const shouldPause = isInteracting || timeSinceInteraction < 1000;
+
+      if (container && !shouldPause) {
+        container.scrollLeft += step;
+
+        // Auto-scroll loop wrapping
+        const thirdWidth = container.scrollWidth / 3;
+        if (thirdWidth > 0) {
+          if (container.scrollLeft >= thirdWidth * 2) {
+            container.scrollLeft -= thirdWidth;
+          } else if (container.scrollLeft < thirdWidth) {
+            container.scrollLeft += thirdWidth;
+          }
+        }
+      }
+
+      animationFrameIdRef.current = requestAnimationFrame(loop);
+    };
+
+    animationFrameIdRef.current = requestAnimationFrame(loop);
+
+    return () => {
+      if (animationFrameIdRef.current !== null) {
+        cancelAnimationFrame(animationFrameIdRef.current);
+      }
+    };
+  }, [speed]);
+
+  // Scroll wrapping during manual scroll (mobile touch swipe or mouse wheel)
+  const handleScroll = () => {
+    const container = containerRef.current;
+    if (!container) return;
+    const thirdWidth = container.scrollWidth / 3;
+    if (thirdWidth <= 0) return;
+
+    if (container.scrollLeft >= thirdWidth * 2) {
+      container.scrollLeft -= thirdWidth;
+    } else if (container.scrollLeft < thirdWidth) {
+      container.scrollLeft += thirdWidth;
+    }
+  };
+
+  // Mouse handlers for desktop click-drag
+  const handleMouseDown = (e: React.MouseEvent) => {
+    const container = containerRef.current;
+    if (!container) return;
+    isInteractingRef.current = true;
+    startXRef.current = e.pageX - container.offsetLeft;
+    scrollLeftStartRef.current = container.scrollLeft;
+    draggedRef.current = false;
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    const container = containerRef.current;
+    if (!container || !isInteractingRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - container.offsetLeft;
+    const walk = (x - startXRef.current) * 1.5;
+    if (Math.abs(walk) > 5) {
+      draggedRef.current = true;
+    }
+    container.scrollLeft = scrollLeftStartRef.current - walk;
+  };
+
+  const handleMouseUpOrLeave = () => {
+    if (isInteractingRef.current) {
+      isInteractingRef.current = false;
+      lastInteractionTimeRef.current = performance.now();
+    }
+  };
+
+  // Touch handlers for mobile swipe
+  const handleTouchStart = () => {
+    isInteractingRef.current = true;
+    draggedRef.current = false;
+  };
+
+  const handleTouchMove = () => {
+    draggedRef.current = true;
+  };
+
+  const handleTouchEnd = () => {
+    if (isInteractingRef.current) {
+      isInteractingRef.current = false;
+      lastInteractionTimeRef.current = performance.now();
+    }
+  };
+
+  const handleCardClick = (e: React.MouseEvent, item: Product) => {
+    if (draggedRef.current) {
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+    onProductClick(item);
+  };
+
+  return (
+    <div className="flex flex-col">
+      <div className="px-4 mb-2 flex items-center justify-between">
+        <h3 className="font-cormorant font-light text-lg tracking-wide text-[#0D0906]">
+          {title}
+        </h3>
+        <span className="font-inter font-normal text-[8px] uppercase tracking-widest text-[#B8924A] font-bold">
+          Swipe & Drag
+        </span>
+      </div>
+
+      <div
+        ref={containerRef}
+        onScroll={handleScroll}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUpOrLeave}
+        onMouseLeave={handleMouseUpOrLeave}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onTouchCancel={handleTouchEnd}
+        className="relative w-full overflow-x-auto scrollbar-none py-1.5 flex select-none cursor-grab active:cursor-grabbing gap-3.5 px-4"
+        style={{ WebkitOverflowScrolling: "touch" }}
+      >
+        {triplicatedProducts.map((item, idx) => (
+          <div
+            key={`${item.id}-${idx}`}
+            onClick={(e) => handleCardClick(e, item)}
+            className="w-[125px] sm:w-[150px] md:w-[180px] lg:w-[200px] flex-shrink-0 bg-white rounded-xl overflow-hidden border border-[#B8924A]/5 p-2 shadow-xs cursor-pointer active:scale-97 transition-all flex flex-col justify-between"
+          >
+            <div className="aspect-[3/4] w-full bg-[#F7F3EE] rounded-lg overflow-hidden relative mb-2 pointer-events-none">
+              <img
+                src={getProductMobileImages(item)[0]}
+                alt={item.title}
+                className="w-full h-full object-cover select-none pointer-events-none"
+                draggable="false"
+                loading="lazy"
+              />
+            </div>
+            <div className="flex flex-col gap-0.5 pointer-events-none">
+              <h4 className="font-jost font-normal text-[11px] text-[#0D0906] truncate leading-tight select-none">
+                {item.title}
+              </h4>
+              <div className="flex justify-between items-center text-[9px] text-gray-500 font-medium select-none">
+                <span className="font-inter font-normal text-[#B8924A] text-[7.5px] uppercase font-bold tracking-wider">
+                  {getDesignNumber(item)}
+                </span>
+                <span className="font-inter font-bold text-[#991B1B]">
+                  ₹{item.price}
+                </span>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function MobileFirstExperience() {
   const { products, loading, addCustomToCart, cartCount, wishlist, toggleWishlist } = useShop();
+  const { data: session } = useSession();
+  const firstName = session?.user?.name ? session.user.name.split(" ")[0] : "";
+  const isAdmin = (session?.user as any)?.role === "admin" || (session?.user as any)?.role === "seller";
 
   // Navigation state
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -178,6 +405,29 @@ export default function MobileFirstExperience() {
   const [toastMessage, setToastMessage] = useState("");
   const [showToast, setShowToast] = useState(false);
   const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
+
+  const [sliceLimit, setSliceLimit] = useState(4);
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      const w = window.innerWidth;
+      setIsDesktop(w >= 1024);
+      if (w >= 1280) setSliceLimit(10);
+      else if (w >= 1024) setSliceLimit(8);
+      else if (w >= 640) setSliceLimit(6);
+      else setSliceLimit(4);
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const modalVariants = {
+    hidden: isDesktop ? { scale: 0.9, opacity: 0, x: "-50%", y: "-50%" } : { y: "100%" },
+    visible: isDesktop ? { scale: 1, opacity: 1, x: "-50%", y: "-50%" } : { y: 0 },
+    exit: isDesktop ? { scale: 0.9, opacity: 0, x: "-50%", y: "-50%" } : { y: "100%" },
+  };
 
   const activeVariant = useMemo(() => {
     if (!selectedProduct || !selectedProduct.colorVariants) return null;
@@ -221,22 +471,26 @@ export default function MobileFirstExperience() {
     {
       img: `${K}/7991032735d4941dd872e07f4fbe08e9b26d6ab69dd81479a7c1782d6be2067c.png`,
       title: "Surat Premium Kurtis",
-      subtitle: "Artisanal prints & classic silhouettes"
+      subtitle: "Artisanal prints & classic silhouettes",
+      position: "object-[center_30%]"
     },
     {
       img: `${T}/052081f1262d42453b2864b2120581c84be1200dd8a51d24744a6d9c4abb5992.png`,
       title: "Contemporary Tunic Tops",
-      subtitle: "Tailored comfortable cotton fusion wear"
+      subtitle: "Tailored comfortable cotton fusion wear",
+      position: "object-[center_35%]"
     },
     {
       img: `${K}/cbced159d300f0054a98f6dfc484470966caffb38e10e3395b2a02acefafd358.png`,
       title: "Heritage Collection",
-      subtitle: "Intricate detailed neck embroideries"
+      subtitle: "Intricate detailed neck embroideries",
+      position: "object-[center_30%]"
     },
     {
       img: `${T}/16325f0d65e848239ec5c846ee373d6111ab99cbf22dd64c36b5ef807cf47342.png`,
       title: "Bespoke Ethnic Styles",
-      subtitle: "Rich, premium textures & silhouettes"
+      subtitle: "Rich, premium textures & silhouettes",
+      position: "object-[center_35%]"
     }
   ];
 
@@ -291,7 +545,7 @@ export default function MobileFirstExperience() {
   // Filter products by type
   const kurtiListings = products.filter(p => p.productType === "kurti");
   const tunicListings = products.filter(p => p.productType === "tunic_top");
-  const onePieceListings = products.filter(p => p.productType === "one_piece" || p.category === "one-piece");
+  const onePieceListings = products.filter(p => p.productType === "one_piece" || (p.productType as string) === "onepiece" || p.category === "one-piece" || (p.category as string) === "onepiece");
 
   // Search filtered products
   const searchedProducts = products.filter(p => 
@@ -366,7 +620,7 @@ export default function MobileFirstExperience() {
       `}</style>
 
       {/* ─── STICKY HEADER ──────────────────────────── */}
-      <header className="sticky top-0 z-40 glass-header border-b border-[#B8924A]/10 shadow-xs">
+      <header className="sticky top-0 z-40 glass-header border-b border-[#B8924A]/10 shadow-xs lg:hidden">
         <div className="flex items-center justify-between px-4 py-3 h-14">
           {/* Hamburger Menu */}
           <button 
@@ -426,7 +680,7 @@ export default function MobileFirstExperience() {
       <section className="w-full flex flex-col bg-white">
         
         {/* Section 1: Hero Carousel */}
-        <div className="relative w-full h-[465px] overflow-hidden bg-[#FAF7F2] select-none">
+        <div className="relative w-full h-[45vh] sm:h-[52vh] md:h-[58vh] lg:h-[65vh] xl:h-[68vh] max-h-[620px] overflow-hidden bg-[#FAF7F2] select-none">
           {/* Slides Container */}
           <div className="w-full h-full relative">
             <AnimatePresence mode="wait">
@@ -441,24 +695,25 @@ export default function MobileFirstExperience() {
                 <img 
                   src={carouselSlides[carouselIdx].img} 
                   alt={carouselSlides[carouselIdx].title}
-                  className="w-full h-full object-cover"
+                  className={`w-full h-full object-cover ${carouselSlides[carouselIdx].position || 'object-center'}`}
+                  draggable="false"
                   loading="eager"
                 />
                 
-                {/* Vignette Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent" />
+                {/* Vignette Overlay - Premium Dark Overlay for contrast */}
+                <div className="absolute inset-0 bg-black/30" />
 
-                {/* Content Overlay */}
-                <div className="absolute bottom-12 left-0 right-0 px-6 flex flex-col items-center text-center text-[#FAF7F2] z-20 pointer-events-none">
-                  <h2 className="font-cormorant font-light text-3xl tracking-wide mb-2 leading-tight text-white drop-shadow-sm">
+                {/* Content Overlay - Vertically Centered */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6 z-20 pointer-events-none select-none">
+                  <h2 className="font-cormorant font-light text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl tracking-wide mb-2.5 leading-tight text-white drop-shadow-sm">
                     {carouselSlides[carouselIdx].title}
                   </h2>
-                  <p className="font-jost font-normal text-xs text-[#FAF7F2]/90 tracking-wider max-w-xs mb-5 leading-relaxed">
+                  <p className="font-jost font-light text-[10px] sm:text-xs md:text-sm lg:text-base text-[#FAF7F2]/90 tracking-wider max-w-xs md:max-w-lg mb-4.5 leading-relaxed">
                     {carouselSlides[carouselIdx].subtitle}
                   </p>
                   <Link 
                     href="/collections" 
-                    className="pointer-events-auto inline-flex items-center justify-center px-6 py-2.5 bg-white hover:bg-[#FAF7F2] text-[#0D0906] font-inter font-normal text-[10px] tracking-[0.2em] uppercase rounded-xs transition-all duration-300 shadow-md active:scale-95"
+                    className="pointer-events-auto inline-flex items-center justify-center px-5 py-2 sm:px-6 sm:py-2.5 md:px-8 md:py-3.5 bg-white hover:bg-[#FAF7F2] text-[#0D0906] font-inter font-normal text-[9px] sm:text-[10px] md:text-xs tracking-[0.2em] uppercase rounded-xs transition-all duration-300 shadow-md active:scale-95"
                   >
                     Shop Now
                   </Link>
@@ -484,17 +739,36 @@ export default function MobileFirstExperience() {
             }}
           />
 
+          {/* Navigation Controls */}
+          <button 
+            onClick={(e) => { e.stopPropagation(); setCarouselIdx((prev) => (prev - 1 + carouselSlides.length) % carouselSlides.length); }}
+            className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 z-35 pointer-events-auto w-10 h-10 md:w-11 md:h-11 flex items-center justify-center rounded-full bg-black/20 hover:bg-black/40 text-white hover:text-[#FAF7F2] transition-all hover:scale-105 active:scale-95 cursor-pointer backdrop-blur-xs select-none border border-white/10"
+            aria-label="Previous slide"
+          >
+            <ChevronLeft size={20} strokeWidth={1.5} />
+          </button>
+          
+          <button 
+            onClick={(e) => { e.stopPropagation(); setCarouselIdx((prev) => (prev + 1) % carouselSlides.length); }}
+            className="absolute right-3 md:right-4 top-1/2 -translate-y-1/2 z-35 pointer-events-auto w-10 h-10 md:w-11 md:h-11 flex items-center justify-center rounded-full bg-black/20 hover:bg-black/40 text-white hover:text-[#FAF7F2] transition-all hover:scale-105 active:scale-95 cursor-pointer backdrop-blur-xs select-none border border-white/10"
+            aria-label="Next slide"
+          >
+            <ChevronRight size={20} strokeWidth={1.5} />
+          </button>
+
           {/* Dots Pagination */}
-          <div className="absolute bottom-4 left-0 right-0 z-20 flex justify-center gap-1.5 pointer-events-none">
+          <div className="absolute bottom-4 left-0 right-0 z-20 flex justify-center gap-1 pointer-events-none">
             {carouselSlides.map((_, i) => (
               <button
                 key={i}
-                onClick={() => setCarouselIdx(i)}
-                className={`w-1.5 h-1.5 rounded-full pointer-events-auto transition-all duration-300 ${
-                  carouselIdx === i ? "bg-[#B8924A] w-3" : "bg-white/40"
-                }`}
+                onClick={(e) => { e.stopPropagation(); setCarouselIdx(i); }}
+                className="w-5 h-5 flex items-center justify-center pointer-events-auto active:scale-90 transition-transform cursor-pointer"
                 aria-label={`Go to slide ${i + 1}`}
-              />
+              >
+                <span className={`rounded-full transition-all duration-300 ${
+                  carouselIdx === i ? "bg-[#B8924A] w-3.5 h-1.5" : "bg-white/40 w-1.5 h-1.5"
+                }`} />
+              </button>
             ))}
           </div>
         </div>
@@ -503,98 +777,36 @@ export default function MobileFirstExperience() {
         <div className="w-full bg-[#FAF7F2] py-6 border-y border-[#B8924A]/10 overflow-hidden flex flex-col gap-5">
           
           {/* Kurti Marquee */}
-          <div className="flex flex-col">
-            <div className="px-4 mb-2 flex items-center justify-between">
-              <h3 className="font-cormorant font-light text-lg tracking-wide text-[#0D0906]">Kurti Collection</h3>
-              <span className="font-inter font-normal text-[8px] uppercase tracking-widest text-[#B8924A] font-bold">Infinite Scroll</span>
-            </div>
-            
-            <div className="relative w-full overflow-hidden py-1.5 flex select-none">
-              <div 
-                className="animate-marquee-infinite flex gap-3.5 pr-3.5"
-                style={{ "--speed": "22s" } as React.CSSProperties}
-              >
-                {/* Render two copies of items for seamless loop */}
-                {[...kurtiListings, ...kurtiListings].map((item, idx) => (
-                  <div 
-                    key={`${item.id}-${idx}`}
-                    onClick={() => setSelectedProduct(item)}
-                    className="w-[125px] flex-shrink-0 bg-white rounded-xl overflow-hidden border border-[#B8924A]/5 p-2 shadow-xs cursor-pointer active:scale-97 transition-all flex flex-col justify-between"
-                  >
-                    <div className="aspect-[3/4] w-full bg-[#F7F3EE] rounded-lg overflow-hidden relative mb-2">
-                      <img 
-                        src={getProductMobileImages(item)[0]} 
-                        alt={item.title}
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                      />
-                    </div>
-                    <div className="flex flex-col gap-0.5">
-                      <h4 className="font-jost font-normal text-[11px] text-[#0D0906] truncate leading-tight">
-                        {item.title}
-                      </h4>
-                      <div className="flex justify-between items-center text-[9px] text-gray-500 font-medium">
-                        <span className="font-inter font-normal text-[#B8924A] text-[7.5px] uppercase font-bold tracking-wider">
-                          {getDesignNumber(item)}
-                        </span>
-                        <span className="font-inter font-bold text-[#991B1B]">₹{item.price}</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+          <InteractiveMarquee 
+            title="Kurti Collection" 
+            products={kurtiListings} 
+            speed={1.0} 
+            onProductClick={setSelectedProduct} 
+          />
 
           {/* Tunic Marquee */}
-          <div className="flex flex-col">
-            <div className="px-4 mb-2 flex items-center justify-between">
-              <h3 className="font-cormorant font-light text-lg tracking-wide text-[#0D0906]">Tunic Collection</h3>
-              <span className="font-inter font-normal text-[8px] uppercase tracking-widest text-[#B8924A] font-bold">Infinite Scroll</span>
-            </div>
-            
-            <div className="relative w-full overflow-hidden py-1.5 flex select-none">
-              <div 
-                className="animate-marquee-infinite flex gap-3.5 pr-3.5"
-                style={{ "--speed": "26s" } as React.CSSProperties}
-              >
-                {/* Render two copies of items for seamless loop */}
-                {[...tunicListings, ...tunicListings].map((item, idx) => (
-                  <div 
-                    key={`${item.id}-${idx}`}
-                    onClick={() => setSelectedProduct(item)}
-                    className="w-[125px] flex-shrink-0 bg-white rounded-xl overflow-hidden border border-[#B8924A]/5 p-2 shadow-xs cursor-pointer active:scale-97 transition-all flex flex-col justify-between"
-                  >
-                    <div className="aspect-[3/4] w-full bg-[#F7F3EE] rounded-lg overflow-hidden relative mb-2">
-                      <img 
-                        src={getProductMobileImages(item)[0]} 
-                        alt={item.title}
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                      />
-                    </div>
-                    <div className="flex flex-col gap-0.5">
-                      <h4 className="font-jost font-normal text-[11px] text-[#0D0906] truncate leading-tight">
-                        {item.title}
-                      </h4>
-                      <div className="flex justify-between items-center text-[9px] text-gray-500 font-medium">
-                        <span className="font-inter font-normal text-[#B8924A] text-[7.5px] uppercase font-bold tracking-wider">
-                          {getDesignNumber(item)}
-                        </span>
-                        <span className="font-inter font-bold text-[#991B1B]">₹{item.price}</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+          <InteractiveMarquee 
+            title="Tunic Collection" 
+            products={tunicListings} 
+            speed={0.8} 
+            onProductClick={setSelectedProduct} 
+          />
+
+          {/* One Piece Marquee */}
+          {onePieceListings.length > 0 && (
+            <InteractiveMarquee 
+              title="One Piece Collection" 
+              products={onePieceListings} 
+              speed={0.9} 
+              onProductClick={setSelectedProduct} 
+            />
+          )}
 
         </div>
       </section>
 
       {/* ─── ETHNIC COLLECTION GRIDS ────────────────── */}
-      <div className="w-full flex flex-col py-8 px-4 gap-10">
+      <div className="w-full flex flex-col py-8 px-4 md:py-12 md:px-6 lg:py-16 lg:px-8 gap-10 md:gap-14 lg:gap-16">
         
         {/* Kurti Collection Section (2x2 Grid) */}
         <section className="flex flex-col">
@@ -602,14 +814,14 @@ export default function MobileFirstExperience() {
             <span className="font-jost font-normal text-[9px] uppercase tracking-[0.2em] text-[#B8924A] font-bold mb-1 block">
               TRADITIONAL ARTISTRY
             </span>
-            <h2 className="font-cormorant font-light text-2xl tracking-wide text-[#0D0906] flex items-center gap-2">
+            <h2 className="font-cormorant font-light text-2xl md:text-3xl lg:text-[36px] tracking-wide text-[#0D0906] flex items-center gap-2">
               Kurti Collection
             </h2>
             <div className="w-10 h-[1.5px] bg-[#B8924A] mt-1.5" />
           </div>
 
-          <div className="grid grid-cols-2 gap-3.5">
-            {kurtiListings.slice(0, 4).map((product) => (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3.5 md:gap-5 lg:gap-6">
+            {kurtiListings.slice(0, sliceLimit).map((product) => (
               <div 
                 key={product.id}
                 onClick={() => setSelectedProduct(product)}
@@ -659,14 +871,14 @@ export default function MobileFirstExperience() {
             <span className="font-jost font-normal text-[9px] uppercase tracking-[0.2em] text-[#B8924A] font-bold mb-1 block">
               CASUAL ELEGANCE
             </span>
-            <h2 className="font-cormorant font-light text-2xl tracking-wide text-[#0D0906] flex items-center gap-2">
+            <h2 className="font-cormorant font-light text-2xl md:text-3xl lg:text-[36px] tracking-wide text-[#0D0906] flex items-center gap-2">
               Tunic Collection
             </h2>
             <div className="w-10 h-[1.5px] bg-[#B8924A] mt-1.5" />
           </div>
 
-          <div className="grid grid-cols-2 gap-3.5">
-            {tunicListings.slice(0, 4).map((product) => (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3.5 md:gap-5 lg:gap-6">
+            {tunicListings.slice(0, sliceLimit).map((product) => (
               <div 
                 key={product.id}
                 onClick={() => setSelectedProduct(product)}
@@ -717,14 +929,14 @@ export default function MobileFirstExperience() {
               <span className="font-jost font-normal text-[9px] uppercase tracking-[0.2em] text-[#B8924A] font-bold mb-1 block">
                 EXCLUSIVE STYLES
               </span>
-              <h2 className="font-cormorant font-light text-2xl tracking-wide text-[#0D0906] flex items-center gap-2">
+              <h2 className="font-cormorant font-light text-2xl md:text-3xl lg:text-[36px] tracking-wide text-[#0D0906] flex items-center gap-2">
                 One Piece Collection
               </h2>
               <div className="w-10 h-[1.5px] bg-[#B8924A] mt-1.5" />
             </div>
 
-            <div className="grid grid-cols-2 gap-3.5">
-              {onePieceListings.slice(0, 4).map((product) => (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3.5 md:gap-5 lg:gap-6">
+              {onePieceListings.slice(0, sliceLimit).map((product) => (
                 <div 
                   key={product.id}
                   onClick={() => setSelectedProduct(product)}
@@ -828,6 +1040,44 @@ export default function MobileFirstExperience() {
 
               {/* Drawer footer info */}
               <div className="flex flex-col gap-3 border-t border-[#B8924A]/10 pt-4">
+                {isAdmin && (
+                  <Link
+                    href="/dashboard"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="w-full text-center py-2.5 border border-[#B8924A]/20 rounded-lg font-inter text-[10px] uppercase tracking-[0.2em] bg-[#B8924A]/5 hover:bg-[#B8924A]/10 text-[#B8924A] transition-all"
+                  >
+                    Admin Dashboard
+                  </Link>
+                )}
+                {session ? (
+                  <button
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      signOut({ callbackUrl: "/" });
+                    }}
+                    className="w-full py-2.5 bg-[#0D0906] hover:bg-[#0D0906]/90 text-white font-semibold font-inter text-[10px] uppercase tracking-[0.2em] rounded-lg transition-all cursor-pointer"
+                  >
+                    Sign Out {firstName ? `(${firstName})` : ""}
+                  </button>
+                ) : (
+                  <div className="flex gap-2 w-full">
+                    <Link
+                      href="/auth/signin"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="flex-1 text-center py-2.5 bg-[#0D0906] hover:bg-[#0D0906]/90 text-white font-semibold font-inter text-[10px] uppercase tracking-[0.2em] rounded-lg transition-all block"
+                    >
+                      Sign In
+                    </Link>
+                    <Link
+                      href="/auth/signup"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="flex-1 text-center py-2.5 border border-[#B8924A]/30 hover:bg-[#B8924A]/5 text-[#B8924A] font-semibold font-inter text-[10px] uppercase tracking-[0.2em] rounded-lg transition-all block"
+                    >
+                      Sign Up
+                    </Link>
+                  </div>
+                )}
+
                 <a 
                   href="https://wa.me/919099369035" 
                   target="_blank" 
@@ -915,7 +1165,7 @@ export default function MobileFirstExperience() {
       {/* ─── PREMIUM BOTTOM SHEET DRAWER (MODAL) ────── */}
       <AnimatePresence>
         {selectedProduct && (
-          <div className="fixed inset-0 z-50 flex justify-center items-end pointer-events-none">
+          <div className="fixed inset-0 z-50 flex justify-center items-end lg:items-center pointer-events-none">
             {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
@@ -925,16 +1175,17 @@ export default function MobileFirstExperience() {
               className="absolute inset-0 bg-black/60 pointer-events-auto"
             />
 
-            {/* Bottom Sheet Sheet Content */}
+            {/* Bottom Sheet / Modal Content */}
             <motion.div
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
+              variants={modalVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
               transition={{ type: "spring", damping: 26, stiffness: 220 }}
-              className="fixed bottom-0 left-0 right-0 w-full h-[88vh] bg-[#F7F3EE] shadow-2xl flex flex-col pointer-events-auto rounded-t-3xl overflow-hidden border-t border-[#B8924A]/10"
+              className="fixed bottom-0 left-0 right-0 lg:bottom-auto lg:top-1/2 lg:left-1/2 w-full lg:w-[95vw] lg:max-w-4xl h-[88vh] lg:h-[80vh] bg-[#F7F3EE] shadow-2xl flex flex-col pointer-events-auto rounded-t-3xl lg:rounded-3xl overflow-hidden border-t lg:border border-[#B8924A]/10"
             >
-              {/* Drag bar indicator */}
-              <div className="w-full flex justify-center py-3 sticky top-0 bg-[#F7F3EE] z-20 shrink-0">
+              {/* Drag bar indicator - hide on desktop */}
+              <div className="w-full flex justify-center py-3 sticky top-0 bg-[#F7F3EE] z-20 shrink-0 lg:hidden">
                 <div className="w-10 h-1 bg-gray-300 rounded-full" />
               </div>
 
@@ -947,164 +1198,173 @@ export default function MobileFirstExperience() {
               </button>
 
               {/* Body scroll */}
-              <div className="flex-1 overflow-y-auto px-5 pb-10 space-y-5 scrollbar-none">
-                {/* Horizontal image gallery */}
-                <div className="relative -mx-5 -mt-3">
-                  <div 
-                    ref={drawerGalleryRef}
-                    onScroll={handleDrawerGalleryScroll}
-                    className="flex overflow-x-auto snap-x snap-mandatory scrollbar-none w-full h-[280px]"
-                  >
-                    {currentImagesList.map((imgSrc, idx) => (
-                      <img
-                        key={idx}
-                        src={imgSrc}
-                        alt={selectedProduct.title}
-                        onClick={() => setFullscreenImage(imgSrc)}
-                        className="w-full h-full object-cover shrink-0 snap-start cursor-zoom-in active:opacity-90 transition-opacity"
-                      />
-                    ))}
-                  </div>
-                  {/* Subtle Zoom Indicator */}
-                  <div className="absolute top-3 right-3 bg-black/45 backdrop-blur-xs text-[#FAF7F2] p-1.5 rounded-full pointer-events-none shadow-xs">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" x2="16.65" y1="21" y2="16.65"/><line x1="11" x2="11" y1="8" y2="14"/><line x1="8" x2="14" y1="11" y2="11"/></svg>
-                  </div>
-                  {/* Gallery Dots */}
-                  {currentImagesList.length > 1 && (
-                    <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5">
-                      {currentImagesList.map((_, idx) => (
-                        <div
-                          key={idx}
-                          className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
-                            idx === activeImageIdx ? "bg-[#B8924A] w-3" : "bg-white/40"
-                          }`}
-                        />
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Details heading */}
-                <div className="flex flex-col gap-1.5">
-                  <div className="flex justify-between items-baseline gap-2">
-                    <span className="text-[#B8924A] text-[9px] uppercase tracking-widest font-bold font-inter">
-                      {getDesignNumber(selectedProduct)}
-                    </span>
-                    <span className="text-xs font-semibold text-teal-600 bg-teal-50 px-2 py-0.5 rounded-full uppercase tracking-wider scale-90">
-                      In Catalog
-                    </span>
-                  </div>
-                  <h3 className="font-jost font-normal text-lg text-[#0D0906] tracking-wide leading-snug">
-                    {selectedProduct.title}
-                  </h3>
-                  <div className="flex items-center gap-3">
-                    <span className="font-inter font-bold text-lg text-[#991B1B]">₹{currentPrice}</span>
-                    {currentCompareAtPrice && (
-                      <span className="font-inter font-normal text-xs text-gray-400 line-through">₹{currentCompareAtPrice}</span>
-                    )}
-                  </div>
-                </div>
-
-                <hr className="border-[#B8924A]/10" />
-
-                {/* Specs list */}
-                <div className="grid grid-cols-2 gap-3 text-[11px] text-gray-600 font-inter">
-                  <div className="flex flex-col">
-                    <span className="font-inter font-normal text-[8px] uppercase tracking-wider text-gray-400 mb-0.5">Fabric Blend</span>
-                    <span className="font-inter font-normal text-[#0D0906]">{selectedProduct.fabric || "Premium Fabric"}</span>
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="font-inter font-normal text-[8px] uppercase tracking-wider text-gray-400 mb-0.5">Sleeve Fit</span>
-                    <span className="font-inter font-normal text-[#0D0906]">{selectedProduct.sleeveType || "Standard Sleves"}</span>
-                  </div>
-                </div>
-
-                {/* Description */}
-                <div className="flex flex-col gap-1">
-                  <span className="font-inter font-normal text-[8px] uppercase tracking-wider text-gray-400 font-bold">Design Story</span>
-                  <p className="font-jost font-normal text-[11px] text-gray-600 leading-relaxed">
-                    {selectedProduct.description}
-                  </p>
-                </div>
-
-                {/* Color select */}
-                {selectedProduct.colorVariants && selectedProduct.colorVariants.length > 0 && (
-                  <div className="flex flex-col gap-2.5">
-                    <span className="font-inter font-normal text-[8px] uppercase tracking-wider text-gray-400 font-bold">Select Colorway</span>
-                    <div className="flex flex-wrap gap-2">
-                      {selectedProduct.colorVariants.map((variant, idx) => (
-                        <button
-                          key={variant.name + '-' + idx}
-                          onClick={() => setSelectedColorIdx(idx)}
-                          className={`h-9 px-3 rounded-xl border flex items-center gap-2 transition-all duration-300 cursor-pointer ${
-                            selectedColorIdx === idx 
-                              ? "bg-[#0D0906] border-[#0D0906] text-white shadow-sm scale-102" 
-                              : "bg-white border-gray-200 text-gray-600 hover:border-gray-400"
-                          }`}
-                        >
-                          <span 
-                            className="w-4 h-4 rounded-full border border-black/10 flex-shrink-0" 
-                            style={{ backgroundColor: variant.hex || '#000' }}
-                          />
-                          <span className="font-inter text-xs font-semibold">{variant.name}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Size select */}
-                <div className="flex flex-col gap-2.5">
-                  <span className="font-inter font-normal text-[8px] uppercase tracking-wider text-gray-400 font-bold">Select Size</span>
-                  <div className="flex gap-2">
-                    {selectedProduct.sizes.map((sz) => (
-                      <button
-                        key={sz}
-                        onClick={() => setSelectedSize(sz)}
-                        className={`w-9 h-9 rounded-xl border flex items-center justify-center font-inter font-normal text-xs transition-all ${
-                          selectedSize === sz
-                            ? "bg-[#0D0906] text-white border-[#0D0906] shadow-sm scale-103"
-                            : "bg-white border-gray-200 text-gray-600"
-                        }`}
+              <div className="flex-1 overflow-y-auto px-5 pb-10 scrollbar-none lg:pt-8">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start max-w-full">
+                  
+                  {/* Left Column: Gallery */}
+                  <div className="space-y-4">
+                    {/* Horizontal image gallery */}
+                    <div className="relative -mx-5 lg:mx-0 -mt-3 lg:mt-0">
+                      <div 
+                        ref={drawerGalleryRef}
+                        onScroll={handleDrawerGalleryScroll}
+                        className="flex overflow-x-auto snap-x snap-mandatory scrollbar-none w-full h-[280px] lg:h-[380px] lg:rounded-2xl border lg:border-[#B8924A]/10"
                       >
-                        {sz}
-                      </button>
-                    ))}
+                        {currentImagesList.map((imgSrc, idx) => (
+                          <img
+                            key={idx}
+                            src={imgSrc}
+                            alt={selectedProduct.title}
+                            onClick={() => setFullscreenImage(imgSrc)}
+                            className="w-full h-full object-cover shrink-0 snap-start cursor-zoom-in active:opacity-90 transition-opacity"
+                          />
+                        ))}
+                      </div>
+                      {/* Subtle Zoom Indicator */}
+                      <div className="absolute top-3 right-3 bg-black/45 backdrop-blur-xs text-[#FAF7F2] p-1.5 rounded-full pointer-events-none shadow-xs">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" x2="16.65" y1="21" y2="16.65"/><line x1="11" x2="11" y1="8" y2="14"/><line x1="8" x2="14" y1="11" y2="11"/></svg>
+                      </div>
+                      {/* Gallery Dots */}
+                      {currentImagesList.length > 1 && (
+                        <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5">
+                          {currentImagesList.map((_, idx) => (
+                            <div
+                              key={idx}
+                              className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
+                                idx === activeImageIdx ? "bg-[#B8924A] w-3" : "bg-white/40"
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
+
+                  {/* Right Column: Info & Buy Flow */}
+                  <div className="space-y-5">
+                    {/* Details heading */}
+                    <div className="flex flex-col gap-1.5">
+                      <div className="flex justify-between items-baseline gap-2">
+                        <span className="text-[#B8924A] text-[9px] uppercase tracking-widest font-bold font-inter">
+                          {getDesignNumber(selectedProduct)}
+                        </span>
+                        <span className="text-xs font-semibold text-teal-600 bg-teal-50 px-2 py-0.5 rounded-full uppercase tracking-wider scale-90">
+                          In Catalog
+                        </span>
+                      </div>
+                      <h3 className="font-jost font-normal text-lg lg:text-xl text-[#0D0906] tracking-wide leading-snug">
+                        {selectedProduct.title}
+                      </h3>
+                      <div className="flex items-center gap-3">
+                        <span className="font-inter font-bold text-lg text-[#991B1B]">₹{currentPrice}</span>
+                        {currentCompareAtPrice && (
+                          <span className="font-inter font-normal text-xs text-gray-400 line-through">₹{currentCompareAtPrice}</span>
+                        )}
+                      </div>
+                    </div>
+
+                    <hr className="border-[#B8924A]/10" />
+
+                    {/* Specs list */}
+                    <div className="grid grid-cols-2 gap-3 text-[11px] text-gray-600 font-inter">
+                      <div className="flex flex-col">
+                        <span className="font-inter font-normal text-[8px] uppercase tracking-wider text-gray-400 mb-0.5">Fabric Blend</span>
+                        <span className="font-inter font-normal text-[#0D0906]">{selectedProduct.fabric || "Premium Fabric"}</span>
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="font-inter font-normal text-[8px] uppercase tracking-wider text-gray-400 mb-0.5">Sleeve Fit</span>
+                        <span className="font-inter font-normal text-[#0D0906]">{selectedProduct.sleeveType || "Standard Sleves"}</span>
+                      </div>
+                    </div>
+
+                    {/* Description */}
+                    <div className="flex flex-col gap-1">
+                      <span className="font-inter font-normal text-[8px] uppercase tracking-wider text-gray-400 font-bold">Design Story</span>
+                      <p className="font-jost font-normal text-[11px] text-gray-600 leading-relaxed">
+                        {selectedProduct.description}
+                      </p>
+                    </div>
+
+                    {/* Color select */}
+                    {selectedProduct.colorVariants && selectedProduct.colorVariants.length > 0 && (
+                      <div className="flex flex-col gap-2.5">
+                        <span className="font-inter font-normal text-[8px] uppercase tracking-wider text-gray-400 font-bold">Select Colorway</span>
+                        <div className="flex flex-wrap gap-2">
+                          {selectedProduct.colorVariants.map((variant, idx) => (
+                            <button
+                              key={variant.name + '-' + idx}
+                              onClick={() => setSelectedColorIdx(idx)}
+                              className={`h-9 px-3 rounded-xl border flex items-center gap-2 transition-all duration-300 cursor-pointer ${
+                                selectedColorIdx === idx 
+                                  ? "bg-[#0D0906] border-[#0D0906] text-white shadow-sm scale-102" 
+                                  : "bg-white border-gray-200 text-gray-600 hover:border-gray-400"
+                              }`}
+                            >
+                              <span 
+                                className="w-4 h-4 rounded-full border border-black/10 flex-shrink-0" 
+                                style={{ backgroundColor: variant.hex || '#000' }}
+                              />
+                              <span className="font-inter text-xs font-semibold">{variant.name}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Size select */}
+                    <div className="flex flex-col gap-2.5">
+                      <span className="font-inter font-normal text-[8px] uppercase tracking-wider text-gray-400 font-bold">Select Size</span>
+                      <div className="flex gap-2">
+                        {selectedProduct.sizes.map((sz) => (
+                          <button
+                            key={sz}
+                            onClick={() => setSelectedSize(sz)}
+                            className={`w-9 h-9 rounded-xl border flex items-center justify-center font-inter font-normal text-xs transition-all ${
+                              selectedSize === sz
+                                ? "bg-[#0D0906] text-white border-[#0D0906] shadow-sm scale-103"
+                                : "bg-white border-gray-200 text-gray-600"
+                            }`}
+                          >
+                            {sz}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <hr className="border-[#B8924A]/10" />
+
+                    {/* CTAs */}
+                    <div className="flex flex-col gap-3 pt-1">
+                      {/* WhatsApp Direct Inquiry */}
+                      <a
+                        href={`https://wa.me/919099369035?text=${encodeURIComponent(`Hi, I would like to inquire about "${selectedProduct.title}" (${getDesignNumber(selectedProduct)}) in color "${activeVariant?.name || selectedProduct.color}" and size "${selectedSize}" (Price: ₹${currentPrice}).`)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full py-3 bg-[#128C7E] hover:bg-[#075E54] text-white rounded-xl font-inter font-normal text-[10px] tracking-widest uppercase flex items-center justify-center gap-2 shadow-xs active:scale-97 transition-all duration-300"
+                      >
+                        <MessageCircle size={15} /> WhatsApp Catalog Inquiry
+                      </a>
+
+                      {/* Add to Bag */}
+                      <button
+                        onClick={handleAddToCart}
+                        className="w-full py-3 bg-white text-[#0D0906] border border-[#0D0906] rounded-xl font-inter font-normal text-[10px] tracking-widest uppercase shadow-xs active:scale-97 transition-all hover:bg-[#0D0906] hover:text-white transition-colors duration-300"
+                      >
+                        Add to Cart Bag
+                      </button>
+
+                      {/* View Full Product Details Page */}
+                      <Link
+                        href={`/products/${selectedProduct.slug}`}
+                        onClick={handleDrawerClose}
+                        className="w-full py-3 bg-[#0D0906] text-white rounded-xl font-inter font-normal text-[10px] tracking-widest uppercase text-center flex items-center justify-center gap-1.5 shadow-sm active:scale-97 transition-all duration-300"
+                      >
+                        Open Product Page <ArrowRight size={13} />
+                      </Link>
+                    </div>
+                  </div>
+
                 </div>
-
-                <hr className="border-[#B8924A]/10" />
-
-                {/* CTAs */}
-                <div className="flex flex-col gap-3 pt-1">
-                  {/* WhatsApp Direct Inquiry */}
-                  <a
-                    href={`https://wa.me/919099369035?text=${encodeURIComponent(`Hi, I would like to inquire about "${selectedProduct.title}" (${getDesignNumber(selectedProduct)}) in color "${activeVariant?.name || selectedProduct.color}" and size "${selectedSize}" (Price: ₹${currentPrice}).`)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full py-3 bg-[#128C7E] hover:bg-[#075E54] text-white rounded-xl font-inter font-normal text-[10px] tracking-widest uppercase flex items-center justify-center gap-2 shadow-xs active:scale-97 transition-all duration-300"
-                  >
-                    <MessageCircle size={15} /> WhatsApp Catalog Inquiry
-                  </a>
-
-                  {/* Add to Bag */}
-                  <button
-                    onClick={handleAddToCart}
-                    className="w-full py-3 bg-white text-[#0D0906] border border-[#0D0906] rounded-xl font-inter font-normal text-[10px] tracking-widest uppercase shadow-xs active:scale-97 transition-all hover:bg-[#0D0906] hover:text-white transition-colors duration-300"
-                  >
-                    Add to Cart Bag
-                  </button>
-
-                  {/* View Full Product Details Page */}
-                  <Link
-                    href={`/products/${selectedProduct.slug}`}
-                    onClick={handleDrawerClose}
-                    className="w-full py-3 bg-[#0D0906] text-white rounded-xl font-inter font-normal text-[10px] tracking-widest uppercase text-center flex items-center justify-center gap-1.5 shadow-sm active:scale-97 transition-all duration-300"
-                  >
-                    Open Product Page <ArrowRight size={13} />
-                  </Link>
-                </div>
-
               </div>
             </motion.div>
           </div>

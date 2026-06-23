@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { set } from "animejs";
 import { interpolate, luxuryEase } from "@/lib/use-anime-scroll";
-import { Menu, X, ShoppingBag, Trash2, Plus, Minus } from "lucide-react";
+import { Menu, X, ShoppingBag, Trash2, Plus, Minus, Heart } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useShop } from "@/context/shop-context";
 import { formatINR } from "@/lib/store";
@@ -16,7 +16,7 @@ export default function Header() {
   const { data: session } = useSession();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [drawerTab, setDrawerTab] = useState<"menu" | "cart">("menu");
-  const { cart, products: productsList, cartCount, cartTotal, updateQty, removeFromCart } = useShop();
+  const { cart, products: productsList, cartCount, cartTotal, updateQty, removeFromCart, wishlist } = useShop();
   const [isScrolledPastSlides, setIsScrolledPastSlides] = useState(false);
   const [showGlobalHeaderMobile, setShowGlobalHeaderMobile] = useState(false);
   const navRef1 = useRef<HTMLElement>(null);
@@ -140,47 +140,81 @@ export default function Header() {
 
             <div className="flex items-center gap-8">
               {/* Desktop Nav Links */}
-              <nav className="hidden gap-7 md:flex [text-rendering:optimizeLegibility] items-center">
-                {["/kurtis", "/tunic-tops", "/dresses", "/one-piece"].map((path, i) => (
+              <nav className="hidden gap-5 xl:gap-7 md:flex [text-rendering:optimizeLegibility] items-center">
+                {[
+                  ["/", "Home"],
+                  ["/kurtis", "Kurtis"],
+                  ["/tunic-tops", "Tunics"],
+                  ["/dresses", "Dresses"],
+                  ["/one-piece", "One Piece"],
+                  ["/collections", "Lookbook"],
+                  ["/about", "About"],
+                  ["/contact", "Contact"],
+                ].map(([path, label]) => (
                   <Link
                     key={path}
                     href={path}
                     className="font-[var(--font-cormorant)] text-[0.8rem] font-medium italic tracking-[0.18em] text-[#3B2B28]/75 uppercase hover:text-[#8B6B61] transition-colors duration-300"
                   >
-                    {["Kurtis", "Tunics", "Dresses", "One Piece"][i]}
+                    {label}
                   </Link>
                 ))}
-                {isAdmin && (
-                  <Link
-                    href="/dashboard"
-                    className="font-[var(--font-cormorant)] text-[0.8rem] font-medium italic tracking-[0.18em] text-[#3B2B28]/75 uppercase hover:text-[#8B6B61] transition-colors duration-300"
-                  >
-                    Dashboard
-                  </Link>
-                )}
               </nav>
 
               {/* Divider */}
               <span className="hidden md:block w-px h-4 bg-[#C98E87]/30" />
 
-              {/* Sign In / Out */}
-              <div className="hidden md:flex items-center">
+              {/* Account actions: Login, Sign Up, Dashboard / Account */}
+              <div className="hidden md:flex items-center gap-4.5">
                 {session ? (
-                  <button
-                    onClick={() => signOut({ callbackUrl: "/" })}
-                    className="font-[var(--font-cormorant)] text-[0.78rem] italic tracking-[0.18em] text-[#3B2B28]/70 uppercase hover:text-[#8B6B61] transition-colors duration-300 cursor-pointer"
-                  >
-                    Sign Out {firstName ? `· ${firstName}` : ""}
-                  </button>
+                  <div className="flex items-center gap-4">
+                    {isAdmin && (
+                      <Link
+                        href="/dashboard"
+                        className="font-[var(--font-cormorant)] text-[0.78rem] italic tracking-[0.18em] text-[#3B2B28]/70 uppercase hover:text-[#8B6B61] transition-colors duration-300 font-semibold"
+                      >
+                        Account
+                      </Link>
+                    )}
+                    <button
+                      onClick={() => signOut({ callbackUrl: "/" })}
+                      className="font-[var(--font-cormorant)] text-[0.78rem] italic tracking-[0.18em] text-[#3B2B28]/70 uppercase hover:text-[#8B6B61] transition-colors duration-300 cursor-pointer"
+                    >
+                      Sign Out {firstName ? `· ${firstName}` : ""}
+                    </button>
+                  </div>
                 ) : (
-                  <Link
-                    href="/auth/signin"
-                    className="font-[var(--font-cormorant)] text-[0.78rem] italic tracking-[0.18em] text-[#3B2B28]/70 uppercase hover:text-[#8B6B61] transition-colors duration-300"
-                  >
-                    Sign In
-                  </Link>
+                  <div className="flex items-center gap-4">
+                    <Link
+                      href="/auth/signin"
+                      className="font-[var(--font-cormorant)] text-[0.78rem] italic tracking-[0.18em] text-[#3B2B28]/70 uppercase hover:text-[#8B6B61] transition-colors duration-300"
+                    >
+                      Sign In
+                    </Link>
+                    <span className="text-[#C98E87]/30 text-xs font-light">·</span>
+                    <Link
+                      href="/auth/signup"
+                      className="font-[var(--font-cormorant)] text-[0.78rem] italic tracking-[0.18em] text-[#3B2B28]/70 uppercase hover:text-[#8B6B61] transition-colors duration-300"
+                    >
+                      Sign Up
+                    </Link>
+                  </div>
                 )}
               </div>
+
+              {/* Wishlist icon — desktop */}
+              <Link
+                href="/wishlist"
+                className="hidden md:flex text-[#3B2B28]/70 hover:text-[#8B6B61] transition-colors p-1 relative"
+                aria-label="View wishlist"
+              >
+                <Heart className="w-4.5 h-4.5" strokeWidth={1.5} />
+                {wishlist.length > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-[#C98E87] text-white text-[7px] font-bold w-3.5 h-3.5 flex items-center justify-center rounded-full">
+                    {wishlist.length}
+                  </span>
+                )}
+              </Link>
 
               {/* Cart icon — desktop */}
               <button
@@ -247,11 +281,11 @@ export default function Header() {
             className="col-start-1 hidden items-center gap-7 md:flex [text-rendering:optimizeLegibility] [-webkit-font-smoothing:antialiased]"
           >
             {[
+              ["/", "Home"],
               ["/kurtis", "Kurtis"],
               ["/tunic-tops", "Tunics"],
               ["/dresses", "Dresses"],
               ["/one-piece", "One Piece"],
-              ["/collections", "Collections"],
             ].map(([path, label]) => (
               <Link
                 key={path}
@@ -286,39 +320,73 @@ export default function Header() {
           <nav
             ref={navRef2}
             style={{ opacity: 0, transform: "translateY(20px)" }}
-            className="col-start-3 hidden items-center justify-end gap-7 md:flex [text-rendering:optimizeLegibility] [-webkit-font-smoothing:antialiased]"
+            className="col-start-3 hidden items-center justify-end gap-5 xl:gap-7 md:flex [text-rendering:optimizeLegibility] [-webkit-font-smoothing:antialiased]"
           >
+            {[
+              ["/collections", "Lookbook"],
+              ["/about", "About"],
+              ["/contact", "Contact"],
+            ].map(([path, label]) => (
+              <Link
+                key={path}
+                href={path}
+                className="font-[var(--font-cormorant)] text-[0.82rem] font-normal italic tracking-[0.22em] uppercase text-current opacity-85 hover:opacity-100 transition-opacity duration-300"
+              >
+                {label}
+              </Link>
+            ))}
+
+            {/* Account Actions */}
+            <div className="flex items-center gap-3.5 text-current opacity-85 hover:opacity-100 transition-opacity">
+              {session ? (
+                <div className="flex items-center gap-3">
+                  {isAdmin && (
+                    <Link
+                      href="/dashboard"
+                      className="font-[var(--font-cormorant)] text-[0.82rem] font-normal italic tracking-[0.22em] uppercase text-current"
+                    >
+                      Account
+                    </Link>
+                  )}
+                  <button
+                    onClick={() => signOut({ callbackUrl: "/" })}
+                    className="font-[var(--font-cormorant)] text-[0.82rem] font-normal italic tracking-[0.22em] uppercase text-current cursor-pointer"
+                  >
+                    Sign Out
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-3">
+                  <Link
+                    href="/auth/signin"
+                    className="font-[var(--font-cormorant)] text-[0.82rem] font-normal italic tracking-[0.22em] uppercase text-current"
+                  >
+                    Sign In
+                  </Link>
+                  <span className="text-current/30 text-xs font-light">·</span>
+                  <Link
+                    href="/auth/signup"
+                    className="font-[var(--font-cormorant)] text-[0.82rem] font-normal italic tracking-[0.22em] uppercase text-current"
+                  >
+                    Sign Up
+                  </Link>
+                </div>
+              )}
+            </div>
+
+            {/* Wishlist icon */}
             <Link
-              href="/about"
-              className="font-[var(--font-cormorant)] text-[0.82rem] font-normal italic tracking-[0.22em] uppercase text-current opacity-85 hover:opacity-100 transition-opacity duration-300"
+              href="/wishlist"
+              className="text-current opacity-85 hover:opacity-100 transition-opacity p-1 relative"
+              aria-label="View wishlist"
             >
-              About
+              <Heart className="w-4.5 h-4.5" strokeWidth={1.5} />
+              {wishlist.length > 0 && (
+                <span className="absolute -top-1 -right-1 bg-[#C98E87] text-white text-[7px] font-bold w-3.5 h-3.5 flex items-center justify-center rounded-full">
+                  {wishlist.length}
+                </span>
+              )}
             </Link>
-
-            {isAdmin && (
-              <Link
-                href="/dashboard"
-                className="font-[var(--font-cormorant)] text-[0.82rem] font-normal italic tracking-[0.22em] uppercase text-current opacity-85 hover:opacity-100 transition-opacity duration-300"
-              >
-                Dashboard
-              </Link>
-            )}
-
-            {session ? (
-              <button
-                onClick={() => signOut({ callbackUrl: "/" })}
-                className="font-[var(--font-cormorant)] text-[0.82rem] font-normal italic tracking-[0.22em] uppercase text-current opacity-85 hover:opacity-100 transition-opacity duration-300 cursor-pointer"
-              >
-                Sign Out
-              </button>
-            ) : (
-              <Link
-                href="/auth/signin"
-                className="font-[var(--font-cormorant)] text-[0.82rem] font-normal italic tracking-[0.22em] uppercase text-current opacity-85 hover:opacity-100 transition-opacity duration-300"
-              >
-                Sign In
-              </Link>
-            )}
 
             {/* Cart icon */}
             <button
@@ -529,13 +597,22 @@ export default function Header() {
                         Sign Out {firstName ? `(${firstName})` : ""}
                       </button>
                     ) : (
-                      <Link
-                        href="/auth/signin"
-                        onClick={() => setIsDrawerOpen(false)}
-                        className="w-full text-center py-3 bg-[#E7C2B8] hover:bg-[#DFAE9F] text-[#160E0C] font-semibold font-inter text-xs uppercase tracking-[0.2em] rounded-sm transition-all block"
-                      >
-                        Sign In
-                      </Link>
+                      <div className="flex gap-3">
+                        <Link
+                          href="/auth/signin"
+                          onClick={() => setIsDrawerOpen(false)}
+                          className="flex-1 text-center py-3 bg-[#E7C2B8] hover:bg-[#DFAE9F] text-[#160E0C] font-semibold font-inter text-xs uppercase tracking-[0.2em] rounded-sm transition-all block"
+                        >
+                          Sign In
+                        </Link>
+                        <Link
+                          href="/auth/signup"
+                          onClick={() => setIsDrawerOpen(false)}
+                          className="flex-1 text-center py-3 border border-[#E7C2B8]/30 hover:bg-[#FAF7F2]/5 text-[#E7C2B8] font-semibold font-inter text-xs uppercase tracking-[0.2em] rounded-sm transition-all block"
+                        >
+                          Sign Up
+                        </Link>
+                      </div>
                     )}
                     <div className="text-[10px] text-center text-[#FAF7F2]/40 tracking-wider font-light mt-2 uppercase font-inter">
                       © 2026 Manasvi Fashion Atelier

@@ -1,7 +1,15 @@
 export type Category = "kurtis" | "dresses" | "tunic-tops" | "one-piece";
 export type ProductType = "kurti" | "tunic_top" | "dress" | "one_piece";
 
+export interface VariantImage {
+  id: string;
+  type: "front" | "back" | "side" | "closeup" | "gallery";
+  url: string;
+  order: number;
+}
+
 export interface ColorVariant {
+  id?: string;
   name: string;
   hex: string;
   image?: string;
@@ -11,6 +19,7 @@ export interface ColorVariant {
   priceAdjustment?: number;
   frontImage?: string;
   backImage?: string;
+  images?: VariantImage[];
 }
 
 export interface Product {

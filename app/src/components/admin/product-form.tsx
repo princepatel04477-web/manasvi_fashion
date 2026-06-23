@@ -121,7 +121,47 @@ export default function ProductForm({ initialData, isEdit = false }: ProductForm
   const [sizes, setSizes] = useState<string[]>(initialData?.sizes || ["S", "M", "L", "XL"]);
 
   // Color Variants State
-  const [colorVariants, setColorVariants] = useState<ColorVariant[]>(initialData?.colorVariants || []);
+  const [colorVariants, setColorVariants] = useState<ColorVariant[]>(() => {
+    const raw = initialData?.colorVariants || [];
+    return raw.map((v, vIdx) => {
+      const varId = v.id || `var_${initialData?.id || 'new'}_${vIdx}_${Math.random().toString(36).substring(2, 5)}`;
+      let images = v.images ? [...v.images] : [];
+      if (images.length === 0) {
+        if (v.frontImage) {
+          images.push({
+            id: `img_${varId}_front`,
+            type: "front",
+            url: v.frontImage,
+            order: 1
+          });
+        }
+        if (v.modelImage) {
+          images.push({
+            id: `img_${varId}_model`,
+            type: "back",
+            url: v.modelImage,
+            order: 2
+          });
+        }
+        if (v.backImage && v.backImage !== v.frontImage && v.backImage !== v.modelImage) {
+          images.push({
+            id: `img_${varId}_back`,
+            type: "back",
+            url: v.backImage,
+            order: 3
+          });
+        }
+      }
+      images.sort((a, b) => (a.order || 0) - (b.order || 0));
+      return {
+        ...v,
+        id: varId,
+        images,
+        frontImage: v.frontImage || images.find(img => img.type === "front")?.url || images[0]?.url || "",
+        modelImage: v.modelImage || images.find(img => img.type === "back" || img.type === "closeup" || img.type === "gallery")?.url || ""
+      };
+    });
+  });
   
   // Custom Variant Addition Fields
   const [varName, setVarName] = useState("");
@@ -139,6 +179,23 @@ export default function ProductForm({ initialData, isEdit = false }: ProductForm
 
   // Expandable Variant Card state
   const [expandedVariants, setExpandedVariants] = useState<Record<number, boolean>>({});
+
+  // Photo Management Modals & Toast State
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+  const [confirmDeleteImage, setConfirmDeleteImage] = useState<{ variantId: string; imageId: string } | null>(null);
+  const [confirmDeleteVariant, setConfirmDeleteVariant] = useState<{ variantId: string; variantName: string } | null>(null);
+  const [addPhotoModal, setAddPhotoModal] = useState<{ variantId: string } | null>(null);
+  const [newPhotoType, setNewPhotoType] = useState<"front" | "back" | "side" | "closeup" | "gallery">("gallery");
+  const [newPhotoUrl, setNewPhotoUrl] = useState("");
+  const [uploadingNewPhoto, setUploadingNewPhoto] = useState(false);
+  const [draggedImage, setDraggedImage] = useState<{ variantId: string; imageId: string } | null>(null);
+
+  const showToast = (message: string, type: "success" | "error" = "success") => {
+    setToast({ message, type });
+    setTimeout(() => {
+      setToast(null);
+    }, 3000);
+  };
 
   // Submit states
   const [submitting, setSubmitting] = useState(false);
@@ -237,14 +294,35 @@ export default function ProductForm({ initialData, isEdit = false }: ProductForm
       return;
     }
 
+    const varId = `var_${Date.now()}_${Math.random().toString(36).substring(2, 5)}`;
+    const images = [];
+    if (varFrontImage) {
+      images.push({
+        id: `img_${varId}_front`,
+        type: "front" as const,
+        url: varFrontImage,
+        order: 1
+      });
+    }
+    if (varModelImage) {
+      images.push({
+        id: `img_${varId}_model`,
+        type: "back" as const,
+        url: varModelImage,
+        order: 2
+      });
+    }
+
     const newVariant: ColorVariant = {
+      id: varId,
       name: varName.trim(),
       hex: varHex.trim(),
       sku: varSku.trim(),
       stock: Number(varStock),
       priceAdjustment: varPriceAdjustment ? Number(varPriceAdjustment) : undefined,
       frontImage: varFrontImage,
-      modelImage: varModelImage || undefined
+      modelImage: varModelImage || undefined,
+      images
     };
 
     // Animate addition
@@ -275,23 +353,456 @@ export default function ProductForm({ initialData, isEdit = false }: ProductForm
 
   // Variant deletion
   function handleRemoveVariant(idx: number) {
-    animate(`.variant-card-${idx}`, {
-      opacity: 0,
-      scale: 0.9,
-      duration: 300,
-      easing: "easeInQuad",
-      complete: () => {
-        const filtered = colorVariants.filter((_, i) => i !== idx);
-        setColorVariants(filtered);
-        // Reset expansion states mapping
-        const nextExpanded: Record<number, boolean> = {};
-        filtered.forEach((_, i) => {
-          nextExpanded[i] = true;
-        });
-        setExpandedVariants(nextExpanded);
+    const item = colorVariants[idx];
+    if (item && item.id) {
+      setConfirmDeleteVariant({ variantId: item.id, variantName: item.name });
+    }
+  }
+
+  // Delete single photo
+  const handleDeleteImage = async () => {
+    if (!confirmDeleteImage) return;
+    const { variantId, imageId } = confirmDeleteImage;
+    
+    let imgUrl = "";
+    colorVariants.forEach(v => {
+      if (v.id === variantId && v.images) {
+        const img = v.images.find(i => i.id === imageId);
+        if (img) imgUrl = img.url;
       }
     });
-  }
+
+    setConfirmDeleteImage(null);
+    setUploadingStates(prev => ({ ...prev, [imageId]: true }));
+    
+    try {
+      // Optimistic update
+      setColorVariants(prev => {
+        return prev.map(v => {
+          if (v.id === variantId && v.images) {
+            const updatedImages = v.images.filter(img => img.id !== imageId);
+            const frontImg = updatedImages.find(i => i.type === "front")?.url || updatedImages[0]?.url || "";
+            const modelImg = updatedImages.find(i => i.type === "back" || i.type === "closeup" || i.type === "gallery")?.url || "";
+            return {
+              ...v,
+              images: updatedImages,
+              frontImage: frontImg,
+              modelImage: modelImg
+            };
+          }
+          return v;
+        });
+      });
+
+      // Storage deletion client-side first
+      if (supabase && imgUrl) {
+        const bucketMarker = "/storage/v1/object/public/products/";
+        const markerIndex = imgUrl.indexOf(bucketMarker);
+        if (markerIndex !== -1) {
+          const filePath = imgUrl.slice(markerIndex + bucketMarker.length);
+          const decodedPath = decodeURIComponent(filePath);
+          await supabase.storage.from("products").remove([decodedPath]);
+        }
+      }
+
+      if (isEdit) {
+        const res = await fetch("/api/admin/variants", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "delete-image",
+            imageId
+          })
+        });
+        const resData = await res.json();
+        if (!resData.success) throw new Error(resData.message || "Failed to delete image from DB.");
+      }
+      
+      showToast("Photo deleted successfully.");
+    } catch (err: any) {
+      console.error(err);
+      showToast(err.message || "Failed to delete image.", "error");
+    } finally {
+      setUploadingStates(prev => ({ ...prev, [imageId]: false }));
+    }
+  };
+
+  // Replace photo file
+  const handleReplaceImageFile = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    variantId: string,
+    imageId: string
+  ) => {
+    if (!e.target.files || !e.target.files[0]) return;
+    const file = e.target.files[0];
+    
+    // Find old URL to delete later
+    let oldUrl = "";
+    colorVariants.forEach(v => {
+      if (v.id === variantId && v.images) {
+        const img = v.images.find(i => i.id === imageId);
+        if (img) oldUrl = img.url;
+      }
+    });
+
+    setUploadingStates(prev => ({ ...prev, [imageId]: true }));
+    
+    try {
+      if (!supabase) throw new Error("Supabase is not initialized.");
+      
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 11)}.${fileExt}`;
+      const filePath = fileName;
+      
+      const { data, error } = await supabase.storage
+        .from("products")
+        .upload(filePath, file, {
+          cacheControl: "3600",
+          upsert: false
+        });
+        
+      if (error) throw error;
+      
+      const { data: urlData } = supabase.storage
+        .from("products")
+        .getPublicUrl(filePath);
+        
+      if (!urlData?.publicUrl) throw new Error("Failed to get public URL.");
+      
+      const newUrl = urlData.publicUrl;
+      
+      // Optimistic update
+      setColorVariants(prev => {
+        return prev.map(v => {
+          if (v.id === variantId && v.images) {
+            const updatedImages = v.images.map(img => {
+              if (img.id === imageId) {
+                return { ...img, url: newUrl };
+              }
+              return img;
+            });
+            const frontImg = updatedImages.find(i => i.type === "front")?.url || updatedImages[0]?.url || "";
+            const modelImg = updatedImages.find(i => i.type === "back" || i.type === "closeup" || i.type === "gallery")?.url || "";
+            return {
+              ...v,
+              images: updatedImages,
+              frontImage: frontImg,
+              modelImage: modelImg
+            };
+          }
+          return v;
+        });
+      });
+      
+      // Delete old file from storage client-side
+      if (supabase && oldUrl) {
+        const bucketMarker = "/storage/v1/object/public/products/";
+        const markerIndex = oldUrl.indexOf(bucketMarker);
+        if (markerIndex !== -1) {
+          const filePath = oldUrl.slice(markerIndex + bucketMarker.length);
+          const decodedPath = decodeURIComponent(filePath);
+          await supabase.storage.from("products").remove([decodedPath]);
+        }
+      }
+
+      if (isEdit) {
+        const res = await fetch("/api/admin/variants", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "replace-image",
+            variantId,
+            imageId,
+            newImageUrl: newUrl
+          })
+        });
+        const resData = await res.json();
+        if (!resData.success) throw new Error(resData.message || "Failed to update image on database.");
+      }
+      
+      showToast("Photo replaced successfully.");
+    } catch (err: any) {
+      console.error(err);
+      showToast(err.message || "Failed to replace image.", "error");
+    } finally {
+      setUploadingStates(prev => ({ ...prev, [imageId]: false }));
+    }
+  };
+
+  // Add additional photo
+  const handleSaveNewPhoto = async () => {
+    if (!addPhotoModal) return;
+    const { variantId } = addPhotoModal;
+    
+    if (!newPhotoUrl) {
+      alert("Please upload an image first.");
+      return;
+    }
+    
+    const imageId = `img_${Date.now()}_${Math.random().toString(36).substring(2, 5)}`;
+    
+    let maxOrder = 0;
+    colorVariants.forEach(v => {
+      if (v.id === variantId && v.images) {
+        maxOrder = v.images.reduce((max, img) => Math.max(max, img.order || 0), 0);
+      }
+    });
+    
+    const newImage = {
+      id: imageId,
+      type: newPhotoType,
+      url: newPhotoUrl,
+      order: maxOrder + 1
+    };
+
+    setAddPhotoModal(null);
+    setNewPhotoUrl("");
+    
+    try {
+      // Optimistic update
+      setColorVariants(prev => {
+        return prev.map(v => {
+          if (v.id === variantId) {
+            const updatedImages = v.images ? [...v.images, newImage] : [newImage];
+            updatedImages.sort((a, b) => (a.order || 0) - (b.order || 0));
+            const frontImg = updatedImages.find(i => i.type === "front")?.url || updatedImages[0]?.url || "";
+            const modelImg = updatedImages.find(i => i.type === "back" || i.type === "closeup" || i.type === "gallery")?.url || "";
+            return {
+              ...v,
+              images: updatedImages,
+              frontImage: frontImg,
+              modelImage: modelImg
+            };
+          }
+          return v;
+        });
+      });
+
+      if (isEdit) {
+        const res = await fetch("/api/admin/variants", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "add-image",
+            variantId,
+            image: {
+              id: imageId,
+              type: newPhotoType,
+              url: newPhotoUrl
+            }
+          })
+        });
+        const resData = await res.json();
+        if (!resData.success) throw new Error(resData.message || "Failed to add image to DB.");
+      }
+      
+      showToast("Photo added successfully.");
+    } catch (err: any) {
+      console.error(err);
+      showToast(err.message || "Failed to add photo.", "error");
+    }
+  };
+
+  // Delete entire variant
+  const handleDeleteVariant = async () => {
+    if (!confirmDeleteVariant) return;
+    const { variantId } = confirmDeleteVariant;
+    
+    const variant = colorVariants.find(v => v.id === variantId);
+    const imgUrls = variant?.images?.map(img => img.url) || [];
+    
+    setConfirmDeleteVariant(null);
+    
+    try {
+      const idx = colorVariants.findIndex(v => v.id === variantId);
+      if (idx !== -1) {
+        animate(`.variant-card-${idx}`, {
+          opacity: 0,
+          scale: 0.9,
+          duration: 300,
+          easing: "easeInQuad",
+          complete: async () => {
+            setColorVariants(prev => prev.filter(v => v.id !== variantId));
+            
+            // Delete storage files client-side
+            if (supabase && imgUrls.length > 0) {
+              const paths = imgUrls.map(url => {
+                const bucketMarker = "/storage/v1/object/public/products/";
+                const markerIndex = url.indexOf(bucketMarker);
+                if (markerIndex !== -1) {
+                  return decodeURIComponent(url.slice(markerIndex + bucketMarker.length));
+                }
+                return "";
+              }).filter(Boolean);
+              
+              if (paths.length > 0) {
+                await supabase.storage.from("products").remove(paths);
+              }
+            }
+
+            if (isEdit) {
+              const res = await fetch("/api/admin/variants", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  action: "delete-variant",
+                  variantId
+                })
+              });
+              const resData = await res.json();
+              if (!resData.success) throw new Error(resData.message || "Failed to delete variant from DB.");
+            }
+            
+            showToast("Color variant deleted successfully.");
+          }
+        });
+      }
+    } catch (err: any) {
+      console.error(err);
+      showToast(err.message || "Failed to delete variant.", "error");
+    }
+  };
+
+  // Drag and drop image reordering
+  const handleDragStart = (e: React.DragEvent, variantId: string, imageId: string) => {
+    setDraggedImage({ variantId, imageId });
+    e.dataTransfer.effectAllowed = "move";
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = async (e: React.DragEvent, targetVariantId: string, targetImageId: string) => {
+    e.preventDefault();
+    if (!draggedImage || draggedImage.variantId !== targetVariantId) return;
+    
+    const { variantId, imageId: sourceImageId } = draggedImage;
+    setDraggedImage(null);
+    
+    if (sourceImageId === targetImageId) return;
+
+    const variant = colorVariants.find(v => v.id === variantId);
+    if (!variant || !variant.images) return;
+
+    const images = [...variant.images];
+    const sourceIdx = images.findIndex(img => img.id === sourceImageId);
+    const targetIdx = images.findIndex(img => img.id === targetImageId);
+    
+    if (sourceIdx === -1 || targetIdx === -1) return;
+
+    const [movedImage] = images.splice(sourceIdx, 1);
+    images.splice(targetIdx, 0, movedImage);
+
+    const reorderedList = images.map((img, index) => ({
+      ...img,
+      order: index + 1
+    }));
+
+    setColorVariants(prev => {
+      return prev.map(v => {
+        if (v.id === variantId) {
+          const frontImg = reorderedList.find(i => i.type === "front")?.url || reorderedList[0]?.url || "";
+          const modelImg = reorderedList.find(i => i.type === "back" || i.type === "closeup" || i.type === "gallery")?.url || "";
+          return {
+            ...v,
+            images: reorderedList,
+            frontImage: frontImg,
+            modelImage: modelImg
+          };
+        }
+        return v;
+      });
+    });
+
+    try {
+      if (isEdit) {
+        const payload = reorderedList.map(img => ({
+          id: img.id,
+          order: img.order
+        }));
+        
+        const res = await fetch("/api/admin/variants", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "reorder-images",
+            variantId,
+            reorderedImages: payload
+          })
+        });
+        const resData = await res.json();
+        if (!resData.success) throw new Error(resData.message || "Failed to update image order in DB.");
+      }
+      showToast("Photos reordered successfully.");
+    } catch (err: any) {
+      console.error(err);
+      showToast(err.message || "Failed to save photo order.", "error");
+    }
+  };
+
+  // Click / Button rapid reordering
+  const handleArrowReorder = async (variantId: string, imageId: string, direction: "left" | "right") => {
+    const variant = colorVariants.find(v => v.id === variantId);
+    if (!variant || !variant.images) return;
+
+    const images = [...variant.images];
+    const idx = images.findIndex(img => img.id === imageId);
+    if (idx === -1) return;
+
+    const targetIdx = direction === "left" ? idx - 1 : idx + 1;
+    if (targetIdx < 0 || targetIdx >= images.length) return;
+
+    const temp = images[idx];
+    images[idx] = images[targetIdx];
+    images[targetIdx] = temp;
+
+    const reorderedList = images.map((img, index) => ({
+      ...img,
+      order: index + 1
+    }));
+
+    setColorVariants(prev => {
+      return prev.map(v => {
+        if (v.id === variantId) {
+          const frontImg = reorderedList.find(i => i.type === "front")?.url || reorderedList[0]?.url || "";
+          const modelImg = reorderedList.find(i => i.type === "back" || i.type === "closeup" || i.type === "gallery")?.url || "";
+          return {
+            ...v,
+            images: reorderedList,
+            frontImage: frontImg,
+            modelImage: modelImg
+          };
+        }
+        return v;
+      });
+    });
+
+    try {
+      if (isEdit) {
+        const payload = reorderedList.map(img => ({
+          id: img.id,
+          order: img.order
+        }));
+        
+        const res = await fetch("/api/admin/variants", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "reorder-images",
+            variantId,
+            reorderedImages: payload
+          })
+        });
+        const resData = await res.json();
+        if (!resData.success) throw new Error(resData.message || "Failed to update image order in DB.");
+      }
+      showToast("Photo order updated.");
+    } catch (err: any) {
+      console.error(err);
+      showToast(err.message || "Failed to save photo order.", "error");
+    }
+  };
 
   // Reorder variants using Anime.js shifts
   const moveVariant = (index: number, direction: "up" | "down") => {
@@ -1038,23 +1549,130 @@ export default function ProductForm({ initialData, isEdit = false }: ProductForm
                             </div>
                           </div>
 
-                          {/* Image views previews side-by-side */}
-                          <div className={`grid gap-3 ${item.modelImage ? "grid-cols-2" : "grid-cols-1"}`}>
-                            <div className="space-y-1">
-                              <span className="block text-[9px] uppercase tracking-wider text-[#8c827a] font-bold text-center">Front View</span>
-                              <div className="aspect-[3/4] rounded-lg overflow-hidden border border-[#d9a58f11] bg-stone-900/50">
-                                <img src={item.frontImage} className="w-full h-full object-cover" alt="" />
-                              </div>
-                            </div>
-                            {item.modelImage && (
-                              <div className="space-y-1">
-                                <span className="block text-[9px] uppercase tracking-wider text-[#8c827a] font-bold text-center">On Model</span>
-                                <div className="aspect-[3/4] rounded-lg overflow-hidden border border-[#d9a58f11] bg-stone-900/50">
-                                  <img src={item.modelImage} className="w-full h-full object-cover" alt="" />
-                                </div>
-                              </div>
-                            )}
-                          </div>
+                           {/* Variant images grid */}
+                           <div className="space-y-2">
+                             <span className="block text-[10px] font-bold uppercase tracking-wider text-[#8b6b61]">
+                               Photos
+                             </span>
+                             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                               {(item.images || []).map((img, imgIdx) => {
+                                 const isUploading = uploadingStates[img.id];
+                                 return (
+                                   <div
+                                     key={img.id}
+                                     draggable
+                                     onDragStart={(e) => handleDragStart(e, item.id || '', img.id)}
+                                     onDragOver={handleDragOver}
+                                     onDrop={(e) => handleDrop(e, item.id || '', img.id)}
+                                     className="group relative aspect-[3/4] rounded-lg overflow-hidden border border-[#d9a58f22] bg-[#141316] cursor-grab active:cursor-grabbing hover:border-[#c98e87]/50 transition-all duration-300 flex flex-col justify-between"
+                                   >
+                                     {/* Image */}
+                                     <img
+                                       src={img.url}
+                                       alt={`${item.name} - ${img.type}`}
+                                       className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none group-hover:scale-105 transition-transform duration-500"
+                                     />
+
+                                     {/* Type Badge */}
+                                     <div className="absolute top-1.5 left-1.5 bg-black/60 backdrop-blur-md border border-[#d9a58f22] rounded px-1.5 py-0.5 text-[8px] uppercase tracking-wider font-bold text-[#c98e87] z-10">
+                                       {img.type}
+                                     </div>
+
+                                     {/* Reorder indicators / buttons */}
+                                     <div className="absolute top-1.5 right-1.5 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                                       <button
+                                         type="button"
+                                         onClick={() => handleArrowReorder(item.id || '', img.id, "left")}
+                                         disabled={imgIdx === 0}
+                                         className="bg-black/60 hover:bg-black p-1 rounded text-white disabled:opacity-30 transition-all active:scale-95"
+                                         title="Move left"
+                                       >
+                                         <ArrowLeft size={10} />
+                                       </button>
+                                       <button
+                                         type="button"
+                                         onClick={() => handleArrowReorder(item.id || '', img.id, "right")}
+                                         disabled={imgIdx === (item.images?.length || 1) - 1}
+                                         className="bg-black/60 hover:bg-black p-1 rounded text-white disabled:opacity-30 transition-all active:scale-95 animate-rotate-180"
+                                         title="Move right"
+                                       >
+                                         <ArrowLeft size={10} className="rotate-180" />
+                                       </button>
+                                     </div>
+
+                                     {/* Uploading indicator */}
+                                     {isUploading && (
+                                       <div className="absolute inset-0 bg-black/85 flex flex-col items-center justify-center z-20">
+                                         <div className="h-5 w-5 animate-spin rounded-full border-2 border-t-[#c98e87] border-r-transparent border-b-[#c98e87] border-l-transparent"></div>
+                                         <span className="text-[8px] uppercase tracking-wider text-[#c98e87] mt-1.5">Processing...</span>
+                                       </div>
+                                     )}
+
+                                     {/* Desktop Hover Controls */}
+                                     <div className="absolute inset-0 bg-[#0c0b0d]/75 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hidden md:flex flex-col items-center justify-center gap-2 z-10">
+                                       <button
+                                         type="button"
+                                         onClick={() => {
+                                           document.getElementById(`replace-input-${img.id}`)?.click();
+                                         }}
+                                         className="px-3 py-1.5 rounded-lg border border-[#c98e87]/40 bg-[#c98e87]/10 text-[10px] font-bold uppercase tracking-wider text-[#f5ebd8] hover:bg-[#c98e87] hover:text-black transition-all flex items-center gap-1 active:scale-95"
+                                       >
+                                         ✏ Replace
+                                       </button>
+                                       <button
+                                         type="button"
+                                         onClick={() => setConfirmDeleteImage({ variantId: item.id || '', imageId: img.id })}
+                                         className="px-3 py-1.5 rounded-lg border border-red-500/40 bg-red-500/10 text-[10px] font-bold uppercase tracking-wider text-red-200 hover:bg-red-500 hover:text-white transition-all flex items-center gap-1 active:scale-95"
+                                       >
+                                         🗑 Delete
+                                       </button>
+                                     </div>
+
+                                     {/* Mobile Overlay (Floating Action Buttons) */}
+                                     <div className="absolute bottom-2 inset-x-2 flex justify-between md:hidden z-10">
+                                       <button
+                                         type="button"
+                                         onClick={() => {
+                                           document.getElementById(`replace-input-${img.id}`)?.click();
+                                         }}
+                                         className="h-8 w-8 rounded-full bg-black/80 backdrop-blur-md border border-[#c98e87]/40 text-[#f5ebd8] flex items-center justify-center shadow-lg active:scale-95"
+                                         title="Replace image"
+                                       >
+                                         ✏
+                                       </button>
+                                       <button
+                                         type="button"
+                                         onClick={() => setConfirmDeleteImage({ variantId: item.id || '', imageId: img.id })}
+                                         className="h-8 w-8 rounded-full bg-black/80 backdrop-blur-md border border-red-500/40 text-red-400 flex items-center justify-center shadow-lg active:scale-95"
+                                         title="Delete image"
+                                       >
+                                         🗑
+                                       </button>
+                                     </div>
+
+                                     {/* Hidden Replace Input */}
+                                     <input
+                                       type="file"
+                                       id={`replace-input-${img.id}`}
+                                       accept="image/*"
+                                       onChange={(e) => handleReplaceImageFile(e, item.id || '', img.id)}
+                                       className="hidden"
+                                     />
+                                   </div>
+                                 );
+                               })}
+
+                               {/* + Add Photo Card */}
+                               <button
+                                 type="button"
+                                 onClick={() => setAddPhotoModal({ variantId: item.id || '' })}
+                                 className="relative aspect-[3/4] rounded-lg border border-dashed border-[#d9a58f33] bg-[#141316]/40 hover:bg-[#1a191d]/60 hover:border-[#c98e87]/40 transition-all flex flex-col items-center justify-center gap-1.5 text-[#8c827a] hover:text-[#f5ebd8] active:scale-95"
+                               >
+                                 <Plus size={20} />
+                                 <span className="text-[10px] font-bold uppercase tracking-wider">Add Photo</span>
+                               </button>
+                             </div>
+                           </div>
                         </div>
                       )}
                     </div>
@@ -1191,6 +1809,155 @@ export default function ProductForm({ initialData, isEdit = false }: ProductForm
           {submitting ? "Saving..." : isEdit ? "Update Design" : "Publish Design"}
         </button>
       </div>
+
+      {/* Toast Notification */}
+      {toast && (
+        <div className="fixed bottom-5 right-5 z-50 animate-slideIn select-none pointer-events-none">
+          <div className={`flex items-center gap-2 rounded-xl border px-4 py-3 shadow-2xl backdrop-blur-md ${
+            toast.type === "success" 
+              ? "border-[#c98e87]/40 bg-[#161519]/90 text-[#f5ebd8]" 
+              : "border-red-500/40 bg-red-950/90 text-red-200"
+          }`}>
+            <span className={toast.type === "success" ? "text-[#c98e87]" : "text-red-400"}>
+              {toast.type === "success" ? "✓" : "⚠"}
+            </span>
+            <span className="text-xs font-semibold">{toast.message}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Confirm Delete Image Modal */}
+      {confirmDeleteImage && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="w-full max-w-sm rounded-2xl border border-[#d9a58f22] bg-[#1a191d] p-6 shadow-2xl space-y-4">
+            <h4 className="font-serif text-lg font-light text-[#f5ebd8] tracking-wide">
+              Delete this photo?
+            </h4>
+            <p className="text-xs text-[#8c827a] font-light leading-relaxed">
+              Are you sure you want to permanently remove this photo? This will delete the photo record and its storage object immediately.
+            </p>
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setConfirmDeleteImage(null)}
+                className="px-4 py-2 rounded-lg border border-[#d9a58f33] text-xs text-[#8c827a] hover:text-[#e3dcd5] transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteImage}
+                className="px-4 py-2 rounded-lg bg-red-500/20 border border-red-500/40 text-xs text-red-200 hover:bg-red-500 hover:text-white transition-all"
+              >
+                Delete Photo
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Confirm Delete Variant Modal */}
+      {confirmDeleteVariant && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="w-full max-w-sm rounded-2xl border border-red-900/30 bg-[#1a191d] p-6 shadow-2xl space-y-4">
+            <h4 className="font-serif text-lg font-light text-red-200 tracking-wide">
+              Delete {confirmDeleteVariant.variantName} Variant?
+            </h4>
+            <div className="text-xs text-[#8c827a] font-light leading-relaxed space-y-2">
+              <p>This will permanently remove:</p>
+              <ul className="list-disc pl-4 space-y-1">
+                <li>All variant photos from storage</li>
+                <li>Inventory and stock details</li>
+                <li>SKU and pricing information</li>
+                <li>Metadata mapping</li>
+              </ul>
+            </div>
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setConfirmDeleteVariant(null)}
+                className="px-4 py-2 rounded-lg border border-[#d9a58f33] text-xs text-[#8c827a] hover:text-[#e3dcd5] transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteVariant}
+                className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-xs text-white transition-all"
+              >
+                Delete Variant
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Photo Modal */}
+      {addPhotoModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md rounded-2xl border border-[#d9a58f22] bg-[#1a191d] p-6 shadow-2xl space-y-4">
+            <h4 className="font-serif text-lg font-light text-[#f5ebd8] tracking-wide">
+              Add Photo to Variant
+            </h4>
+            
+            <div className="space-y-3">
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-[#8b6b61] mb-1">
+                  Photo Type / View
+                </label>
+                <select
+                  value={newPhotoType}
+                  onChange={(e) => setNewPhotoType(e.target.value as any)}
+                  className="w-full rounded-lg border border-[#d9a58f33] bg-[#141316]/50 px-3 py-2 text-xs text-[#e3dcd5] focus:outline-none"
+                >
+                  <option value="front">Front View</option>
+                  <option value="back">Back View</option>
+                  <option value="side">Side View</option>
+                  <option value="closeup">Closeup</option>
+                  <option value="gallery">Gallery Images</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-[#8b6b61] mb-1">
+                  Image Upload
+                </label>
+                <div className="mt-1">
+                  <ImageUploadArea
+                    label="Choose File"
+                    value={newPhotoUrl}
+                    onChange={setNewPhotoUrl}
+                    uploading={uploadingNewPhoto}
+                    setUploading={setUploadingNewPhoto}
+                    id="new-photo-upload"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setAddPhotoModal(null);
+                  setNewPhotoUrl("");
+                }}
+                className="px-4 py-2 rounded-lg border border-[#d9a58f33] text-xs text-[#8c827a] hover:text-[#e3dcd5] transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={!newPhotoUrl || uploadingNewPhoto}
+                onClick={handleSaveNewPhoto}
+                className="px-4 py-2 rounded-lg bg-[#c98e87] hover:bg-[#b07871] text-xs font-bold text-[#121214] disabled:opacity-50 transition-all uppercase tracking-wider"
+              >
+                Add to Gallery
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </form>
   );
 }

@@ -349,3 +349,49 @@ ALTER TABLE public.products
 -- Index for fast filtering
 CREATE INDEX IF NOT EXISTS idx_products_category ON public.products (category);
 
+
+-- ============================================================
+-- Photo Management System Tables
+-- ============================================================
+
+-- Table to store variants relationally
+CREATE TABLE IF NOT EXISTS public.product_variants (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    product_id TEXT REFERENCES public.products(id) ON DELETE CASCADE,
+    color_name TEXT NOT NULL,
+    hex_code TEXT,
+    sku TEXT,
+    stock INTEGER DEFAULT 0,
+    price_adjustment NUMERIC(10, 2) DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()) NOT NULL
+);
+
+-- Table to store variant images relationally (with individual photo logic, types, and ordering)
+CREATE TABLE IF NOT EXISTS public.product_variant_images (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    variant_id UUID REFERENCES public.product_variants(id) ON DELETE CASCADE,
+    image_type TEXT CHECK (image_type IN ('front', 'back', 'side', 'closeup', 'gallery')),
+    image_url TEXT NOT NULL,
+    image_order INTEGER DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()) NOT NULL
+);
+
+-- Enable RLS for variants and variant images
+ALTER TABLE public.product_variants ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.product_variant_images ENABLE ROW LEVEL SECURITY;
+
+-- Allow anyone to read variants and images (public catalogue support)
+CREATE POLICY "Public can read variants" ON public.product_variants
+    FOR SELECT TO anon, authenticated USING (true);
+
+CREATE POLICY "Public can read variant images" ON public.product_variant_images
+    FOR SELECT TO anon, authenticated USING (true);
+
+-- Admins can manage variants and variant images
+CREATE POLICY "Admins can manage variants" ON public.product_variants
+    FOR ALL TO authenticated USING (true) WITH CHECK (true);
+
+CREATE POLICY "Admins can manage variant images" ON public.product_variant_images
+    FOR ALL TO authenticated USING (true) WITH CHECK (true);
+
+

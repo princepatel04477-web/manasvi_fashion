@@ -12,4 +12,4 @@ app/testsprite_tests/
 /photo MODELS/
 /photo modeless/
 .env
-
+.claude-flow/

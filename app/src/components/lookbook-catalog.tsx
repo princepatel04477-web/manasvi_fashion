@@ -138,9 +138,9 @@ export default function LookbookCatalog({ initialTab = "Summer Collection" }: Lo
         case "Kurtis":
           return (p.productType === "kurti" || cat === "kurtis") && p.productType !== "tunic_top" && cat !== "tunic-tops";
         case "Dresses":
-          return (p.productType === "dress" || cat === "dresses") && p.productType !== "kurti" && cat !== "kurtis" && p.productType !== "one_piece" && cat !== "one-piece";
+          return (p.productType === "dress" || cat === "dresses") && p.productType !== "kurti" && cat !== "kurtis" && p.productType !== "one_piece" && (p.productType as string) !== "onepiece" && cat !== "one-piece" && (cat as string) !== "onepiece";
         case "One Piece":
-          return p.productType === "one_piece" || cat === "one-piece";
+          return p.productType === "one_piece" || (p.productType as string) === "onepiece" || cat === "one-piece" || (cat as string) === "onepiece";
         case "New Arrivals":
           return !!p.isNew;
         default:

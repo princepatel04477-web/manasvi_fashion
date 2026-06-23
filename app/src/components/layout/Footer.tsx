@@ -358,6 +358,16 @@ export default function Footer() {
 
         </div>
 
+        {/* Local SEO Footer Block */}
+        <div className="border-t border-white/[0.06] pt-10 pb-2 text-center">
+          <p className="font-[var(--font-inter)] text-[10px] tracking-[0.25em] text-white/40 uppercase mb-4 font-semibold">
+            Boutique Collections & Sourcing
+          </p>
+          <p className="font-[var(--font-inter)] text-[11px] leading-relaxed text-white/30 tracking-wide max-w-4xl mx-auto text-justify lg:text-center">
+            As a leading <strong>Women&apos;s Fashion Brand in Surat</strong>, Manasvi Fashion offers a curated experience for those seeking a premium <strong>Fashion Store in Surat</strong>. Our collections feature high-quality <strong>Designer Kurtis in Surat</strong>, a modern <strong>Tunics Collection in Surat</strong>, and <strong>Premium Dresses in Surat</strong> for every occasion, from casual wear to formal outings. Whether you are looking for classic <strong>Ethnic Wear in Surat</strong>, contemporary <strong>Western Wear in Surat</strong>, or elegant <strong>One Piece Dresses in Surat</strong>, our <strong>Fashion Boutique in Surat Gujarat</strong> provides customized fits and exceptional sourcing. We aim to be the preferred <strong>Ladies Clothing Store in Surat</strong> and the ultimate <strong>Women&apos;s Clothing Store in Surat</strong> for discerning clients. Enjoy seamless <strong>Online Fashion Shopping in Surat</strong> with global delivery, or visit our atelier to experience Surat&apos;s textile craftsmanship firsthand.
+          </p>
+        </div>
+
         {/* Bottom Bar Section */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 sm:gap-6 pt-8 sm:pt-10">
           
