@@ -168,6 +168,34 @@ interface InteractiveMarqueeProps {
   onProductClick: (product: Product) => void;
 }
 
+// Helper for padding/replicating array for smooth marquee looping without adjacent duplicates
+const getSmartPaddedList = (arr: Product[], minLength = 12): Product[] => {
+  if (arr.length === 0) return [];
+  
+  const shuffle = (list: Product[]): Product[] => {
+    const copy = [...list];
+    for (let i = copy.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    return copy;
+  };
+
+  let result = shuffle(arr);
+  if (result.length >= minLength) {
+    return result;
+  }
+
+  while (result.length < minLength) {
+    const chunk = shuffle(arr);
+    if (arr.length > 1 && result[result.length - 1].id === chunk[0].id) {
+      [chunk[0], chunk[1]] = [chunk[1], chunk[0]];
+    }
+    result = [...result, ...chunk];
+  }
+  return result;
+};
+
 function InteractiveMarquee({
   title,
   products,
@@ -182,26 +210,48 @@ function InteractiveMarquee({
   const lastInteractionTimeRef = useRef(0);
   const animationFrameIdRef = useRef<number | null>(null);
 
-  // Triplicate product list for continuous wrap-around in both directions
-  const triplicatedProducts = useMemo(() => {
-    return [...products, ...products, ...products];
+  const [shuffledProducts, setShuffledProducts] = useState<Product[]>([]);
+  const [loopCopyProducts, setLoopCopyProducts] = useState<Product[]>([]);
+
+  // Shuffle and pad only on client mount to avoid hydration mismatch
+  useEffect(() => {
+    if (products.length > 0) {
+      const p1 = getSmartPaddedList(products, 12);
+      const p2 = getSmartPaddedList(products, 12);
+      setShuffledProducts(p1);
+      setLoopCopyProducts(p2);
+    }
   }, [products]);
 
-  // Center the scroll container initially so there is content on both sides
+  // Enable marquee for all active collections
+  const isMarqueeEnabled = products.length > 0;
+
+  // Memoize loop array or default array
+  const displayProducts = useMemo(() => {
+    const p1 = shuffledProducts.length > 0 ? shuffledProducts : products;
+    const p2 = loopCopyProducts.length > 0 ? loopCopyProducts : products;
+
+    if (products.length === 0) {
+      return [];
+    }
+    // 4 blocks for seamless looping in both directions: [P, P_shuffled, P, P_shuffled]
+    return [...p1, ...p2, ...p1, ...p2];
+  }, [products, shuffledProducts, loopCopyProducts]);
+
+  // Center/initialize scroll container for loop wrapping
   useEffect(() => {
+    if (!isMarqueeEnabled) return;
     const container = containerRef.current;
     if (!container) return;
 
     const initScroll = () => {
-      const thirdWidth = container.scrollWidth / 3;
-      if (thirdWidth > 0) {
-        container.scrollLeft = thirdWidth;
+      const oneBlockWidth = container.scrollWidth / 4;
+      if (oneBlockWidth > 0) {
+        container.scrollLeft = oneBlockWidth;
       }
     };
 
     initScroll();
-    
-    // Fallback timer if layout/images are still rendering
     const t = setTimeout(initScroll, 150);
 
     window.addEventListener("resize", initScroll);
@@ -209,10 +259,11 @@ function InteractiveMarquee({
       clearTimeout(t);
       window.removeEventListener("resize", initScroll);
     };
-  }, [products]);
+  }, [shuffledProducts, isMarqueeEnabled]);
 
-  // requestAnimationFrame scroll loop
+  // Autoplay requestAnimationFrame loop
   useEffect(() => {
+    if (!isMarqueeEnabled) return;
     const container = containerRef.current;
     if (!container) return;
 
@@ -232,13 +283,12 @@ function InteractiveMarquee({
       if (container && !shouldPause) {
         container.scrollLeft += step;
 
-        // Auto-scroll loop wrapping
-        const thirdWidth = container.scrollWidth / 3;
-        if (thirdWidth > 0) {
-          if (container.scrollLeft >= thirdWidth * 2) {
-            container.scrollLeft -= thirdWidth;
-          } else if (container.scrollLeft < thirdWidth) {
-            container.scrollLeft += thirdWidth;
+        const oneBlockWidth = container.scrollWidth / 4;
+        if (oneBlockWidth > 0) {
+          if (container.scrollLeft >= oneBlockWidth * 3) {
+            container.scrollLeft -= 2 * oneBlockWidth;
+          } else if (container.scrollLeft < oneBlockWidth) {
+            container.scrollLeft += 2 * oneBlockWidth;
           }
         }
       }
@@ -253,23 +303,24 @@ function InteractiveMarquee({
         cancelAnimationFrame(animationFrameIdRef.current);
       }
     };
-  }, [speed]);
+  }, [speed, isMarqueeEnabled, shuffledProducts]);
 
-  // Scroll wrapping during manual scroll (mobile touch swipe or mouse wheel)
+  // Handle wrapping during manual swipe or scroll
   const handleScroll = () => {
+    if (!isMarqueeEnabled) return;
     const container = containerRef.current;
     if (!container) return;
-    const thirdWidth = container.scrollWidth / 3;
-    if (thirdWidth <= 0) return;
+    const oneBlockWidth = container.scrollWidth / 4;
+    if (oneBlockWidth <= 0) return;
 
-    if (container.scrollLeft >= thirdWidth * 2) {
-      container.scrollLeft -= thirdWidth;
-    } else if (container.scrollLeft < thirdWidth) {
-      container.scrollLeft += thirdWidth;
+    if (container.scrollLeft >= oneBlockWidth * 3) {
+      container.scrollLeft -= 2 * oneBlockWidth;
+    } else if (container.scrollLeft < oneBlockWidth) {
+      container.scrollLeft += 2 * oneBlockWidth;
     }
   };
 
-  // Mouse handlers for desktop click-drag
+  // Mouse drag handlers
   const handleMouseDown = (e: React.MouseEvent) => {
     const container = containerRef.current;
     if (!container) return;
@@ -298,7 +349,7 @@ function InteractiveMarquee({
     }
   };
 
-  // Touch handlers for mobile swipe
+  // Touch swipe handlers
   const handleTouchStart = () => {
     isInteractingRef.current = true;
     draggedRef.current = false;
@@ -324,6 +375,14 @@ function InteractiveMarquee({
     onProductClick(item);
   };
 
+  // 0 products: Hide section completely
+  if (products.length === 0) {
+    return null;
+  }
+
+  // Determine indicator label (all marquees will auto-scroll)
+  const indicatorLabel = "Auto Scroll";
+
   return (
     <div className="flex flex-col">
       <div className="px-4 mb-2 flex items-center justify-between">
@@ -331,7 +390,7 @@ function InteractiveMarquee({
           {title}
         </h3>
         <span className="font-inter font-normal text-[8px] uppercase tracking-widest text-[#B8924A] font-bold">
-          Swipe & Drag
+          {indicatorLabel}
         </span>
       </div>
 
@@ -349,7 +408,7 @@ function InteractiveMarquee({
         className="relative w-full overflow-x-auto scrollbar-none py-1.5 flex select-none cursor-grab active:cursor-grabbing gap-3.5 px-4"
         style={{ WebkitOverflowScrolling: "touch" }}
       >
-        {triplicatedProducts.map((item, idx) => (
+        {displayProducts.map((item, idx) => (
           <div
             key={`${item.id}-${idx}`}
             onClick={(e) => handleCardClick(e, item)}
@@ -542,10 +601,58 @@ export default function MobileFirstExperience() {
     }
   }, [selectedColorIdx]);
 
-  // Filter products by type
-  const kurtiListings = products.filter(p => p.productType === "kurti");
-  const tunicListings = products.filter(p => p.productType === "tunic_top");
-  const onePieceListings = products.filter(p => p.productType === "one_piece" || (p.productType as string) === "onepiece" || p.category === "one-piece" || (p.category as string) === "onepiece");
+  // Filter products by type (memoized to prevent infinite marquee shuffle loops)
+  const kurtiListings = useMemo(() => products.filter(p => 
+    p.productType === "kurti" || 
+    (p.category as string) === "kurtis" || 
+    (p.category as string) === "kurti" || 
+    p.subcategory === "kurtis" || 
+    p.subcategory === "kurti"
+  ), [products]);
+
+  const tunicListings = useMemo(() => products.filter(p => 
+    p.productType === "tunic_top" || 
+    (p.category as string) === "tunic-tops" || 
+    (p.category as string) === "tunic" || 
+    p.subcategory === "tunic-tops" || 
+    p.subcategory === "tunic"
+  ), [products]);
+
+  const dressListings = useMemo(() => products.filter(p => 
+    p.productType === "dress" || 
+    (p.category as string) === "dresses" || 
+    (p.category as string) === "dress" || 
+    p.subcategory === "dresses" || 
+    p.subcategory === "dress"
+  ), [products]);
+
+  const onePieceListings = useMemo(() => products.filter(p => 
+    p.productType === "one_piece" || 
+    (p.productType as string) === "onepiece" || 
+    (p.category as string) === "one-piece" || 
+    (p.category as string) === "onepiece" || 
+    (p.category as string) === "one_pieces" || 
+    p.subcategory === "one piece" || 
+    p.subcategory === "one-piece" || 
+    p.subcategory === "onepiece"
+  ), [products]);
+
+  // Partition products between marquees and grids to ensure mutual exclusivity
+  const partitionListings = (listings: Product[]) => {
+    if (listings.length <= 1) {
+      return { marquee: listings, grid: [] };
+    }
+    const marqueeCount = Math.max(1, Math.min(6, Math.floor(listings.length / 2)));
+    return {
+      marquee: listings.slice(0, marqueeCount),
+      grid: listings.slice(marqueeCount)
+    };
+  };
+
+  const kurtiPart = useMemo(() => partitionListings(kurtiListings), [kurtiListings]);
+  const tunicPart = useMemo(() => partitionListings(tunicListings), [tunicListings]);
+  const dressPart = useMemo(() => partitionListings(dressListings), [dressListings]);
+  const onePiecePart = useMemo(() => partitionListings(onePieceListings), [onePieceListings]);
 
   // Search filtered products
   const searchedProducts = products.filter(p => 
@@ -792,15 +899,21 @@ export default function MobileFirstExperience() {
             onProductClick={setSelectedProduct} 
           />
 
+          {/* Dresses Marquee */}
+          <InteractiveMarquee 
+            title="Dresses Collection" 
+            products={dressListings} 
+            speed={0.75} 
+            onProductClick={setSelectedProduct} 
+          />
+
           {/* One Piece Marquee */}
-          {onePieceListings.length > 0 && (
-            <InteractiveMarquee 
-              title="One Piece Collection" 
-              products={onePieceListings} 
-              speed={0.9} 
-              onProductClick={setSelectedProduct} 
-            />
-          )}
+          <InteractiveMarquee 
+            title="One Piece Collection" 
+            products={onePieceListings} 
+            speed={0.9} 
+            onProductClick={setSelectedProduct} 
+          />
 
         </div>
       </section>
@@ -821,7 +934,7 @@ export default function MobileFirstExperience() {
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3.5 md:gap-5 lg:gap-6">
-            {kurtiListings.slice(0, sliceLimit).map((product) => (
+            {kurtiPart.grid.slice(0, sliceLimit).map((product) => (
               <div 
                 key={product.id}
                 onClick={() => setSelectedProduct(product)}
@@ -878,7 +991,7 @@ export default function MobileFirstExperience() {
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3.5 md:gap-5 lg:gap-6">
-            {tunicListings.slice(0, sliceLimit).map((product) => (
+            {tunicPart.grid.slice(0, sliceLimit).map((product) => (
               <div 
                 key={product.id}
                 onClick={() => setSelectedProduct(product)}
@@ -923,7 +1036,7 @@ export default function MobileFirstExperience() {
         </section>
 
         {/* One Piece Collection Section (2x2 Grid) */}
-        {onePieceListings.length > 0 && (
+        {onePiecePart.grid.length > 0 && (
           <section className="flex flex-col">
             <div className="mb-5 flex flex-col">
               <span className="font-jost font-normal text-[9px] uppercase tracking-[0.2em] text-[#B8924A] font-bold mb-1 block">
@@ -936,7 +1049,7 @@ export default function MobileFirstExperience() {
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3.5 md:gap-5 lg:gap-6">
-              {onePieceListings.slice(0, sliceLimit).map((product) => (
+              {onePiecePart.grid.slice(0, sliceLimit).map((product) => (
                 <div 
                   key={product.id}
                   onClick={() => setSelectedProduct(product)}

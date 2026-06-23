@@ -46,7 +46,11 @@ export default function TunicTopsPage() {
                 <p>
                   Our <strong>designer tunic tops surat</strong> are created in partnership with skilled local artisans in the Surat textile hub. By choosing our collection, you are supporting authentic, regional textile sourcing and local Gujarat craftsmanship. From classic long tunics to short chic tunic tops, each garment is made with careful attention to stitching, hem finishes, and premium fabric selection. We aim to offer affordable luxury without compromising on quality, which is why each piece is designed to be highly durable and easy to maintain. Visit our Surat boutique studio or browse our online platform to discover our collection of premium, stylish tops that enrich your daily wardrobe with quiet luxury.
                 </p>
-              </div>
+              
+                <p>
+                  For those who appreciate modern fusion and relaxed styling, our <strong>tunics surat</strong> and <strong>designer tunics surat</strong> offer the ultimate comfort. Designed as stylish wardrobe essentials, our <strong>cotton tunics surat</strong> and <strong>premium tunics surat</strong> are perfect for both office wear and casual outings. We have crafted a unique <strong>tunic collection surat</strong> that features clean lines, comfortable pockets, and breathable weaves. Our <strong>designer tunic tops surat</strong> are perfect for pairing with trousers or denim, making them a versatile choice for contemporary lifestyles. At our <strong>fashion boutique surat</strong>, we ensure that every tunic is tailored with precision, offering <strong>stylish tunics surat</strong> and <strong>trendy tunics surat</strong> that capture the <strong>latest fashion trends surat</strong> while remaining comfortably timeless.
+                </p>
+</div>
             </div>
           </div>
         </LuxuryTransition>

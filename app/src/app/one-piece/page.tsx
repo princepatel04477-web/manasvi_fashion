@@ -399,16 +399,33 @@ export default function OnePiecePage() {
                   Atelier Collection
                 </span>
                 <h2 className="font-cormorant text-3xl sm:text-4xl md:text-5xl font-light italic leading-tight">
-                  "Elegance in every silhouette."
+                  &ldquo;Elegance in every silhouette.&rdquo;
                 </h2>
                 <div className="w-16 h-[1px] bg-[#E7C2B8]/60 my-1" />
                 <p className="font-inter text-xs sm:text-sm text-[#FAF7F2]/80 leading-relaxed max-w-md font-light tracking-wide">
                   One piece, endless possibilities. From relaxed daywear to elevated evening styles,
-                  Manasvi's curated one piece collection brings grace and confidence to every occasion.
+                  Manasvi&apos;s curated one piece collection brings grace and confidence to every occasion.
                 </p>
               </div>
             </div>
           </section>
+
+          {/* High-Fashion Category SEO Description */}
+          <div className="mt-16 border-t border-[#E7C2B8]/40 pt-16 max-w-4xl mx-auto pb-8">
+            <span className="font-inter text-[9px] tracking-[0.25em] text-[#C98E87] uppercase font-bold block mb-3 text-center">
+              Collection Journal
+            </span>
+            <h2 className="font-serif text-2xl text-[#3B2B28] text-center mb-8">
+              One Piece Dresses in Surat – Contemporary Luxury
+            </h2>
+            <div className="w-12 h-[1px] bg-[#C98E87] mx-auto mb-8" />
+            
+            <div className="font-inter text-sm text-[#8B6B61] leading-relaxed font-light space-y-6 text-justify">
+              <p>
+                In addition to our traditional wear, we have developed a stunning range of <strong>western wear surat</strong> and <strong>designer dresses surat</strong> to suit the cosmopolitan woman. Our <strong>women dress collection surat</strong> includes elegant <strong>one piece dresses surat</strong>, fashion dresses surat, and <strong>premium dresses surat</strong> that transition seamlessly from day to night. From flowing georgette <strong>party wear dresses surat</strong> to structured cotton <strong>casual wear surat</strong>, each piece is designed with absolute attention to fit and contour. We understand that modern women clothing in surat requires versatile options, which is why our <strong>designer western wear surat</strong> combines minimalist styling with high-fashion drapes. Explore our <strong>latest dress collection surat</strong> to find everything from comfortable midi dresses and formal office wear dresses to radiant maxis that stand out at any social gathering.
+              </p>
+            </div>
+          </div>
 
         </div>
       </main>

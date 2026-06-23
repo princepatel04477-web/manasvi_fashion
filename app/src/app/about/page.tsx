@@ -379,6 +379,28 @@ export default function AboutPage() {
         </div>
       </section>
 
+      {/* Brand Heritage SEO Description Panel */}
+      <section className="relative border-t border-[#E7C2B8]/40 py-20 px-4 sm:px-6 lg:px-8 bg-[#FAF7F2]">
+        <div className="max-w-4xl mx-auto">
+          <span className="font-inter text-[9px] tracking-[0.25em] text-[#C98E87] uppercase font-bold block mb-3 text-center">
+            Brand Heritage
+          </span>
+          <h2 className="font-serif text-2xl text-[#3B2B28] text-center mb-8">
+            Our Surat Textile Legacy & Artisan Story
+          </h2>
+          <div className="w-12 h-[1px] bg-[#C98E87] mx-auto mb-8" />
+          
+          <div className="font-inter text-sm text-[#8B6B61] leading-relaxed font-light space-y-6 text-justify">
+            <p>
+              At Manasvi Fashion, we pride ourselves on being a premier <strong>fashion store surat</strong> and a leading destination for <strong>women fashion surat</strong>. Rooted in the rich cultural history and textile heritage of Gujarat, India, our brand is dedicated to offering the finest <strong>ladies fashion surat</strong>. We are located in Mota Varachha, at the heart of the <strong>Surat textile hub</strong>, where we combine age-old Indian artisan techniques with modern western design sensibilities. For years, Surat has been globally renowned as the center of textile manufacturing, and Manasvi Fashion honors this legacy by sourcing only authentic, top-grade fabrics. Our mission is simple: to create luxury garments that speak of grace and modern sophistication, providing a premium shopping experience for every woman who steps into our online boutique or visits our Surat atelier.
+            </p>
+            <p>
+              Manasvi Fashion is more than just a brand; it is a celebrated <strong>surat fashion brand</strong> and a dedicated <strong>ladies clothing store surat</strong>. We believe in providing <strong>premium women fashion in surat</strong> that is both luxury-focused and accessible. Our commitment to authentic Surat sourcing and artisan partnerships allows us to maintain a high standard of quality across all our products. We work closely with local weavers, dye houses, and hand-block printers to create <strong>designer ethnic wear in surat</strong> that represents the true spirit of <strong>indian fashion surat</strong>. Every garment reflects our commitment to trust, premium fabrics, and customer-friendly service, making us a top <strong>fashion destination surat</strong>.
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* FOOTER TRANSITION CALL TO ACTION */}
       <section className="relative border-t border-[#E7C2B8]/40 py-24 text-center">
         <div className="max-w-2xl mx-auto px-6 flex flex-col items-center gap-6">

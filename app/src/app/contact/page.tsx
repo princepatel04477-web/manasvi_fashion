@@ -601,6 +601,23 @@ export default function ContactPage() {
             </div>
           </div>
 
+          {/* Contact Page SEO Description Panel */}
+          <div className="mt-20 border-t border-[#E7C2B8]/40 pt-16 max-w-4xl mx-auto pb-8">
+            <span className="font-inter text-[9px] tracking-[0.25em] text-[#C98E87] uppercase font-bold block mb-3 text-center">
+              Shopping Experience
+            </span>
+            <h2 className="font-serif text-2xl text-[#3B2B28] text-center mb-8">
+              Online Boutique & Private Styling Consultations in Surat
+            </h2>
+            <div className="w-12 h-[1px] bg-[#C98E87] mx-auto mb-8" />
+            
+            <div className="font-inter text-sm text-[#8B6B61] leading-relaxed font-light space-y-6 text-justify">
+              <p>
+                Whether you are seeking <strong>online fashion shopping surat</strong> or wish to visit our boutique studio, we ensure that your journey is filled with delight. We offer a user-friendly <strong>online clothing store surat</strong> and a premium online boutique where you can <strong>buy kurtis online surat</strong> and <strong>buy dresses online surat</strong>. Our platform provides a curated catalog of <strong>women fashion online surat</strong>, <strong>ethnic wear online surat</strong>, and <strong>western wear online surat</strong>, complete with secure payment gateways and reliable global shipping. As a trusted <strong>women apparel store surat</strong>, we are committed to helping you curate a wardrobe of timeless essentials that make you feel confident and elegant every single day. Explore the world of Manasvi Fashion Surat Gujarat today and celebrate the art of fine clothing.
+              </p>
+            </div>
+          </div>
+
         </div>
 
       </div>

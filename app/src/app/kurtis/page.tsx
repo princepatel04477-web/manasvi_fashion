@@ -46,6 +46,9 @@ export default function KurtisPage() {
                 <p>
                   At Manasvi Fashion, we believe that luxury should be felt in every thread. Our collection of <strong>women kurtis surat</strong> highlights the exquisite craftsmanship of the region&apos;s artisans. From short kurtis suitable for fusion wear to long, elegant ethnic kurtis, each design undergoes rigorous quality checks to ensure perfect styling and durability. When you shop at our <strong>designer kurti store surat</strong>, you receive not only a premium garment but also a commitment to customer-friendly service and reliable delivery. Embrace the charm of traditional craftsmanship combined with modern, comfortable cuts, and find your perfect fit with us today.
                 </p>
+                <p>
+                  If you are looking for <strong>designer kurtis surat</strong> or <strong>premium kurtis surat</strong>, our collection is curated to present quiet elegance and timeless style. As a beloved <strong>kurti shop surat</strong> and the <strong>best kurti store surat</strong>, we offer a wide range of designs that cater to every occasion. Our <strong>cotton kurtis surat</strong> are made from the highest quality breathable cotton, perfect for the warm Indian seasons, while our printed kurtis are ideal for office wear and everyday comfort. For those special occasions, we offer ethnic kurtis and traditional kurtis featuring intricate hand-embroidery, tassel details, and Zari borders. Every single piece is designed to highlight the beauty of <strong>ethnic wear surat</strong>, celebrating the unique textures of hand-woven fabrics and classical prints. Whether you prefer <strong>long kurtis surat</strong> or <strong>short kurtis surat</strong>, our designs provide a flattering drape and complete freedom of movement.
+                </p>
               </div>
             </div>
           </div>
