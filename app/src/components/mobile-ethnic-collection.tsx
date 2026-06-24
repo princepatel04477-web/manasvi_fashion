@@ -191,7 +191,7 @@ const mobileTunics: Product[] = [
     description: "Sophisticated pleated A-line tunic featuring front pleats, an embroidered neck keyhole, and a premium flowy silhouette.",
     fabric: "Viscose Blend", sleeveType: "3/4 Sleeve", color: "Pastel Yellow",
     price: 1499, compareAtPrice: 2999, sizes: ["S", "M", "L", "XL"], stock: 12, rating: 4.9, reviews: 45,
-    images: [`${T}/f655dfe697c9665cbf991262939d41b341203af8c792f879663c652577e7c1a8.png`, `${T}/Gemini_Generated_Image_7p370v7p370v7p37.png`],
+    images: [`${T}/f655dfe697c9665cbf991262939d41b341203af8c792f879663c652577e7c1a8.png`, `${T}/a989fa4d2c204c4c58698f66efe357b7008f8d05d1bf03fcf0092d833b0836fc.png`],
     colorVariants: [{ name: "Pastel Yellow", hex: "#FAF3C5" }, { name: "Powder Blue", hex: "#C5ECFA" }]
   }
 ];

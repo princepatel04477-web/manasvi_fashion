@@ -19,7 +19,11 @@ export async function POST(req: NextRequest) {
     }
 
     // 1. Verify Webhook Signature
-    const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET || "mockwebhooksecret123";
+    const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
+    if (!webhookSecret) {
+      console.error("[api-webhooks-razorpay] Missing RAZORPAY_WEBHOOK_SECRET environment variable");
+      return NextResponse.json({ error: "Webhook validation is not configured" }, { status: 500 });
+    }
     const expectedSignature = crypto
       .createHmac("sha256", webhookSecret)
       .update(rawBody)

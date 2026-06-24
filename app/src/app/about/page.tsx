@@ -159,7 +159,7 @@ export default function AboutPage() {
           ref={heroImageRef}
           className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-[will-change] duration-100"
           style={{
-            backgroundImage: "url('/photos/Gemini_Generated_Image_7p370v7p370v7p37.png')",
+            backgroundImage: "url('/photos/cbced159d300f0054a98f6dfc484470966caffb38e10e3395b2a02acefafd358.png')",
             opacity: 0.35,
           }}
         />
@@ -203,7 +203,7 @@ export default function AboutPage() {
           <div className="lg:col-span-5 relative w-full overflow-hidden rounded-2xl bg-[#E7C2B8] aspect-[3/4] max-w-md lg:max-w-full mx-auto shadow-xl group">
             <img 
               ref={storyImageRef}
-              src="/photos/Gemini_Generated_Image_h8k8lch8k8lch8k8.png"
+              src="/photos/slide1_pastel_pink_kurti.png"
               alt="Manasvi couture draping and natural elegance"
               className="absolute inset-0 w-full h-[120%] object-cover object-center scale-[1.05] transition-transform duration-500 ease-out group-hover:scale-[1.08]"
               style={{ top: "-10%" }}

@@ -116,7 +116,7 @@ export default function DressesPage() {
               
               {/* Story Image from provided assets */}
               <img 
-                src="/photos/Gemini_Generated_Image_o7map6o7map6o7ma.png" 
+                src="/photos/slide4_white_tunic_dress.png" 
                 alt="Drape movement" 
                 className="absolute inset-0 w-full h-full object-cover filter brightness-[0.8] scale-105" 
               />

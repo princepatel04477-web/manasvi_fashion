@@ -104,7 +104,7 @@ export default function HeroSection({
       ctaLink: "/new-arrivals",
     },
     {
-      image: "/photos/Gemini_Generated_Image_o7map6o7map6o7ma.png",
+      image: "/photos/slide4_white_tunic_dress.png",
       eyebrow: "Exclusive New Category",
       row1: "Elegant",
       row2: "One Piece",

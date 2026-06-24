@@ -54,7 +54,7 @@ export const tunicDesignGroups: DesignGroup[] = [
     price: 1200,
     images: [
       `${P}/298a7d7ca464b6cebeb9831bbc04b2b30be7f8d60df05f982bda5a28edd8cf9c.png`,
-      `${P}/Gemini_Generated_Image_o7map6o7map6o7ma.png`,
+      `${P}/8dcce96683276500c2236556084f5d2ec0b2c695b15201a77821204c1030c309.png`,
     ],
   },
   {
@@ -69,7 +69,7 @@ export const tunicDesignGroups: DesignGroup[] = [
       `${P}/6f3b4324572536e1c644bea8fb930139f703830c3430d24d5b047a122dbb7417.png`,
       `${P}/80a8ba805434a5c22ef64bc2313ae280404e5e50c301a4cdf674d4b15ad4b233.png`,
       `${P}/94f3f6fc103aa131653afadd4cdac362e00cf2d1d796568db0627351611b10c5.png`,
-      `${P}/Gemini_Generated_Image_7p370v7p370v7p37.png`,
+      `${P}/eaa09b74a57f958619ee031523d47e4a70b8999f5066e556febe0c05c139362e.png`,
       `${P}/f655dfe697c9665cbf991262939d41b341203af8c792f879663c652577e7c1a8.png`,
     ],
   },

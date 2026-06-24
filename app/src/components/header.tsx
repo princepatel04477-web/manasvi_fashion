@@ -6,10 +6,25 @@ import { useEffect, useRef, useState } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { set } from "animejs";
 import { interpolate, luxuryEase } from "@/lib/use-anime-scroll";
-import { Menu, X, ShoppingBag, Trash2, Plus, Minus, Heart } from "lucide-react";
+import { Menu, X, ShoppingBag, Trash2, Plus, Minus, Heart, Search, User, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useShop } from "@/context/shop-context";
 import { formatINR } from "@/lib/store";
+
+const AnimatedNavLink = ({ href, children }: { href: string; children: React.ReactNode }) => {
+  const defaultTextColor = 'text-[#3B2B28]/75';
+  const hoverTextColor = 'text-[#8B6B61]';
+  const textSizeClass = 'text-[0.82rem] font-medium tracking-[0.18em] uppercase font-[var(--font-cormorant)]';
+
+  return (
+    <Link href={href} className={`group relative block overflow-hidden h-7 whitespace-nowrap ${textSizeClass}`}>
+      <div className="flex flex-col transition-transform duration-300 ease-out transform group-hover:-translate-y-1/2">
+        <span className={`h-7 flex items-center ${defaultTextColor}`}>{children}</span>
+        <span className={`h-7 flex items-center ${hoverTextColor}`}>{children}</span>
+      </div>
+    </Link>
+  );
+};
 
 export default function Header() {
   const pathname = usePathname();
@@ -22,6 +37,13 @@ export default function Header() {
   const navRef1 = useRef<HTMLElement>(null);
   const navRef2 = useRef<HTMLElement>(null);
   const logoRef = useRef<HTMLDivElement>(null);
+  const [isOpen, setIsOpen] = useState(false);
+  const [headerShapeClass, setHeaderShapeClass] = useState("rounded-full");
+  const shapeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [isAccountOpen, setIsAccountOpen] = useState(false);
+  const toggleMenu = () => {
+    setIsOpen(!isOpen);
+  };
 
   const isHome = pathname === "/";
 
@@ -41,6 +63,27 @@ export default function Header() {
       window.removeEventListener("open-mobile-cart", handleOpenCart);
     };
   }, []);
+
+  useEffect(() => {
+    if (shapeTimeoutRef.current) {
+      clearTimeout(shapeTimeoutRef.current);
+    }
+
+    if (isOpen) {
+      setHeaderShapeClass("rounded-2xl");
+    } else {
+      shapeTimeoutRef.current = setTimeout(() => {
+        setHeaderShapeClass("rounded-full");
+      }, 300);
+    }
+
+    return () => {
+      if (shapeTimeoutRef.current) {
+        clearTimeout(shapeTimeoutRef.current);
+      }
+    };
+  }, [isOpen]);
+
   const isAdmin = (session?.user as any)?.role === "admin" || (session?.user as any)?.role === "seller";
   const firstName = session?.user?.name ? session.user.name.split(" ")[0] : "";
 
@@ -56,328 +99,205 @@ export default function Header() {
     };
   }, [isDrawerOpen]);
 
-  // Auto-close drawer on route change
+  // Auto-close drawer and mobile menu on route change
   useEffect(() => {
     setIsDrawerOpen(false);
+    setIsOpen(false);
   }, [pathname]);
 
   useEffect(() => {
-    if (pathname.startsWith("/dashboard") || pathname.startsWith("/auth") || pathname.startsWith("/mobile")) {
-      return;
-    }
-
-    const handleScroll = () => {
-      const sy = window.scrollY;
-      const threshold = window.innerHeight * 3 - 80;
-      setIsScrolledPastSlides(sy > threshold);
-      setShowGlobalHeaderMobile(sy > 50);
-
-      if (!isHome) return;
-
-      const hasScroll = document.documentElement.scrollHeight > window.innerHeight + 4;
-      if (!hasScroll) {
-        if (navRef1.current) {
-          set(navRef1.current, { opacity: 1, translateY: "0px" });
-        }
-        if (navRef2.current) {
-          set(navRef2.current, { opacity: 1, translateY: "0px" });
-        }
-        if (logoRef.current) {
-          set(logoRef.current, { opacity: 1 });
-        }
-        return;
-      }
-
-      const navOpacity = interpolate(sy, { inputRange: [190, 360], outputRange: [0, 1], ease: luxuryEase });
-      const navY = interpolate(sy, { inputRange: [190, 360], outputRange: [20, 0], ease: luxuryEase });
-      const logoOpacity = interpolate(sy, { inputRange: [650, 730], outputRange: [0, 1], ease: luxuryEase });
-
-      if (navRef1.current) {
-        set(navRef1.current, {
-          opacity: navOpacity,
-          translateY: `${navY}px`
-        });
-      }
-      if (navRef2.current) {
-        set(navRef2.current, {
-          opacity: navOpacity,
-          translateY: `${navY}px`
-        });
-      }
-      if (logoRef.current) {
-        set(logoRef.current, {
-          opacity: 1
-        });
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll();
-
-    return () => window.removeEventListener("scroll", handleScroll);
+    // Persistent header: no scroll styling transitions required.
   }, [isHome, pathname]);
 
   if (pathname.startsWith("/dashboard") || pathname.startsWith("/auth") || pathname.startsWith("/mobile")) {
     return null;
   }
 
-  if (!isHome) {
-    return (
-      <>
-        <header className="fixed inset-x-0 top-0 z-50 bg-[#FAF7F2]/92 backdrop-blur-md border-b border-[#C98E87]/15 text-[#3B2B28]">
-          <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-8">
-            {/* Logo */}
-            <div>
-              <Link href="/" className="flex flex-col items-center gap-0.5 group">
-                <span className="font-[var(--font-bodoni)] text-[1.35rem] leading-none tracking-[0.06em] text-[#3B2B28] group-hover:text-[#8B6B61] transition-colors duration-300 [-webkit-font-smoothing:antialiased]">
-                  MANASVI
-                </span>
-                <span className="font-[var(--font-im-fell)] italic text-[0.6rem] tracking-[0.35em] text-[#8B6B61] uppercase leading-none">
-                  Fashion
-                </span>
-              </Link>
-            </div>
+  const navLinksData = [
+    { label: 'Home', href: '/' },
+    { label: 'Kurtis', href: '/kurtis' },
+    { label: 'Tunics', href: '/tunic-tops' },
+    { label: 'Dresses', href: '/dresses' },
+    { label: 'One Piece', href: '/one-piece' },
+    { label: 'About', href: '/about' },
+    { label: 'Contact', href: '/contact' },
+  ];
 
-            <div className="flex items-center gap-8">
-              {/* Desktop Nav Links */}
-              <nav className="hidden gap-5 xl:gap-7 md:flex [text-rendering:optimizeLegibility] items-center">
-                {[
-                  ["/", "Home"],
-                  ["/kurtis", "Kurtis"],
-                  ["/tunic-tops", "Tunics"],
-                  ["/dresses", "Dresses"],
-                  ["/one-piece", "One Piece"],
-                  ["/collections", "Lookbook"],
-                  ["/about", "About"],
-                  ["/contact", "Contact"],
-                ].map(([path, label]) => (
-                  <Link
-                    key={path}
-                    href={path}
-                    className="font-[var(--font-cormorant)] text-[0.8rem] font-medium italic tracking-[0.18em] text-[#3B2B28]/75 uppercase hover:text-[#8B6B61] transition-colors duration-300"
-                  >
-                    {label}
-                  </Link>
-                ))}
-              </nav>
+  const handleSearchClick = () => {
+    if (pathname === "/") {
+      window.dispatchEvent(new Event("open-search"));
+    } else {
+      window.location.href = "/?search=true";
+    }
+  };
 
-              {/* Divider */}
-              <span className="hidden md:block w-px h-4 bg-[#C98E87]/30" />
+  const desktopAuthElement = session ? (
+    <div 
+      className="relative"
+      onMouseEnter={() => setIsAccountOpen(true)}
+      onMouseLeave={() => setIsAccountOpen(false)}
+    >
+      <button className="flex items-center gap-1.5 px-4 py-2 border border-[#C98E87]/20 bg-[#FAF7F2]/60 text-[#3B2B28]/75 hover:text-[#8B6B61] rounded-full transition-colors duration-200 text-[0.78rem] font-medium tracking-[0.18em] uppercase cursor-pointer font-[var(--font-cormorant)]">
+        <span>Hi, {firstName || "User"}</span>
+        <ChevronDown className="w-3.5 h-3.5 opacity-60" />
+      </button>
 
-              {/* Account actions: Login, Sign Up, Dashboard / Account */}
-              <div className="hidden md:flex items-center gap-4.5">
-                {session ? (
-                  <div className="flex items-center gap-4">
-                    {isAdmin && (
-                      <Link
-                        href="/dashboard"
-                        className="font-[var(--font-cormorant)] text-[0.78rem] italic tracking-[0.18em] text-[#3B2B28]/70 uppercase hover:text-[#8B6B61] transition-colors duration-300 font-semibold"
-                      >
-                        Account
-                      </Link>
-                    )}
-                    <button
-                      onClick={() => signOut({ callbackUrl: "/" })}
-                      className="font-[var(--font-cormorant)] text-[0.78rem] italic tracking-[0.18em] text-[#3B2B28]/70 uppercase hover:text-[#8B6B61] transition-colors duration-300 cursor-pointer"
-                    >
-                      Sign Out {firstName ? `· ${firstName}` : ""}
-                    </button>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-4">
-                    <Link
-                      href="/auth/signin"
-                      className="font-[var(--font-cormorant)] text-[0.78rem] italic tracking-[0.18em] text-[#3B2B28]/70 uppercase hover:text-[#8B6B61] transition-colors duration-300"
-                    >
-                      Sign In
-                    </Link>
-                    <span className="text-[#C98E87]/30 text-xs font-light">·</span>
-                    <Link
-                      href="/auth/signup"
-                      className="font-[var(--font-cormorant)] text-[0.78rem] italic tracking-[0.18em] text-[#3B2B28]/70 uppercase hover:text-[#8B6B61] transition-colors duration-300"
-                    >
-                      Sign Up
-                    </Link>
-                  </div>
-                )}
-              </div>
+      {/* Dropdown Menu */}
+      <div className={`absolute right-0 mt-1 w-44 bg-[#FAF7F2] border border-[#C98E87]/20 rounded-xl shadow-lg py-2 flex flex-col z-50 transition-all duration-200 origin-top-right ${isAccountOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}>
+        {isAdmin && (
+          <Link
+            href="/dashboard"
+            className="px-4 py-2 text-[0.78rem] tracking-[0.18em] text-[#3B2B28]/75 hover:text-[#8B6B61] hover:bg-[#FAF7F2]/50 uppercase transition-colors font-[var(--font-cormorant)] font-semibold"
+          >
+            Dashboard
+          </Link>
+        )}
+        <Link
+          href="/order-tracking"
+          className="px-4 py-2 text-[0.78rem] tracking-[0.18em] text-[#3B2B28]/75 hover:text-[#8B6B61] hover:bg-[#FAF7F2]/50 uppercase transition-colors font-[var(--font-cormorant)] font-semibold"
+        >
+          Orders
+        </Link>
+        <Link
+          href="/wishlist"
+          className="px-4 py-2 text-[0.78rem] tracking-[0.18em] text-[#3B2B28]/75 hover:text-[#8B6B61] hover:bg-[#FAF7F2]/50 uppercase transition-colors font-[var(--font-cormorant)] font-semibold"
+        >
+          Wishlist
+        </Link>
+        <hr className="border-[#C98E87]/15 my-1" />
+        <button
+          onClick={() => signOut({ callbackUrl: "/" })}
+          className="px-4 py-2 text-[0.78rem] tracking-[0.18em] text-left text-red-700/80 hover:text-red-700 hover:bg-[#FAF7F2]/50 uppercase transition-colors cursor-pointer font-[var(--font-cormorant)] font-semibold"
+        >
+          Sign Out
+        </button>
+      </div>
+    </div>
+  ) : (
+    <div className="flex items-center gap-2 flex-nowrap flex-shrink-0">
+      <Link
+        href="/auth/signin"
+        className="px-4 py-2 text-[0.78rem] tracking-[0.18em] text-[#3B2B28]/75 border border-[#C98E87]/25 hover:border-[#8B6B61]/50 hover:text-[#8B6B61] rounded-full bg-[#FAF7F2]/50 transition-all duration-200 font-[var(--font-cormorant)] font-semibold whitespace-nowrap flex-shrink-0"
+      >
+        Log In
+      </Link>
+      <Link
+        href="/auth/signup"
+        className="px-4 py-2 text-[0.78rem] tracking-[0.18em] text-white bg-gradient-to-br from-[#E7C2B8] to-[#C98E87] hover:from-[#EFCAC0] hover:to-[#D29891] rounded-full shadow-xs hover:shadow-md transition-all duration-200 font-[var(--font-cormorant)] font-semibold whitespace-nowrap flex-shrink-0"
+      >
+        Sign Up
+      </Link>
+    </div>
+  );
 
-              {/* Wishlist icon — desktop */}
-              <Link
-                href="/wishlist"
-                className="hidden md:flex text-[#3B2B28]/70 hover:text-[#8B6B61] transition-colors p-1 relative"
-                aria-label="View wishlist"
-              >
-                <Heart className="w-4.5 h-4.5" strokeWidth={1.5} />
-                {wishlist.length > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-[#C98E87] text-white text-[7px] font-bold w-3.5 h-3.5 flex items-center justify-center rounded-full">
-                    {wishlist.length}
-                  </span>
-                )}
-              </Link>
-
-              {/* Cart icon — desktop */}
-              <button
-                onClick={() => { setDrawerTab("cart"); setIsDrawerOpen(true); }}
-                className="hidden md:flex text-[#3B2B28]/70 hover:text-[#8B6B61] transition-colors p-1 relative cursor-pointer"
-                aria-label="Open shopping bag"
-              >
-                <ShoppingBag className="w-4.5 h-4.5" strokeWidth={1.5} />
-                {cartCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-[#C98E87] text-white text-[7px] font-bold w-3.5 h-3.5 flex items-center justify-center rounded-full">
-                    {cartCount}
-                  </span>
-                )}
-              </button>
-
-              {/* Mobile controls */}
-              <div className="flex items-center gap-2 md:hidden">
-                <button
-                  onClick={() => { setDrawerTab("cart"); setIsDrawerOpen(true); }}
-                  className="text-[#3B2B28]/70 hover:text-[#8B6B61] transition-colors p-2 relative cursor-pointer"
-                  aria-label="Open shopping bag"
-                >
-                  <ShoppingBag className="w-5 h-5" strokeWidth={1.5} />
-                  {cartCount > 0 && (
-                    <span className="absolute top-1 right-1 bg-[#C98E87] text-white text-[8px] font-bold w-4 h-4 flex items-center justify-center rounded-full">
-                      {cartCount}
-                    </span>
-                  )}
-                </button>
-                <button
-                  onClick={() => { setDrawerTab("menu"); setIsDrawerOpen(!isDrawerOpen); }}
-                  className="text-[#3B2B28]/70 hover:text-[#8B6B61] transition-colors focus:outline-none z-50 relative p-2 cursor-pointer"
-                  aria-label="Toggle navigation menu"
-                >
-                  {isDrawerOpen ? <X className="w-5 h-5" strokeWidth={1.5} /> : <Menu className="w-5 h-5" strokeWidth={1.5} />}
-                </button>
-              </div>
-            </div>
-          </div>
-        </header>
-
-        {/* Slide-out Drawer Component */}
-        {renderDrawer()}
-      </>
-    );
-  }
+  const mobileAuthElement = session ? (
+    <div className="flex flex-col items-center space-y-4 mt-4 w-full">
+      {isAdmin && (
+        <Link
+          href="/dashboard"
+          className="text-[#3B2B28]/75 hover:text-[#8B6B61] transition-colors w-full text-center text-sm font-semibold tracking-[0.18em] uppercase font-[var(--font-cormorant)]"
+          onClick={() => setIsOpen(false)}
+        >
+          Dashboard
+        </Link>
+      )}
+      <Link
+        href="/order-tracking"
+        className="text-[#3B2B28]/75 hover:text-[#8B6B61] transition-colors w-full text-center text-sm font-semibold tracking-[0.18em] uppercase font-[var(--font-cormorant)]"
+        onClick={() => setIsOpen(false)}
+      >
+        Orders
+      </Link>
+      <Link
+        href="/wishlist"
+        className="text-[#3B2B28]/75 hover:text-[#8B6B61] transition-colors w-full text-center text-sm font-semibold tracking-[0.18em] uppercase font-[var(--font-cormorant)]"
+        onClick={() => setIsOpen(false)}
+      >
+        Wishlist
+      </Link>
+      <button
+        onClick={() => {
+          setIsOpen(false);
+          signOut({ callbackUrl: "/" });
+        }}
+        className="w-full py-2.5 bg-red-700/10 hover:bg-red-700/20 text-red-700 font-semibold text-xs uppercase tracking-[0.18em] rounded-full transition-all cursor-pointer font-[var(--font-cormorant)]"
+      >
+        Logout
+      </button>
+    </div>
+  ) : (
+    <div className="flex flex-col items-center space-y-3 mt-4 w-full px-4 border-t border-[#C98E87]/15 pt-4">
+      <Link
+        href="/auth/signin"
+        className="w-full text-center py-2.5 border border-[#C98E87]/30 hover:border-[#8B6B61]/50 text-[#3B2B28]/75 hover:text-[#8B6B61] font-semibold text-xs uppercase tracking-[0.18em] rounded-full transition-all block bg-[#FAF7F2]/50 font-[var(--font-cormorant)]"
+        onClick={() => setIsOpen(false)}
+      >
+        Log In
+      </Link>
+      <Link
+        href="/auth/signup"
+        className="w-full text-center py-2.5 text-white bg-gradient-to-br from-[#E7C2B8] to-[#C98E87] hover:from-[#EFCAC0] hover:to-[#D29891] font-semibold text-xs uppercase tracking-[0.18em] rounded-full transition-all block font-[var(--font-cormorant)]"
+        onClick={() => setIsOpen(false)}
+      >
+        Sign Up
+      </Link>
+    </div>
+  );
 
   return (
     <>
-      <header className={`fixed inset-x-0 top-0 z-50 bg-transparent py-5 transition-all duration-300 md:opacity-100 md:pointer-events-auto ${
-        isHome && !showGlobalHeaderMobile ? "opacity-0 pointer-events-none" : "opacity-100 pointer-events-auto"
-      }`}>
-        <div
-          className={`mx-auto grid max-w-7xl grid-cols-3 items-center px-6 transition-colors duration-500 ${
-            isScrolledPastSlides
-              ? "text-[#3B2B28]"
-              : "text-[#fff8f2] [text-shadow:0_1px_10px_rgba(0,0,0,0.5)]"
-          }`}
-        >
-          {/* Left nav */}
-          <nav
-            ref={navRef1}
-            style={{ opacity: 0, transform: "translateY(20px)" }}
-            className="col-start-1 hidden items-center gap-7 md:flex [text-rendering:optimizeLegibility] [-webkit-font-smoothing:antialiased]"
-          >
-            {[
-              ["/", "Home"],
-              ["/kurtis", "Kurtis"],
-              ["/tunic-tops", "Tunics"],
-              ["/dresses", "Dresses"],
-              ["/one-piece", "One Piece"],
-            ].map(([path, label]) => (
-              <Link
-                key={path}
-                href={path}
-                className="font-[var(--font-cormorant)] text-[0.82rem] font-normal italic tracking-[0.22em] uppercase text-current opacity-85 hover:opacity-100 transition-opacity duration-300"
-              >
-                {label}
-              </Link>
-            ))}
-          </nav>
+      <header className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-50
+                         flex flex-col items-center
+                         px-8 py-3 backdrop-blur-md
+                         ${headerShapeClass}
+                         border border-[#C98E87]/25 bg-[#FAF7F2]/82 shadow-md
+                         w-[95%] max-w-7xl
+                         transition-[border-radius] duration-300 ease-in-out text-[#3B2B28]`}>
 
-          {/* Centre logo */}
-          <div
-            ref={logoRef}
-            style={{ opacity: 0 }}
-            className="col-start-2 justify-self-center [will-change:opacity]"
-          >
-            <Link
-              href="/"
-              className="flex flex-col items-center gap-0.5 [font-kerning:normal] [text-rendering:optimizeLegibility] [-webkit-font-smoothing:antialiased]"
-            >
-              <div className="font-[var(--font-bodoni)] text-[1.7rem] leading-none tracking-[0.06em] text-current md:text-[2rem]">
-                MANASVI
-              </div>
-              <div className="font-[var(--font-im-fell)] italic text-[0.58rem] tracking-[0.42em] text-current uppercase leading-none opacity-80">
-                Fashion
+        <div className="flex items-center justify-between w-full gap-x-6 sm:gap-x-8">
+          {/* Logo */}
+          <div className="flex items-center flex-shrink-0">
+            <Link href="/" className="flex items-center gap-3 group select-none">
+              <img
+                src="/Man_logo.png"
+                alt="Manasvi Logo"
+                className="h-12 w-12 rounded-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+              <div className="flex flex-col items-start gap-0.5">
+                <span className="font-[var(--font-bodoni)] text-[1.35rem] leading-none tracking-[0.06em] text-[#3B2B28] group-hover:text-[#8B6B61] transition-colors duration-300">
+                  MANASVI
+                </span>
+                <span className="font-[var(--font-im-fell)] text-[0.62rem] tracking-[0.35em] text-[#8B6B61] uppercase leading-none font-medium">
+                  Fashion
+                </span>
               </div>
             </Link>
           </div>
 
-          {/* Right nav */}
-          <nav
-            ref={navRef2}
-            style={{ opacity: 0, transform: "translateY(20px)" }}
-            className="col-start-3 hidden items-center justify-end gap-5 xl:gap-7 md:flex [text-rendering:optimizeLegibility] [-webkit-font-smoothing:antialiased]"
-          >
-            {[
-              ["/collections", "Lookbook"],
-              ["/about", "About"],
-              ["/contact", "Contact"],
-            ].map(([path, label]) => (
-              <Link
-                key={path}
-                href={path}
-                className="font-[var(--font-cormorant)] text-[0.82rem] font-normal italic tracking-[0.22em] uppercase text-current opacity-85 hover:opacity-100 transition-opacity duration-300"
-              >
-                {label}
-              </Link>
+          {/* Desktop Nav Links */}
+          <nav className="hidden md:flex items-center space-x-5 lg:space-x-7 text-sm flex-nowrap flex-shrink-0">
+            {navLinksData.map((link) => (
+              <AnimatedNavLink key={link.href} href={link.href}>
+                {link.label}
+              </AnimatedNavLink>
             ))}
+          </nav>
 
-            {/* Account Actions */}
-            <div className="flex items-center gap-3.5 text-current opacity-85 hover:opacity-100 transition-opacity">
-              {session ? (
-                <div className="flex items-center gap-3">
-                  {isAdmin && (
-                    <Link
-                      href="/dashboard"
-                      className="font-[var(--font-cormorant)] text-[0.82rem] font-normal italic tracking-[0.22em] uppercase text-current"
-                    >
-                      Account
-                    </Link>
-                  )}
-                  <button
-                    onClick={() => signOut({ callbackUrl: "/" })}
-                    className="font-[var(--font-cormorant)] text-[0.82rem] font-normal italic tracking-[0.22em] uppercase text-current cursor-pointer"
-                  >
-                    Sign Out
-                  </button>
-                </div>
-              ) : (
-                <div className="flex items-center gap-3">
-                  <Link
-                    href="/auth/signin"
-                    className="font-[var(--font-cormorant)] text-[0.82rem] font-normal italic tracking-[0.22em] uppercase text-current"
-                  >
-                    Sign In
-                  </Link>
-                  <span className="text-current/30 text-xs font-light">·</span>
-                  <Link
-                    href="/auth/signup"
-                    className="font-[var(--font-cormorant)] text-[0.82rem] font-normal italic tracking-[0.22em] uppercase text-current"
-                  >
-                    Sign Up
-                  </Link>
-                </div>
-              )}
-            </div>
+          {/* Right Actions & Icons (Desktop) */}
+          <div className="hidden md:flex items-center gap-4 flex-nowrap flex-shrink-0">
+            {/* Search button */}
+            <button 
+              onClick={handleSearchClick}
+              className="p-1 text-[#3B2B28]/70 hover:text-[#8B6B61] active:scale-95 transition-all cursor-pointer"
+              aria-label="Search catalogue"
+            >
+              <Search className="w-4.5 h-4.5" strokeWidth={1.5} />
+            </button>
 
-            {/* Wishlist icon */}
+            {/* Wishlist Link */}
             <Link
               href="/wishlist"
-              className="text-current opacity-85 hover:opacity-100 transition-opacity p-1 relative"
+              className="text-[#3B2B28]/70 hover:text-[#8B6B61] relative p-1 transition-colors"
               aria-label="View wishlist"
             >
               <Heart className="w-4.5 h-4.5" strokeWidth={1.5} />
@@ -388,43 +308,93 @@ export default function Header() {
               )}
             </Link>
 
-            {/* Cart icon */}
+            {/* Cart Trigger */}
             <button
               onClick={() => { setDrawerTab("cart"); setIsDrawerOpen(true); }}
-              className="text-current opacity-85 hover:opacity-100 transition-opacity p-1 relative cursor-pointer"
+              className="text-[#3B2B28]/70 hover:text-[#8B6B61] relative p-1 transition-colors cursor-pointer"
               aria-label="Open shopping bag"
             >
-              <ShoppingBag className="w-4 h-4" strokeWidth={1.5} />
+              <ShoppingBag className="w-4.5 h-4.5" strokeWidth={1.5} />
               {cartCount > 0 && (
                 <span className="absolute -top-1 -right-1 bg-[#C98E87] text-white text-[7px] font-bold w-3.5 h-3.5 flex items-center justify-center rounded-full">
                   {cartCount}
                 </span>
               )}
             </button>
-          </nav>
 
-          {/* Mobile controls */}
-          <div className="col-start-3 justify-self-end flex items-center gap-1 md:hidden">
+            {/* Divider */}
+            <span className="w-px h-4 bg-[#C98E87]/30" />
+
+            {/* Auth section */}
+            {desktopAuthElement}
+          </div>
+
+          {/* Mobile Controls (visible on < md) */}
+          <div className="flex items-center gap-2 md:hidden">
+            {/* Search button */}
+            <button 
+              onClick={handleSearchClick}
+              className="p-1.5 text-[#3B2B28]/70 hover:text-[#8B6B61] active:scale-95 transition-all cursor-pointer"
+              aria-label="Search catalogue"
+            >
+              <Search className="w-5 h-5" strokeWidth={1.5} />
+            </button>
+
+            {/* Wishlist Link */}
+            <Link
+              href="/wishlist"
+              className="text-[#3B2B28]/70 hover:text-[#8B6B61] relative p-1.5 transition-colors"
+              aria-label="View wishlist"
+            >
+              <Heart className="w-5 h-5" strokeWidth={1.5} />
+              {wishlist.length > 0 && (
+                <span className="absolute top-1 right-1 bg-[#C98E87] text-white text-[7.5px] font-bold w-3.5 h-3.5 flex items-center justify-center rounded-full">
+                  {wishlist.length}
+                </span>
+              )}
+            </Link>
+
+            {/* Cart Trigger */}
             <button
               onClick={() => { setDrawerTab("cart"); setIsDrawerOpen(true); }}
-              className="text-current opacity-85 hover:opacity-100 transition-opacity p-2 relative cursor-pointer"
+              className="text-[#3B2B28]/70 hover:text-[#8B6B61] relative p-1.5 transition-colors cursor-pointer"
               aria-label="Open shopping bag"
             >
               <ShoppingBag className="w-5 h-5" strokeWidth={1.5} />
               {cartCount > 0 && (
-                <span className="absolute top-0.5 right-0.5 bg-[#C98E87] text-white text-[8px] font-bold w-4 h-4 flex items-center justify-center rounded-full">
+                <span className="absolute top-1 right-1 bg-[#C98E87] text-white text-[7.5px] font-bold w-3.5 h-3.5 flex items-center justify-center rounded-full">
                   {cartCount}
                 </span>
               )}
             </button>
-            <button
-              onClick={() => { setDrawerTab("menu"); setIsDrawerOpen(!isDrawerOpen); }}
-              className="text-current opacity-85 hover:opacity-100 transition-opacity focus:outline-none z-50 relative p-2 cursor-pointer"
-              aria-label="Toggle navigation menu"
+
+            {/* Hamburger Menu button */}
+            <button 
+              className="flex items-center justify-center w-8 h-8 text-[#3B2B28]/75 hover:text-[#8B6B61] focus:outline-none cursor-pointer" 
+              onClick={toggleMenu} 
+              aria-label={isOpen ? 'Close Menu' : 'Open Menu'}
             >
-              {isDrawerOpen ? <X className="w-5 h-5" strokeWidth={1.5} /> : <Menu className="w-5 h-5" strokeWidth={1.5} />}
+              {isOpen ? <X className="w-5.5 h-5.5" strokeWidth={1.5} /> : <Menu className="w-5.5 h-5.5" strokeWidth={1.5} />}
             </button>
           </div>
+        </div>
+
+        {/* Mobile Expanded Menu */}
+        <div className={`md:hidden flex flex-col items-center w-full transition-all ease-in-out duration-300 overflow-hidden
+                         ${isOpen ? 'max-h-[1000px] opacity-100 pt-4' : 'max-h-0 opacity-0 pt-0 pointer-events-none'}`}>
+          <nav className="flex flex-col items-center space-y-4 text-base w-full border-t border-[#C98E87]/15 pt-4">
+            {navLinksData.map((link) => (
+              <Link 
+                key={link.href} 
+                href={link.href} 
+                className="text-[#3B2B28]/70 hover:text-[#8B6B61] transition-colors w-full text-center text-sm font-semibold tracking-[0.18em] uppercase font-[var(--font-cormorant)]"
+                onClick={() => setIsOpen(false)}
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+          {mobileAuthElement}
         </div>
       </header>
 
@@ -552,7 +522,6 @@ export default function Header() {
                        ["/tunic-tops", "Tunic Tops"],
                        ["/dresses", "Dresses"],
                        ["/one-piece", "One Piece"],
-                       ["/collections", "Lookbook & Collections"],
                        ["/about", "Our Story"],
                        ["/cart", "Shopping Bag"],
                     ].map(([href, label]) => (
@@ -568,7 +537,7 @@ export default function Header() {
                           onClick={() => setIsDrawerOpen(false)}
                           className="group flex items-center justify-between py-1 text-lg font-light tracking-wide hover:text-[#E7C2B8] transition-colors"
                         >
-                          <span className="font-cormorant italic font-medium">{label}</span>
+                          <span className="font-cormorant font-medium">{label}</span>
                           <span className="opacity-0 group-hover:opacity-100 transition-opacity text-[#E7C2B8] text-xs">→</span>
                         </Link>
                       </motion.div>
@@ -625,14 +594,14 @@ export default function Header() {
                   {cartItems.length === 0 ? (
                     <div className="flex-grow flex flex-col items-center justify-center text-center px-4">
                       <ShoppingBag className="w-10 h-10 text-white/20 mb-4 stroke-1" />
-                      <p className="font-cormorant text-xl italic text-white/80">Your bag is empty.</p>
+                      <p className="font-cormorant text-xl text-white/80">Your bag is empty.</p>
                       <p className="font-inter text-[11px] text-white/40 tracking-wider mt-2 max-w-[200px]">
                         Save your favorite silhouettes and designs to purchase them later.
                       </p>
                       <button
                         onClick={() => {
                           setIsDrawerOpen(false);
-                          window.location.href = "/collections";
+                          window.location.href = "/";
                         }}
                         className="mt-6 px-6 py-2.5 bg-[#FAF7F2] text-[#160E0C] text-[10px] font-semibold uppercase tracking-[0.2em] rounded-sm hover:bg-[#E7C2B8] transition-colors cursor-pointer"
                       >

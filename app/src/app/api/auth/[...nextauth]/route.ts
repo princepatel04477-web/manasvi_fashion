@@ -18,9 +18,39 @@ const authHandler = NextAuth({
         password: { label: "Password", type: "password" },
         emailOrPhone: { label: "Email or Phone", type: "text" },
         otp: { label: "OTP", type: "text" },
-        authType: { label: "Auth Type", type: "text" }
+        authType: { label: "Auth Type", type: "text" },
+        name: { label: "Name", type: "text" },
+        id: { label: "ID", type: "text" },
+        image: { label: "Image", type: "text" }
       },
       async authorize(credentials) {
+        // Check for Google OAuth authorization
+        if (credentials?.authType === "oauth") {
+          const email = credentials.email;
+          const name = credentials.name || email.split("@")[0];
+          const id = credentials.id; // Supabase auth user id
+          const image = credentials.image; // Avatar URL
+          
+          if (!email || !id) {
+            throw new Error("Missing email or Supabase ID for OAuth.");
+          }
+
+          const { registerOAuthUser } = await import("@/lib/db-users");
+          const user = await registerOAuthUser(email, name, id);
+
+          return {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            phone: user.phone,
+            shippingAddress: user.shippingAddress,
+            city: user.city,
+            postalCode: user.postalCode,
+            image: image // Pass the image back to NextAuth
+          };
+        }
+
         // Check for password + passcode Multi-Factor Authentication (MFA)
         if (credentials?.authType === "mfa") {
           const email = credentials.email;
@@ -148,6 +178,7 @@ const authHandler = NextAuth({
         token.shippingAddress = u.shippingAddress;
         token.city = u.city;
         token.postalCode = u.postalCode;
+        token.image = u.image;
       }
       return token;
     },
@@ -159,6 +190,7 @@ const authHandler = NextAuth({
         u.shippingAddress = token.shippingAddress as string;
         u.city = token.city as string;
         u.postalCode = token.postalCode as string;
+        u.image = token.image as string;
       }
       return session;
     }

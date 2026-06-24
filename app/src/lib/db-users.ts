@@ -223,6 +223,81 @@ export async function registerPasswordlessUser(
   );
 }
 
+export async function registerOAuthUser(
+  email: string,
+  name: string,
+  supabaseId: string
+): Promise<User> {
+  const role = getRoleByEmail(email);
+
+  const newUser: User = {
+    id: supabaseId,
+    name,
+    email,
+    passwordHash: "", // No password for OAuth
+    role,
+    createdAt: new Date().toISOString()
+  };
+
+  if (supabaseAdmin) {
+    try {
+      const { data: existing } = await supabaseAdmin
+        .from("users")
+        .select("id, role, phone, shipping_address, city, postal_code")
+        .eq("email", email.toLowerCase());
+
+      if (existing && existing.length > 0) {
+        console.log("[db-users] OAuth User already exists in Supabase table:", email);
+        return {
+          id: existing[0].id,
+          name,
+          email,
+          passwordHash: "",
+          role: existing[0].role as any,
+          phone: existing[0].phone,
+          shippingAddress: existing[0].shipping_address,
+          city: existing[0].city,
+          postalCode: existing[0].postal_code,
+          createdAt: new Date().toISOString()
+        };
+      }
+
+      const { error } = await supabaseAdmin
+        .from("users")
+        .insert([
+          {
+            id: newUser.id,
+            name: newUser.name,
+            email: newUser.email,
+            password_hash: newUser.passwordHash,
+            role: newUser.role,
+          }
+        ]);
+
+      if (!error) {
+        console.log("[db-users] OAuth User registered in Supabase public.users:", newUser.email);
+        return newUser;
+      }
+      console.warn("[db-users] Supabase OAuth user registration failed:", error.message);
+    } catch (err) {
+      console.warn("[db-users] Supabase register OAuth user error:", err);
+    }
+  }
+
+  // To prevent write duplication/masking, read and append directly to local JSON list
+  const seed = await getSeedUsers();
+  const allLocal = await readJson<User[]>(USERS_FILE, seed);
+  const existingLocal = allLocal.find((u) => u.email.toLowerCase() === email.toLowerCase());
+  
+  if (existingLocal) {
+    return existingLocal;
+  }
+
+  allLocal.push(newUser);
+  await writeJson<User[]>(USERS_FILE, allLocal);
+  return newUser;
+}
+
 export async function registerUser(
   name: string,
   email: string,

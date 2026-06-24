@@ -183,7 +183,7 @@ export default function NewArrivalsPage() {
               <div className="relative aspect-[4/5] rounded-3xl overflow-hidden border border-[#E7C2B8]/30 warm-shadow group">
                 <div className="absolute inset-0 bg-[#3B2B28]/10 mix-blend-overlay z-10" />
                 <img 
-                  src="/photos/Gemini_Generated_Image_7p370v7p370v7p37.png" 
+                  src="/photos/cbced159d300f0054a98f6dfc484470966caffb38e10e3395b2a02acefafd358.png" 
                   alt="Crafted texture details" 
                   className="w-full h-full object-cover transition-transform duration-[2500ms] group-hover:scale-105"
                 />

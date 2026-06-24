@@ -15,6 +15,7 @@ import {
   Sparkles 
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 interface LookbookCatalogProps {
   initialTab?: "Summer Collection" | "Festive Collection" | "Cotton Roots" | "Tunics" | "Kurtis" | "Dresses" | "One Piece" | "New Arrivals";
@@ -334,11 +335,12 @@ export default function LookbookCatalog({ initialTab = "Summer Collection" }: Lo
               >
                 {/* 90% Card Image Frame */}
                 <div className="relative aspect-[3/4] w-full overflow-hidden rounded-none bg-[#f6eee2] mb-3">
-                  <motion.img
+                  <Image
                     src={product.images[0]}
                     alt={product.title}
-                    className="h-full w-full object-cover transition-transform duration-[800ms] group-hover:scale-103"
-                    loading="lazy"
+                    className="object-cover transition-transform duration-[800ms] group-hover:scale-103"
+                    fill
+                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
                   />
 
                   {/* Subtle heart overlay (desktop hover / mobile default overlay) */}

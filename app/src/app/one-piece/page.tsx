@@ -390,7 +390,7 @@ export default function OnePiecePage() {
             <div className="relative h-[52vh] sm:h-[65vh] w-full flex items-center justify-center">
               <div className="absolute inset-0 bg-gradient-to-b from-[#3B2B28]/95 via-[#3B2B28]/60 to-[#3B2B28]/90 z-10" />
               <img
-                src="/photos/Gemini_Generated_Image_o7map6o7map6o7ma.png"
+                src="/photos/slide4_white_tunic_dress.png"
                 alt="One Piece elegance"
                 className="absolute inset-0 w-full h-full object-cover filter brightness-[0.8] scale-105"
               />

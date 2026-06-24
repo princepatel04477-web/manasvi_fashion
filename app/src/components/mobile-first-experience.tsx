@@ -8,6 +8,7 @@ import { Product, ColorVariant } from "@/types";
 import { formatINR } from "@/lib/store";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
+import Image from "next/image";
 
 // Modeless image directory mapping
 const K = "/photo modeless/kurti";
@@ -415,12 +416,13 @@ function InteractiveMarquee({
             className="w-[125px] sm:w-[150px] md:w-[180px] lg:w-[200px] flex-shrink-0 bg-white rounded-xl overflow-hidden border border-[#B8924A]/5 p-2 shadow-xs cursor-pointer active:scale-97 transition-all flex flex-col justify-between"
           >
             <div className="aspect-[3/4] w-full bg-[#F7F3EE] rounded-lg overflow-hidden relative mb-2 pointer-events-none">
-              <img
+              <Image
                 src={getProductMobileImages(item)[0]}
                 alt={item.title}
-                className="w-full h-full object-cover select-none pointer-events-none"
+                className="object-cover select-none pointer-events-none"
                 draggable="false"
-                loading="lazy"
+                fill
+                sizes="(max-width: 640px) 125px, (max-width: 768px) 150px, (max-width: 1024px) 180px, 200px"
               />
             </div>
             <div className="flex flex-col gap-0.5 pointer-events-none">
@@ -481,6 +483,25 @@ export default function MobileFirstExperience() {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  useEffect(() => {
+    const handleOpenSearch = () => {
+      setIsSearchOpen(true);
+    };
+    window.addEventListener("open-search", handleOpenSearch);
+
+    // Check search query parameter on mount
+    const searchParams = new URLSearchParams(window.location.search);
+    if (searchParams.get("search") === "true") {
+      setIsSearchOpen(true);
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+
+    return () => {
+      window.removeEventListener("open-search", handleOpenSearch);
+    };
+  }, []);
+
 
   const modalVariants = {
     hidden: isDesktop ? { scale: 0.9, opacity: 0, x: "-50%", y: "-50%" } : { y: "100%" },
@@ -727,7 +748,7 @@ export default function MobileFirstExperience() {
       `}</style>
 
       {/* ─── STICKY HEADER ──────────────────────────── */}
-      <header className="sticky top-0 z-40 glass-header border-b border-[#B8924A]/10 shadow-xs lg:hidden">
+      <header className="hidden sticky top-0 z-40 glass-header border-b border-[#B8924A]/10 shadow-xs lg:hidden">
         <div className="flex items-center justify-between px-4 py-3 h-14">
           {/* Hamburger Menu */}
           <button 
@@ -787,7 +808,7 @@ export default function MobileFirstExperience() {
       <section className="w-full flex flex-col bg-white">
         
         {/* Section 1: Hero Carousel */}
-        <div className="relative w-full h-[45vh] sm:h-[52vh] md:h-[58vh] lg:h-[65vh] xl:h-[68vh] max-h-[620px] overflow-hidden bg-[#FAF7F2] select-none">
+        <div className="relative w-full h-[27vh] sm:h-[31vh] md:h-[35vh] lg:h-[65vh] xl:h-[68vh] max-h-[620px] overflow-hidden bg-[#FAF7F2] select-none">
           {/* Slides Container */}
           <div className="w-full h-full relative">
             <AnimatePresence mode="wait">
@@ -799,12 +820,14 @@ export default function MobileFirstExperience() {
                 transition={{ duration: 0.5, ease: "easeInOut" }}
                 className="absolute inset-0 w-full h-full"
               >
-                <img 
+                <Image 
                   src={carouselSlides[carouselIdx].img} 
                   alt={carouselSlides[carouselIdx].title}
-                  className={`w-full h-full object-cover ${carouselSlides[carouselIdx].position || 'object-center'}`}
+                  className={`object-cover ${carouselSlides[carouselIdx].position || 'object-center'}`}
                   draggable="false"
-                  loading="eager"
+                  fill
+                  priority
+                  sizes="100vw"
                 />
                 
                 {/* Vignette Overlay - Premium Dark Overlay for contrast */}
@@ -934,21 +957,22 @@ export default function MobileFirstExperience() {
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3.5 md:gap-5 lg:gap-6">
-            {kurtiPart.grid.slice(0, sliceLimit).map((product) => (
+            {kurtiPart.grid.slice(0, 3).map((product) => (
               <div 
                 key={product.id}
                 onClick={() => setSelectedProduct(product)}
                 className="bg-white rounded-2xl overflow-hidden border border-[#B8924A]/5 p-2.5 shadow-xs cursor-pointer active:scale-97 transition-all flex flex-col justify-between"
               >
                 <div className="aspect-[3/4] w-full bg-[#F7F3EE] rounded-xl overflow-hidden relative mb-2.5">
-                  <img 
+                  <Image 
                     src={getProductMobileImages(product)[0]} 
                     alt={product.title}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
+                    className="object-cover"
+                    fill
+                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
                   />
                   {product.isNew && (
-                    <span className="font-inter font-bold absolute top-2 left-2 bg-[#B8924A] text-white text-[7px] uppercase tracking-wider px-1.5 py-0.5 rounded-full">
+                    <span className="font-inter font-bold absolute top-2 left-2 bg-[#B8924A] text-white text-[7px] uppercase tracking-wider px-1.5 py-0.5 rounded-full z-10">
                       New
                     </span>
                   )}
@@ -991,21 +1015,22 @@ export default function MobileFirstExperience() {
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3.5 md:gap-5 lg:gap-6">
-            {tunicPart.grid.slice(0, sliceLimit).map((product) => (
+            {tunicPart.grid.slice(0, 5).map((product) => (
               <div 
                 key={product.id}
                 onClick={() => setSelectedProduct(product)}
                 className="bg-white rounded-2xl overflow-hidden border border-[#B8924A]/5 p-2.5 shadow-xs cursor-pointer active:scale-97 transition-all flex flex-col justify-between"
               >
                 <div className="aspect-[3/4] w-full bg-[#F7F3EE] rounded-xl overflow-hidden relative mb-2.5">
-                  <img 
+                  <Image 
                     src={getProductMobileImages(product)[0]} 
                     alt={product.title}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
+                    className="object-cover"
+                    fill
+                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
                   />
                   {product.isNew && (
-                    <span className="font-inter font-bold absolute top-2 left-2 bg-[#B8924A] text-white text-[7px] uppercase tracking-wider px-1.5 py-0.5 rounded-full">
+                    <span className="font-inter font-bold absolute top-2 left-2 bg-[#B8924A] text-white text-[7px] uppercase tracking-wider px-1.5 py-0.5 rounded-full z-10">
                       New
                     </span>
                   )}
@@ -1049,21 +1074,22 @@ export default function MobileFirstExperience() {
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3.5 md:gap-5 lg:gap-6">
-              {onePiecePart.grid.slice(0, sliceLimit).map((product) => (
+              {onePiecePart.grid.slice(0, 1).map((product) => (
                 <div 
                   key={product.id}
                   onClick={() => setSelectedProduct(product)}
                   className="bg-white rounded-2xl overflow-hidden border border-[#B8924A]/5 p-2.5 shadow-xs cursor-pointer active:scale-97 transition-all flex flex-col justify-between"
                 >
                   <div className="aspect-[3/4] w-full bg-[#F7F3EE] rounded-xl overflow-hidden relative mb-2.5">
-                    <img 
+                    <Image 
                       src={getProductMobileImages(product)[0]} 
                       alt={product.title}
-                      className="w-full h-full object-cover"
-                      loading="lazy"
+                      className="object-cover"
+                      fill
+                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
                     />
                     {product.isNew && (
-                      <span className="font-inter font-bold absolute top-2 left-2 bg-[#B8924A] text-white text-[7px] uppercase tracking-wider px-1.5 py-0.5 rounded-full">
+                      <span className="font-inter font-bold absolute top-2 left-2 bg-[#B8924A] text-white text-[7px] uppercase tracking-wider px-1.5 py-0.5 rounded-full z-10">
                         New
                       </span>
                     )}
@@ -1134,7 +1160,6 @@ export default function MobileFirstExperience() {
                     { label: "Kurtis Collection", href: "/kurtis" },
                     { label: "Tunic Collection", href: "/tunic-tops" },
                     { label: "One Piece", href: "/one-piece" },
-                    { label: "Boutique Lookbook", href: "/collections" },
                     { label: "About Us", href: "/about" },
                     { label: "Contact Atelier", href: "/contact" }
                   ].map((item) => (
@@ -1259,8 +1284,8 @@ export default function MobileFirstExperience() {
                     onClick={() => { setSelectedProduct(p); setIsSearchOpen(false); setSearchQuery(""); }}
                     className="flex gap-3 bg-white p-2.5 rounded-xl border border-gray-100 items-center cursor-pointer active:scale-98 transition-transform"
                   >
-                    <div className="w-12 h-16 rounded-lg overflow-hidden bg-gray-50 flex-shrink-0">
-                      <img src={getProductMobileImages(p)[0]} alt={p.title} className="w-full h-full object-cover" />
+                    <div className="w-12 h-16 rounded-lg overflow-hidden bg-gray-50 flex-shrink-0 relative">
+                      <Image src={getProductMobileImages(p)[0]} alt={p.title} className="object-cover" fill sizes="48px" />
                     </div>
                     <div className="flex flex-col flex-1">
                       <span className="font-jost font-normal text-xs text-[#0D0906] line-clamp-1">{p.title}</span>
@@ -1324,13 +1349,16 @@ export default function MobileFirstExperience() {
                         className="flex overflow-x-auto snap-x snap-mandatory scrollbar-none w-full h-[280px] lg:h-[380px] lg:rounded-2xl border lg:border-[#B8924A]/10"
                       >
                         {currentImagesList.map((imgSrc, idx) => (
-                          <img
-                            key={idx}
-                            src={imgSrc}
-                            alt={selectedProduct.title}
-                            onClick={() => setFullscreenImage(imgSrc)}
-                            className="w-full h-full object-cover shrink-0 snap-start cursor-zoom-in active:opacity-90 transition-opacity"
-                          />
+                          <div key={idx} className="w-full h-full shrink-0 snap-start cursor-zoom-in active:opacity-90 transition-opacity relative">
+                            <Image
+                              src={imgSrc}
+                              alt={selectedProduct.title}
+                              onClick={() => setFullscreenImage(imgSrc)}
+                              className="object-cover animate-fade-in"
+                              fill
+                              sizes="(max-width: 1024px) 100vw, 400px"
+                            />
+                          </div>
                         ))}
                       </div>
                       {/* Subtle Zoom Indicator */}

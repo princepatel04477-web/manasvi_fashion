@@ -55,16 +55,7 @@ function CheckoutFormContent() {
   const [couponError, setCouponError] = useState("");
   const [couponSuccess, setCouponSuccess] = useState("");
 
-  // Sandbox Simulator states
-  const [showMockModal, setShowMockModal] = useState(false);
-  const [mockPaymentStatus, setMockPaymentStatus] = useState<"idle" | "processing" | "success" | "failure">("idle");
-  const canUseMockCheckout =
-    typeof window !== "undefined" &&
-    (["localhost", "127.0.0.1"].includes(window.location.hostname) ||
-     window.location.hostname.startsWith("192.168.") ||
-     window.location.hostname.startsWith("10.") ||
-     window.location.hostname.startsWith("172.") ||
-     process.env.NODE_ENV === "development");
+
 
   interface SessionUser {
     name?: string;
@@ -189,64 +180,7 @@ function CheckoutFormContent() {
     });
   };
 
-  // Handle simulated payment verification from our sandbox overlay
-  const handleSimulatedPayment = async (success: boolean) => {
-    if (!success) {
-      setShowMockModal(false);
-      setIsProcessing(false);
-      router.push(`/checkout/failure?error=${encodeURIComponent("Payment declined by customer on secure sandbox")}`);
-      return;
-    }
 
-    setMockPaymentStatus("processing");
-    try {
-      console.log("[Sandbox Payment Simulator] Simulating verification API call...");
-      const verifyRes = await fetch("/api/checkout/razorpay/verify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          razorpay_order_id: `mock_order_${Date.now()}`,
-          razorpay_payment_id: `pay_mock_${Math.random().toString(36).substring(2, 12)}`,
-          razorpay_signature: "mock_sig",
-          shippingDetails: { name, email, phone, address, city, pin },
-          cartItems: resolvedItems,
-          couponCode: appliedCoupon,
-          isMock: true
-        })
-      });
-
-      const verifyData = await verifyRes.json();
-      console.log("[Sandbox Payment Simulator] Verify API response:", verifyData);
-
-      if (verifyRes.ok && verifyData.ok) {
-        setMockPaymentStatus("success");
-        setTimeout(() => {
-          clearCart();
-          setShowMockModal(false);
-          setMockPaymentStatus("idle");
-          router.push(`/checkout/success?orderId=${verifyData.orderId}`);
-        }, 1500);
-      } else {
-        setMockPaymentStatus("failure");
-        setTimeout(() => {
-          setShowMockModal(false);
-          setMockPaymentStatus("idle");
-          setIsProcessing(false);
-          router.push(`/checkout/failure?error=${encodeURIComponent(verifyData.error || "Verification failed")}`);
-        }, 1500);
-      }
-    } catch (err) {
-      console.error("[Sandbox Payment Simulator] Unexpected error during verification:", err);
-      setMockPaymentStatus("failure");
-      setTimeout(() => {
-        setShowMockModal(false);
-        setMockPaymentStatus("idle");
-        setIsProcessing(false);
-        const msg = err instanceof Error ? err.message : "ConnectionError";
-        router.push(`/checkout/failure?error=${encodeURIComponent(msg)}`);
-      }, 1500);
-    }
-  };
 
   // Handle Checkout Order placement
   const handleCheckoutSubmit = async (e: React.FormEvent) => {
@@ -276,43 +210,19 @@ function CheckoutFormContent() {
       }
 
       // 2. Call backend CREATE ORDER API
-      let orderData: any;
-      let isSandbox = false;
-      try {
-        const orderRes = await fetch("/api/checkout/razorpay/order", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            items: cart.map((i) => ({ productId: i.productId, qty: i.qty, size: i.size })),
-            couponCode: appliedCoupon,
-            shippingDetails: { name, email, phone, address, city, pin }
-          })
-        });
+      const orderRes = await fetch("/api/checkout/razorpay/order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: cart.map((i) => ({ productId: i.productId, qty: i.qty, size: i.size })),
+          couponCode: appliedCoupon,
+          shippingDetails: { name, email, phone, address, city, pin }
+        })
+      });
 
-        orderData = await orderRes.json();
-        if (!orderRes.ok || orderData.error) {
-          throw new Error(orderData.error || "Failed to generate payment transaction");
-        }
-      } catch (err) {
-        console.warn("Backend order creation failed:", err);
-        if (!canUseMockCheckout) {
-          throw err;
-        }
-
-        console.warn("Switching to local sandbox checkout mode.");
-        isSandbox = true;
-        orderData = {
-          keyId: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-          amount: Math.round(grandTotal * 100),
-          currency: "INR",
-          id: null
-        };
-      }
-
-      // If we are in sandbox/test mode (API keys incorrect), bypass loading standard Razorpay SDK modal
-      if (isSandbox) {
-        setShowMockModal(true);
-        return;
+      const orderData = await orderRes.json();
+      if (!orderRes.ok || orderData.error) {
+        throw new Error(orderData.error || "Failed to generate payment transaction");
       }
 
       if (!orderData.keyId) {
@@ -339,13 +249,12 @@ function CheckoutFormContent() {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
-                razorpay_order_id: response.razorpay_order_id || `mock_order_${Date.now()}`,
+                razorpay_order_id: response.razorpay_order_id,
                 razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature: response.razorpay_signature || "mock_sig",
+                razorpay_signature: response.razorpay_signature,
                 shippingDetails: { name, email, phone, address, city, pin },
                 cartItems: resolvedItems,
-                couponCode: appliedCoupon,
-                isMock: isSandbox
+                couponCode: appliedCoupon
               })
             });
 
@@ -354,7 +263,7 @@ function CheckoutFormContent() {
 
             if (verifyRes.ok && verifyData.ok) {
               clearCart();
-              router.push(`/checkout/success?orderId=${verifyData.orderId}`);
+              router.push(`/order-success?orderId=${verifyData.orderId}`);
             } else {
               router.push(`/checkout/failure?error=${encodeURIComponent(verifyData.error || "Verification failed")}`);
             }
@@ -746,98 +655,7 @@ function CheckoutFormContent() {
       )}
     </LuxuryTransition>
 
-      {/* Premium Sandbox Payment Simulator Modal */}
-      {showMockModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm transition-opacity duration-300 animate-fadeIn">
-          <div className="bg-[#FAF7F2] border border-[#E7C2B8]/40 rounded-3xl p-8 max-w-md w-full mx-4 shadow-2xl relative overflow-hidden soft-grain text-[#3B2B28] flex flex-col gap-6 animate-scaleIn">
-            
-            {/* Elegant Background Accents */}
-            <div className="absolute top-[-10%] right-[-10%] w-32 h-32 bg-[#F4D7CF] opacity-30 rounded-full filter blur-2xl pointer-events-none" />
-            <div className="absolute bottom-[-10%] left-[-10%] w-32 h-32 bg-[#E7C2B8] opacity-30 rounded-full filter blur-2xl pointer-events-none" />
 
-            <div className="text-center relative z-10 space-y-2">
-              <span className="font-inter text-[9px] uppercase tracking-[0.3em] text-[#C98E87] font-semibold bg-[#FAF7F2] border border-[#E7C2B8]/40 px-3 py-1 rounded-full">
-                Sandbox Simulator
-              </span>
-              <h3 className="font-cormorant text-2xl italic font-light text-[#3B2B28] pt-2">
-                Secured Test Gateway
-              </h3>
-              <p className="font-inter text-[11px] text-[#8B6B61] tracking-wide font-light">
-                Simulating secure Razorpay checkout integration
-              </p>
-            </div>
-
-            <div className="w-full h-[1px] bg-[#E7C2B8]/30 relative z-10" />
-
-            {/* Order & Payment Summary Details */}
-            <div className="space-y-4 font-inter text-xs text-[#8B6B61] relative z-10">
-              <div className="flex justify-between items-center bg-white/60 p-3.5 rounded-xl border border-[#E7C2B8]/20">
-                <span className="font-light">Client Name</span>
-                <span className="font-semibold text-[#3B2B28]">{name}</span>
-              </div>
-              <div className="flex justify-between items-center bg-white/60 p-3.5 rounded-xl border border-[#E7C2B8]/20">
-                <span className="font-light">Acquisition Email</span>
-                <span className="font-semibold text-[#3B2B28] truncate max-w-[180px]">{email}</span>
-              </div>
-              <div className="flex justify-between items-baseline bg-[#3B2B28]/5 p-4 rounded-xl border border-[#E7C2B8]/30">
-                <span className="font-cormorant text-sm italic text-[#3B2B28]">Acquisition Total</span>
-                <span className="font-cormorant text-xl font-semibold text-[#3B2B28]">
-                  ₹{grandTotal.toLocaleString("en-IN")}
-                </span>
-              </div>
-            </div>
-
-            {/* Conditional Status Render */}
-            <div className="relative z-10 flex flex-col items-center justify-center min-h-[80px]">
-              {mockPaymentStatus === "idle" && (
-                <p className="text-center font-inter text-[11px] text-[#8B6B61] leading-relaxed italic">
-                  Select payment outcome below to verify database, email notifications, and stock updates.
-                </p>
-              )}
-              {mockPaymentStatus === "processing" && (
-                <div className="flex flex-col items-center gap-3">
-                  <Loader2 className="w-7 h-7 animate-spin text-[#C98E87]" />
-                  <p className="font-cormorant text-sm italic text-[#3B2B28] animate-pulse">
-                    Processing secure acquisition...
-                  </p>
-                </div>
-              )}
-              {mockPaymentStatus === "success" && (
-                <div className="text-center text-emerald-700 font-inter text-xs font-medium space-y-1">
-                  <p className="font-cormorant text-base italic">✓ Authorization Confirmed</p>
-                  <p className="font-light text-[10px] text-emerald-600">Redirecting to success page...</p>
-                </div>
-              )}
-              {mockPaymentStatus === "failure" && (
-                <div className="text-center text-red-700 font-inter text-xs font-medium space-y-1">
-                  <p className="font-cormorant text-base italic">✕ Transaction Declined</p>
-                  <p className="font-light text-[10px] text-red-600">Reverting to checkout...</p>
-                </div>
-              )}
-            </div>
-
-            {/* Simulated payment outcome actions */}
-            <div className="relative z-10 flex gap-3.5 pt-2">
-              <button
-                type="button"
-                disabled={mockPaymentStatus !== "idle"}
-                onClick={() => handleSimulatedPayment(true)}
-                className="flex-1 py-3 bg-[#3B2B28] text-[#FAF7F2] rounded-xl font-cormorant text-[10px] uppercase tracking-widest font-semibold hover:bg-[#8B6B61] transition-all duration-300 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-              >
-                Authorize
-              </button>
-              <button
-                type="button"
-                disabled={mockPaymentStatus !== "idle"}
-                onClick={() => handleSimulatedPayment(false)}
-                className="flex-1 py-3 border border-[#C98E87] text-[#3B2B28] rounded-xl font-cormorant text-[10px] uppercase tracking-widest font-semibold hover:bg-white hover:border-[#8B6B61] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-              >
-                Decline
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 }

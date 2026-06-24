@@ -17,8 +17,7 @@ export async function POST(req: NextRequest) {
       razorpay_signature,
       shippingDetails,
       cartItems,
-      couponCode,
-      isMock
+      couponCode
     } = requestBody;
 
     if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
@@ -33,24 +32,22 @@ export async function POST(req: NextRequest) {
 
     // 1. Verify Razorpay Payment Signature
     const keySecret = process.env.RAZORPAY_KEY_SECRET;
-    if (!isMock && !keySecret) {
+    if (!keySecret) {
       console.error("[api-checkout-razorpay-verify] Missing RAZORPAY_KEY_SECRET for live verification");
       return NextResponse.json({ error: "Razorpay verification is not configured" }, { status: 500 });
     }
     const bodyText = razorpay_order_id + "|" + razorpay_payment_id;
     
     const expectedSignature = crypto
-      .createHmac("sha256", keySecret || "")
+      .createHmac("sha256", keySecret)
       .update(bodyText)
       .digest("hex");
 
-    const isSignatureValid =
-      isMock === true ? razorpay_signature === "mock_sig" : expectedSignature === razorpay_signature;
+    const isSignatureValid = expectedSignature === razorpay_signature;
 
     console.log("[api-checkout-razorpay-verify] Signature validation parameters:", {
       razorpay_order_id,
       razorpay_payment_id,
-      isMock,
       expectedSignature,
       receivedSignature: razorpay_signature,
       isSignatureValid
