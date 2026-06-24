@@ -248,26 +248,26 @@ export default function Header() {
     <>
       <header className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-50
                          flex flex-col items-center
-                         px-8 py-3 backdrop-blur-md
+                         px-3.5 sm:px-6 md:px-8 py-2.5 sm:py-3 backdrop-blur-md
                          ${headerShapeClass}
                          border border-[#C98E87]/25 bg-[#FAF7F2]/82 shadow-md
                          w-[95%] max-w-7xl
                          transition-[border-radius] duration-300 ease-in-out text-[#3B2B28]`}>
 
-        <div className="flex items-center justify-between w-full gap-x-6 sm:gap-x-8">
+        <div className="flex items-center justify-between w-full gap-x-2 sm:gap-x-4 md:gap-x-8">
           {/* Logo */}
           <div className="flex items-center flex-shrink-0">
-            <Link href="/" className="flex items-center gap-3 group select-none">
+            <Link href="/" className="flex items-center gap-1.5 sm:gap-3 group select-none">
               <img
                 src="/Man_logo.png"
                 alt="Manasvi Logo"
-                className="h-12 w-12 rounded-full object-cover group-hover:scale-105 transition-transform duration-300"
+                className="h-9 w-9 sm:h-12 sm:w-12 rounded-full object-cover group-hover:scale-105 transition-transform duration-300"
               />
               <div className="flex flex-col items-start gap-0.5">
-                <span className="font-[var(--font-bodoni)] text-[1.35rem] leading-none tracking-[0.06em] text-[#3B2B28] group-hover:text-[#8B6B61] transition-colors duration-300">
+                <span className="font-[var(--font-bodoni)] text-[1.05rem] sm:text-[1.35rem] leading-none tracking-[0.06em] text-[#3B2B28] group-hover:text-[#8B6B61] transition-colors duration-300">
                   MANASVI
                 </span>
-                <span className="font-[var(--font-im-fell)] text-[0.62rem] tracking-[0.35em] text-[#8B6B61] uppercase leading-none font-medium">
+                <span className="font-[var(--font-im-fell)] text-[0.5rem] sm:text-[0.62rem] tracking-[0.35em] text-[#8B6B61] uppercase leading-none font-medium">
                   Fashion
                 </span>
               </div>
@@ -330,25 +330,25 @@ export default function Header() {
           </div>
 
           {/* Mobile Controls (visible on < md) */}
-          <div className="flex items-center gap-2 md:hidden">
+          <div className="flex items-center gap-1 sm:gap-2 md:hidden">
             {/* Search button */}
             <button 
               onClick={handleSearchClick}
-              className="p-1.5 text-[#3B2B28]/70 hover:text-[#8B6B61] active:scale-95 transition-all cursor-pointer"
+              className="p-1 sm:p-1.5 text-[#3B2B28]/70 hover:text-[#8B6B61] active:scale-95 transition-all cursor-pointer"
               aria-label="Search catalogue"
             >
-              <Search className="w-5 h-5" strokeWidth={1.5} />
+              <Search className="w-4.5 h-4.5 sm:w-5 sm:h-5" strokeWidth={1.5} />
             </button>
 
             {/* Wishlist Link */}
             <Link
               href="/wishlist"
-              className="text-[#3B2B28]/70 hover:text-[#8B6B61] relative p-1.5 transition-colors"
+              className="text-[#3B2B28]/70 hover:text-[#8B6B61] relative p-1 sm:p-1.5 transition-colors"
               aria-label="View wishlist"
             >
-              <Heart className="w-5 h-5" strokeWidth={1.5} />
+              <Heart className="w-4.5 h-4.5 sm:w-5 sm:h-5" strokeWidth={1.5} />
               {wishlist.length > 0 && (
-                <span className="absolute top-1 right-1 bg-[#C98E87] text-white text-[7.5px] font-bold w-3.5 h-3.5 flex items-center justify-center rounded-full">
+                <span className="absolute -top-0.5 -right-0.5 sm:top-1 sm:right-1 bg-[#C98E87] text-white text-[7px] sm:text-[7.5px] font-bold w-3 sm:w-3.5 h-3 sm:h-3.5 flex items-center justify-center rounded-full">
                   {wishlist.length}
                 </span>
               )}
@@ -357,12 +357,12 @@ export default function Header() {
             {/* Cart Trigger */}
             <button
               onClick={() => { setDrawerTab("cart"); setIsDrawerOpen(true); }}
-              className="text-[#3B2B28]/70 hover:text-[#8B6B61] relative p-1.5 transition-colors cursor-pointer"
+              className="text-[#3B2B28]/70 hover:text-[#8B6B61] relative p-1 sm:p-1.5 transition-colors cursor-pointer"
               aria-label="Open shopping bag"
             >
-              <ShoppingBag className="w-5 h-5" strokeWidth={1.5} />
+              <ShoppingBag className="w-4.5 h-4.5 sm:w-5 sm:h-5" strokeWidth={1.5} />
               {cartCount > 0 && (
-                <span className="absolute top-1 right-1 bg-[#C98E87] text-white text-[7.5px] font-bold w-3.5 h-3.5 flex items-center justify-center rounded-full">
+                <span className="absolute -top-0.5 -right-0.5 sm:top-1 sm:right-1 bg-[#C98E87] text-white text-[7px] sm:text-[7.5px] font-bold w-3 sm:w-3.5 h-3 sm:h-3.5 flex items-center justify-center rounded-full">
                   {cartCount}
                 </span>
               )}
@@ -370,11 +370,11 @@ export default function Header() {
 
             {/* Hamburger Menu button */}
             <button 
-              className="flex items-center justify-center w-8 h-8 text-[#3B2B28]/75 hover:text-[#8B6B61] focus:outline-none cursor-pointer" 
+              className="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 text-[#3B2B28]/75 hover:text-[#8B6B61] focus:outline-none cursor-pointer" 
               onClick={toggleMenu} 
               aria-label={isOpen ? 'Close Menu' : 'Open Menu'}
             >
-              {isOpen ? <X className="w-5.5 h-5.5" strokeWidth={1.5} /> : <Menu className="w-5.5 h-5.5" strokeWidth={1.5} />}
+              {isOpen ? <X className="w-5 h-5 sm:w-5.5 sm:h-5.5" strokeWidth={1.5} /> : <Menu className="w-5 h-5 sm:w-5.5 sm:h-5.5" strokeWidth={1.5} />}
             </button>
           </div>
         </div>
